@@ -1,0 +1,124 @@
+@charset "utf-8";
+/* JOE UI Styles */
+
+
+.joe-block,.joe-overlay{
+	position:absolute;
+	top:0;
+	right:0;
+	bottom:0;
+	left:0;
+}
+
+.joe-overlay{
+	background-color: rgba(0,0,0,.7);
+	z-index: 100;
+	display:none;
+}
+
+/*-------------------------
+	UI Overlays
+-------------------------*/	
+
+.joe-overlay.active{
+	display:block;
+}
+
+/*-------------------------
+	UI Panels
+-------------------------*/	
+.joe-overlay-panel {
+	background: #eee;
+	position:absolute;
+	top:20px;
+	left:20px;
+	bottom:20px;
+	right:20px;
+	box-shadow:0 0 4px 0 rgba(0,0,0,.7)
+}
+
+.joe-panel{
+	position:relative;
+}
+
+/*-------------------------
+	UI Panel Header
+-------------------------*/	
+.joe-panel-header{
+	height:40px;
+	position:relative;
+	background-color: rgba(0,0,0,.1);
+}
+
+.joe-panel-close{
+    position: absolute;
+    top: 0;
+    right: 0;
+    line-height: 40px;
+    background: #ddd;
+	background-color: rgba(0,0,0,.1);
+    /* padding: 0 10px; */
+    font-size: 14px;
+    width: 40px;
+    text-align: center;
+    cursor: pointer;
+}
+.joe-panel-close:hover{
+    background: #ccc;
+}
+
+.joe-panel-title{
+    font-weight: bold;
+    padding: 5px;
+    color: #007ac2;
+}
+
+/*-------------------------
+	UI Panel Content
+-------------------------*/	
+.joe-panel-content {
+	min-height:50px;
+	margin-bottom:10px;
+}
+.joe-panel-content.joe-inset{
+	margin:5px;
+	background:#fff;
+	box-shadow:inset 0 0 3px 0 rgba(0,0,0,.5);
+	border:1px solid #efefef;
+}
+
+
+.joe-panel-content-option {
+    /* height: 40px; */
+    /* line-height: 40px; */
+    padding: 10px 10px;
+    position: relative;
+    /* min-height: 30px; */
+    cursor: pointer;
+    font-size: 14px;
+	clear:both;
+}
+.joe-panel-content-option:hover {
+    background-color: rgba(0,0,0,.1);
+}
+/*-------------------------
+	UI Panel Content Types
+-------------------------*/
+	.joe-text-content{
+		padding:20px;
+	}
+	
+/*-------------------------------------------------------------------->
+	1 | Footer
+<--------------------------------------------------------------------*/	
+.joe-footer-button {
+    float: right;
+    padding: 8px 16px;
+    margin: 5px;
+    background-color: rgba(255,255,255,.5);
+    box-shadow: 0 0 3px 0 rgba(0,0,0,.5);
+    cursor: pointer;
+}
+.joe-footer-button:hover {
+    background-color: rgba(255,255,255,1);
+}

@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>JOE Test</title>
+<link rel="stylesheet" type="text/css" href="css/joe-styles.css">
+<script src="js/jquery-1.10.2.min.js"></script>
+<script src="js/craydent-1.7.18.js"></script>
+<script src="js/JsonObjectEditor.jquery.craydent.js"></script>
+
+</head>
+
+<body>
+Json Object Editor Demo Page
+
+
+<div>
+<h3>examples</h3>
+<a href="javascript:_joe.show();">Show JOE</a>
+</div>
+<script>
+	var testObject = {
+		name:"My test object",
+		id:cuid()
+	}
+
+	var JOE = new JsonObjectEditor();
+	JOE.init();
+</script>
+</body>
+</html>
