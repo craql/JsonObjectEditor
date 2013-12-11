@@ -16,11 +16,20 @@ Json Object Editor Demo Page
 
 <div>
 <h3>examples</h3>
-<a href="javascript:_joe.show();">Show JOE</a>
-<a href="javascript:_joe.show(cat);">edit Cat</a>
+<a href="javascript:_joe.show();">Show JOE</a><br/>
 
+<a href="javascript:_joe.show(cat);">edit Cat</a><br/>
+
+<a href="javascript:_joe.show(cat,'animal');">edit Cat(animal)</a><br/>
+
+<a href="javascript:_joe.show(animals,'animal');">edit Animals</a><br/>
+
+<a href="javascript:_joe.show({},'animal','',addAnimal);">Add Animal</a><br/>
 </div>
 <script>
+function addAnimal(obj){
+	animals.push(obj);
+}
 var cat = 
 {	name:'tom', 
 	legs:4,
@@ -28,11 +37,21 @@ var cat =
 	id:cuid(),
 	hiddenizer:'the hidden field'
 };
-	var testObject = {
-		name:"My test object",
-		id:cuid(),
-		animalType:'cat'
-	}
+var dog =
+{	name:'rover', 
+	legs:4,
+	species:'dog',
+	id:cuid()
+};
+
+var rat =
+{	name:'jerry', 
+	legs:4,
+	species:'rat',
+	id:cuid()
+};
+
+var animals =[cat,dog,rat];
 
 	var specs = {
 /*		defaultProfile:{
@@ -41,8 +60,21 @@ var cat =
 		},*/
 		fields:{
 			species:{label:'Species',type:'select', values:['cat','dog','rat']},
+			gender:{type:'select', values:['male','female']},
 			id:{label:'ID',type:'text', locked:true},
 			hiddenizer:{hidden:true}
+		},
+		schemas:{
+			animal:{
+				_title:'Animal',
+				fields:['name','legs','id','species','color','gender'],
+				_listID:'id',
+				_listTitle:'${name} ${species}',
+				callback:function(obl){
+					alert(obj.name);
+				}
+				
+			}
 		}
 	}
 	var JOE = new JsonObjectEditor(specs);

@@ -14,7 +14,8 @@ function JsonObjectEditor(specs){
 			hiddenFields:[]
 		},
 		profiles:{},
-		fields:{}
+		fields:{},
+		schemas:{}
 	},
 	specs||{})
 	
@@ -22,6 +23,8 @@ function JsonObjectEditor(specs){
 	//TODO: check for class/id selector
 	this.container = $(this.specs.container);
 	this.fields = this.specs.fields;
+	this.schemas = this.specs.schemas;
+	
 	this.defaultProfile = this.specs.defaultProfile || this.specs.joeprofile;
 	this.current.profile = this.defaultProfile;
 /*-------------------------------------------------------------------->
@@ -52,20 +55,44 @@ function JsonObjectEditor(specs){
 		'</div>';
 		return html;
 	}
-	this.populateFramework = function(data,profile){
+	this.populateFramework = function(data,schema,profile,callback){
 		var specs = {};
+	//callback
+	if(callback){self.current.callback = callback;}
+	else{self.current.callback = null;}
+	
+	
+	//setup schema + title
+		var schema = schema || '';
+		specs.schema = ($.type(schema) == 'object')?schema:self.schemas[schema] || null;
+		self.current.schema = specs.schema;
+		specs.title = (specs.schema)?(specs.schema.title ||"Editing '"+schema+"' Object"):"Editing Object";	
 		
+	
+	//when object passed in
 		if($.type(data) == 'object'){
 			specs.object = data;
 			specs.menu = [{name:'save',label:'Save Object',action:'_joe.updateObject()'}];
 			specs.mode="object";
 			self.current.object = data;
-			specs.title = "Editing Object";	
-			specs.profile = (profile)? 
-				(self.specs.profiles[profile]||self.specs.joeprofile):
-				self.specs.joeprofile;
+			
 		}
 		
+	//when array passed in	
+		if($.type(data) == 'array'){
+			specs.list = data;
+			specs.menu = [];
+			specs.mode="list";
+			self.current.list = data;
+			//self.current.object = null;
+
+		}
+		
+	//setup profile
+		specs.profile = (profile)? 
+			(self.specs.profiles[profile]||self.specs.joeprofile):
+			self.specs.joeprofile;	
+			
 		self.current.profile = specs.profile;
 		
 		var html = 
@@ -145,28 +172,50 @@ function JsonObjectEditor(specs){
 		return html;
 		
 	}
+//LIST
 	this.renderListContent = function(specs){
 		specs = specs || {};
-		var html = 'LIST';
+		var schema = specs.schema;
+		var list = specs.list || [];
+		var html = '';
+			list.map(function(li){
+				html += self.renderListItem(li);
+			})
+		
 		return html;
 		
 	}
 	
+//OBJECT
 	this.renderObjectContent = function(specs){
 		specs = specs || {};
 		var object = specs.object;
 		var fields = '';
 		var propObj;
-		for( var prop in object){
-			propObj = $.extend({
-				name:prop,
-				type:'text',
-				value:object[prop]	
-			},self.fields[prop]);
-			
-			fields += self.renderObjectField(propObj);
-		}
 		
+		if(!specs.schema){//no schema use items as own schema
+			for( var prop in object){
+				propObj = $.extend({
+					name:prop,
+					type:'text',
+					value:object[prop]	
+				},self.fields[prop]);
+				
+				fields += self.renderObjectField(propObj);
+			}
+		}
+		else{
+			(specs.schema.fields||[]).map(function(prop){
+				propObj = $.extend({
+					name:prop,
+					type:'text',
+					value:object[prop]	
+				},self.fields[prop]);
+				
+				fields += self.renderObjectField(propObj);
+			})
+			
+		}
 		var html = '<div class="joe-object-content">'+fields+'</div>';
 		return html;
 	}
@@ -200,12 +249,15 @@ function JsonObjectEditor(specs){
 		return html;
 	}
 /*-------------------------------------------------------------------->
-	3 | FORM
+	3 | OBJECT FORM
 <--------------------------------------------------------------------*/
 	this.renderObjectField = function(prop){
 		//requires {name,type}
 		var hidden = (prop.hidden)?'hidden':'';
-		var html = '<div class="joe-object-field '+hidden+'" data-type="'+prop.type+'" data-name="'+prop.name+'">';
+		var html = 
+			'<div class="joe-object-field '+hidden+'" data-type="'+prop.type+'" data-name="'+prop.name+'">'+
+			'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>';
+			
 		switch(prop.type){
 			case 'select':
 				html+= self.renderSelectField(prop)
@@ -226,7 +278,6 @@ function JsonObjectEditor(specs){
 			'':'disabled';
 		
 		var html=
-		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+
 		'<input class="joe-text-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+disabled+' />';
 		return html;
 	}
@@ -240,8 +291,8 @@ function JsonObjectEditor(specs){
 		var disabled = (profile.lockedFields.indexOf(prop.name) != -1 || prop.locked)?
 			'disabled':'';
 		
-		var html=
-		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+
+		var html=/*
+		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
 		'<input class="joe-number-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+disabled+' />';
 		return html;
 	}
@@ -264,8 +315,8 @@ function JsonObjectEditor(specs){
 			'disabled':'';
 		
 		var selected;
-		var html=
-		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+
+		var html=/*
+		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
 		
 		'<select class="joe-select-field joe-field" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+disabled+'>';
 			valObjs.map(function(v){
@@ -277,15 +328,46 @@ function JsonObjectEditor(specs){
 		return html;
 	}
 /*-------------------------------------------------------------------->
+	4 | OBJECT LISTS
+<--------------------------------------------------------------------*/
+	this.renderListItem = function(listItem){
+		var idprop = self.current.schema._listID || 'id';
+		var id = listItem[idprop] || null;
+		var action = 'onclick="_joe.showSchemaObject(\''+id+'\');"';
+		
+		if(!self.current.schema._listTemplate){
+			var title = self.current.schema._listTitle || listItem.name || id || 'untitled';
+			var html = '<div class="joe-panel-content-option" '+action+'>'+fillTemplate(title,listItem)+'</div>';
+		}
+		
+		return html;
+	}
+	
+	this.showSchemaObject = function(id){
+		var list = self.current.list;
+		var idprop = self.current.schema._listID || 'id';
+		
+		var object = list.filter(function(li){return li[idprop] == id;})[0]||false;
+		
+		if(!object){
+			alert('error finding object');
+			return;
+		}
+		self.populateFramework(object,self.current.schema);
+	}
+/*-------------------------------------------------------------------->
+	5 | MENUS
+<--------------------------------------------------------------------*/
+/*-------------------------------------------------------------------->
 	I | INTERACTIONS
 <--------------------------------------------------------------------*/
 	this.toggleOverlay = function(dom){
 		$(dom).parents('.joe-overlay').toggleClass('active');
 	}
 	
-	this.show = function(data,profile){
+	this.show = function(data,schema,profile,callback){
 		//profile = profile || null
-		self.populateFramework(data,profile);
+		self.populateFramework(data,schema,profile,callback);
 		$('.joe-overlay').addClass('active');
 	}
 	this.hide = function(data){
@@ -303,12 +385,13 @@ function JsonObjectEditor(specs){
 /*-------------------------------------------------------------------->
 	D | DATA
 <--------------------------------------------------------------------*/
-	this.updateObject = function(dom){
+	this.updateObject = function(callback){
+		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || logit;
 		var newObj = self.constructObjectFromFields();
 		var obj = $.extend(self.current.object,newObj);
 		logit('object updated');
-		logit(obj);
 		self.hide();
+		callback(obj);
 	}
 	
 	this.constructObjectFromFields = function(){

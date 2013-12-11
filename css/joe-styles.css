@@ -75,6 +75,7 @@
     font-weight: bold;
     padding: 5px;
     color: #007ac2;
+	line-height:30px;
 }
 
 /*-------------------------
@@ -95,7 +96,9 @@
 	border:1px solid #efefef;
 }
 
-
+/*-------------------------
+	UI Panel Content List Options
+-------------------------*/	
 .joe-panel-content-option {
     /* height: 40px; */
     /* line-height: 40px; */
