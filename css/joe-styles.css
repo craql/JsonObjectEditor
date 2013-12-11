@@ -1,7 +1,9 @@
 @charset "utf-8";
 /* JOE UI Styles */
 
-
+.joe-overlay{
+	font-family:Cambria, "Hoefler Text", "Liberation Serif", Times, "Times New Roman", serif;
+}
 .joe-block,.joe-overlay{
 	position:absolute;
 	top:0;
@@ -48,6 +50,8 @@
 	height:40px;
 	position:relative;
 	background-color: rgba(0,0,0,.1);
+	border-bottom: 1px solid #eee;
+	box-shadow: 0 0 2px 0 rgba(0,0,0,.3);
 }
 
 .joe-panel-close{
@@ -78,10 +82,14 @@
 -------------------------*/	
 .joe-panel-content {
 	min-height:50px;
-	margin-bottom:10px;
+	position: absolute;
+	top: 50px;
+	bottom: 50px;
+	left: 5px;
+	right: 5px;
+	overflow: auto;
 }
 .joe-panel-content.joe-inset{
-	margin:5px;
 	background:#fff;
 	box-shadow:inset 0 0 3px 0 rgba(0,0,0,.5);
 	border:1px solid #efefef;
@@ -118,8 +126,28 @@
 }
 	
 /*-------------------------------------------------------------------->
+	Editor Form 
+<--------------------------------------------------------------------*/		
+.joe-object-field{
+	margin: 5px;
+	border: 1px solid #f2f2f2;
+	padding: 5px 0;
+}
+.joe-object-field.hidden{
+	display:none;
+}
+.joe-object-field input[type=text] {
+	padding: 4px;
+}	
+/*-------------------------------------------------------------------->
 	1 | Footer
 <--------------------------------------------------------------------*/	
+.joe-panel-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
 .joe-footer-button {
     float: right;
     padding: 8px 16px;

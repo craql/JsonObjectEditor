@@ -21,13 +21,29 @@ Json Object Editor Demo Page
 
 </div>
 <script>
-var cat = {name:'tom', legs:4,species:'cat'};
+var cat = 
+{	name:'tom', 
+	legs:4,
+	species:'cat',
+	id:cuid()
+};
 	var testObject = {
 		name:"My test object",
-		id:cuid()
+		id:cuid(),
+		animalType:'cat'
 	}
 
-	var JOE = new JsonObjectEditor();
+	var specs = {
+/*		defaultProfile:{
+			lockedFields:['joeUpdated','id'],
+			hiddenFields:[]
+		},*/
+		fields:{
+			species:{label:'Species',type:'select', values:['cat','dog','rat']},
+			id:{label:'ID',type:'text', locked:true}
+		}
+	}
+	var JOE = new JsonObjectEditor(specs);
 	JOE.init();
 </script>
 </body>

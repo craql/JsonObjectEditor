@@ -13,16 +13,17 @@ function JsonObjectEditor(specs){
 			lockedFields:['joeUpdated'],
 			hiddenFields:[]
 		},
-		profiles:[]
+		profiles:{},
+		fields:{}
 	},
 	specs||{})
 	
 	this.current = {};
 	//TODO: check for class/id selector
 	this.container = $(this.specs.container);
-
-
-	this.current.profile = this.specs.joeprofile;
+	this.fields = this.specs.fields;
+	this.defaultProfile = this.specs.defaultProfile || this.specs.joeprofile;
+	this.current.profile = this.defaultProfile;
 /*-------------------------------------------------------------------->
 	1 | INIT
 <--------------------------------------------------------------------*/
@@ -157,11 +158,11 @@ function JsonObjectEditor(specs){
 		var fields = '';
 		var propObj;
 		for( var prop in object){
-			propObj = {
+			propObj = $.extend({
 				name:prop,
 				type:'text',
 				value:object[prop]	
-			};
+			},self.fields[prop]);
 			
 			fields += self.renderObjectField(propObj);
 		}
@@ -203,7 +204,8 @@ function JsonObjectEditor(specs){
 <--------------------------------------------------------------------*/
 	this.renderObjectField = function(prop){
 		//requires {name,type}
-		var html = '<div class="joe-object-field" data-type="'+prop.type+'" data-name="'+prop.name+'">';
+		var hidden = (prop.hidden)?'hidden':'';
+		var html = '<div class="joe-object-field '+hidden+'" data-type="'+prop.type+'" data-name="'+prop.name+'">';
 		switch(prop.type){
 			default:
 				html+= self.renderTextField(prop)
@@ -213,7 +215,7 @@ function JsonObjectEditor(specs){
 		return html;
 	}
 /*----------------------------->
-	* | Text Input
+	A | Text Input
 <-----------------------------*/
 	this.renderTextField = function(prop){
 		var profile = self.current.profile;
@@ -226,6 +228,20 @@ function JsonObjectEditor(specs){
 		return html;
 	}
 	
+
+/*----------------------------->
+	B | Number Input
+<-----------------------------*/
+	this.renderTextField = function(prop){
+		var profile = self.current.profile;
+		var disabled = (profile.lockedFields.indexOf(prop.name) == -1)?
+			'':'disabled';
+		
+		var html=
+		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+
+		'<input class="joe-number-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+disabled+' />';
+		return html;
+	}	
 /*-------------------------------------------------------------------->
 	I | INTERACTIONS
 <--------------------------------------------------------------------*/
