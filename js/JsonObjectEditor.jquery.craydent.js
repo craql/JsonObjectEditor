@@ -10,8 +10,10 @@ function JsonObjectEditor(specs){
 	this.specs = $.extend({
 		container:'body',
 		joeprofile:{
-			lockedFields:['lastUpdated']
-		}
+			lockedFields:['joeUpdated'],
+			hiddenFields:[]
+		},
+		profiles:[]
 	},
 	specs||{})
 	
@@ -49,7 +51,7 @@ function JsonObjectEditor(specs){
 		'</div>';
 		return html;
 	}
-	this.populateFramework = function(data){
+	this.populateFramework = function(data,profile){
 		var specs = {};
 		
 		if($.type(data) == 'object'){
@@ -58,7 +60,12 @@ function JsonObjectEditor(specs){
 			specs.mode="object";
 			self.current.object = data;
 			specs.title = "Editing Object";	
+			specs.profile = (profile)? 
+				(self.specs.profiles[profile]||self.specs.joeprofile):
+				self.specs.joeprofile;
 		}
+		
+		self.current.profile = specs.profile;
 		
 		var html = 
 			self.renderEditorHeader(specs)+
@@ -209,9 +216,13 @@ function JsonObjectEditor(specs){
 	* | Text Input
 <-----------------------------*/
 	this.renderTextField = function(prop){
+		var profile = self.current.profile;
+		var disabled = (profile.lockedFields.indexOf(prop.name) == -1)?
+			'':'disabled';
+		
 		var html=
 		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+
-		'<input class="joe-text-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"/>';
+		'<input class="joe-text-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+disabled+' />';
 		return html;
 	}
 	
@@ -222,8 +233,9 @@ function JsonObjectEditor(specs){
 		$(dom).parents('.joe-overlay').toggleClass('active');
 	}
 	
-	this.show = function(data){
-		self.populateFramework(data);
+	this.show = function(data,profile){
+		//profile = profile || null
+		self.populateFramework(data,profile);
 		$('.joe-overlay').addClass('active');
 	}
 	this.hide = function(data){
@@ -250,7 +262,7 @@ function JsonObjectEditor(specs){
 	}
 	
 	this.constructObjectFromFields = function(){
-		var object = {joeupdate:new Date()};
+		var object = {joeUpdated:new Date()};
 		var prop;
 		$('.joe-object-field').find('input').each(function(){
 			switch($(this).attr('type')){
