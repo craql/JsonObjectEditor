@@ -119,25 +119,40 @@
 /*-------------------------
 	UI Panel Object Content
 -------------------------*/	
-.joe-field-label {
+/*.joe-field-label {
 	padding: 5px 10px;
 	display: inline-block;
 	width: 100px;
+}*/
+.joe-field-label {
+	padding: 0 4px;
+	display: inline-block;
+	position: absolute;
+	top: -10px;
+	background-color: #fff;
+	left: 5px;
 }
 	
 /*-------------------------------------------------------------------->
 	Editor Form 
 <--------------------------------------------------------------------*/		
-.joe-object-field{
+/*.joe-object-field{
 	margin: 5px;
 	border: 1px solid #f2f2f2;
 	padding: 5px 0;
+}*/
+.joe-object-field{
+	margin: 10px 5px;
+	border: 1px solid #f2f2f2;
+	padding: 8px 6px;
+	position: relative;
 }
 .joe-object-field.hidden{
 	display:none;
 }
 .joe-object-field input[type=text] {
 	padding: 4px;
+	width: 300px;
 }	
 /*-------------------------------------------------------------------->
 	1 | Footer

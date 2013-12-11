@@ -207,6 +207,9 @@ function JsonObjectEditor(specs){
 		var hidden = (prop.hidden)?'hidden':'';
 		var html = '<div class="joe-object-field '+hidden+'" data-type="'+prop.type+'" data-name="'+prop.name+'">';
 		switch(prop.type){
+			case 'select':
+				html+= self.renderSelectField(prop)
+			break;
 			default:
 				html+= self.renderTextField(prop)
 			break;
@@ -224,7 +227,7 @@ function JsonObjectEditor(specs){
 		
 		var html=
 		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+
-		'<input class="joe-text-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+disabled+' />';
+		'<input class="joe-text-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+disabled+' />';
 		return html;
 	}
 	
@@ -232,16 +235,47 @@ function JsonObjectEditor(specs){
 /*----------------------------->
 	B | Number Input
 <-----------------------------*/
-	this.renderTextField = function(prop){
+	this.renderNumberField = function(prop){
 		var profile = self.current.profile;
-		var disabled = (profile.lockedFields.indexOf(prop.name) == -1)?
-			'':'disabled';
+		var disabled = (profile.lockedFields.indexOf(prop.name) != -1 || prop.locked)?
+			'disabled':'';
 		
 		var html=
 		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+
-		'<input class="joe-number-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+disabled+' />';
+		'<input class="joe-number-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+disabled+' />';
 		return html;
-	}	
+	}
+/*----------------------------->
+	C | Select
+<-----------------------------*/	
+	this.renderSelectField = function(prop){
+		var profile = self.current.profile;
+		var values = prop.values || [prop.value];
+		var valObjs = [];
+		if($.type(values[0]) != 'object'){
+			values.map(function(v){
+				valObjs.push({name:v});
+			});
+		}
+		else{
+			valObjs = values;
+		}
+		var disabled = (profile.lockedFields.indexOf(prop.name) != -1 || prop.locked)?
+			'disabled':'';
+		
+		var selected;
+		var html=
+		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+
+		
+		'<select class="joe-select-field joe-field" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+disabled+'>';
+			valObjs.map(function(v){
+				selected = (prop.value == v.name)?'selected':'';
+				html += '<option value="'+v.name+'" '+selected+'>'+(v.display||v.label||v.name)+'</option>'	
+			})
+			
+		html+='</select>';
+		return html;
+	}
 /*-------------------------------------------------------------------->
 	I | INTERACTIONS
 <--------------------------------------------------------------------*/
@@ -280,7 +314,7 @@ function JsonObjectEditor(specs){
 	this.constructObjectFromFields = function(){
 		var object = {joeUpdated:new Date()};
 		var prop;
-		$('.joe-object-field').find('input').each(function(){
+		$('.joe-object-field').find('.joe-field').each(function(){
 			switch($(this).attr('type')){
 				case 'text':
 				default:
