@@ -17,8 +17,11 @@ Json Object Editor Demo Page
 <div>
 <h3>examples</h3>
 <a href="javascript:_joe.show();">Show JOE</a>
+<a href="javascript:_joe.show(cat);">edit Cat</a>
+
 </div>
 <script>
+var cat = {name:'tom', legs:4,species:'cat'};
 	var testObject = {
 		name:"My test object",
 		id:cuid()

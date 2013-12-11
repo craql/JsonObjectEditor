@@ -8,17 +8,24 @@ function JsonObjectEditor(specs){
 	0 | CONFIG
 <--------------------------------------------------------------------*/
 	this.specs = $.extend({
-		container:'body'
+		container:'body',
+		joeprofile:{
+			lockedFields:['lastUpdated']
+		}
 	},
 	specs||{})
 	
+	this.current = {};
 	//TODO: check for class/id selector
 	this.container = $(this.specs.container);
 
+
+	this.current.profile = this.specs.joeprofile;
 /*-------------------------------------------------------------------->
 	1 | INIT
 <--------------------------------------------------------------------*/
 	this.init = function(){
+		self.current = {};
 		var html = self.renderFramework(
 			self.renderEditorHeader()+
 			self.renderEditorContent()+
@@ -35,7 +42,7 @@ function JsonObjectEditor(specs){
 	this.renderFramework = function(content){
 		
 		var html = 
-		'<div class="joe-overlay active">'+
+		'<div class="joe-overlay">'+
 			'<div class="joe-overlay-panel active">'+
 				(content || '')+
 			'</div>'+
@@ -43,14 +50,21 @@ function JsonObjectEditor(specs){
 		return html;
 	}
 	this.populateFramework = function(data){
+		var specs = {};
+		
 		if($.type(data) == 'object'){
-			
+			specs.object = data;
+			specs.menu = [{name:'save',label:'Save Object',action:'_joe.updateObject()'}];
+			specs.mode="object";
+			self.current.object = data;
+			specs.title = "Editing Object";	
 		}
+		
 		var html = 
-			self.renderEditorHeader()+
-			self.renderEditorContent()+
-			self.renderEditorFooter()
-		$('.joe-overlay-panel').html();
+			self.renderEditorHeader(specs)+
+			self.renderEditorContent(specs)+
+			self.renderEditorFooter(specs)
+		$('.joe-overlay-panel').html(html);
 		
 		return html;
 	}
@@ -154,7 +168,7 @@ function JsonObjectEditor(specs){
 <-----------------------------*/	
 	this.renderEditorFooter = function(specs){
 		specs = specs || {};
-		var menu = specs.menu || [{name:'save',label:'Save'}]
+		var menu = specs.menu || [{name:'save',label:'Save', action:'_joe.upateItem(this);'}]
 		var title = specs.title || 'untitled';
 		var display,action;
 		
@@ -182,10 +196,10 @@ function JsonObjectEditor(specs){
 <--------------------------------------------------------------------*/
 	this.renderObjectField = function(prop){
 		//requires {name,type}
-		var html = '<div class="joe-form-field" data-type="'+prop.type+'" data-name="'+prop.name+'">';
+		var html = '<div class="joe-object-field" data-type="'+prop.type+'" data-name="'+prop.name+'">';
 		switch(prop.type){
 			default:
-				self.renderTextField(prop)
+				html+= self.renderTextField(prop)
 			break;
 		}
 		html+='</div>';
@@ -193,9 +207,13 @@ function JsonObjectEditor(specs){
 	}
 /*----------------------------->
 	* | Text Input
-<-----------------------------*/	
-	var html=
-	
+<-----------------------------*/
+	this.renderTextField = function(prop){
+		var html=
+		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+
+		'<input class="joe-text-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"/>';
+		return html;
+	}
 	
 /*-------------------------------------------------------------------->
 	I | INTERACTIONS
@@ -205,6 +223,7 @@ function JsonObjectEditor(specs){
 	}
 	
 	this.show = function(data){
+		self.populateFramework(data);
 		$('.joe-overlay').addClass('active');
 	}
 	this.hide = function(data){
@@ -219,6 +238,33 @@ function JsonObjectEditor(specs){
 	});
 
 
+/*-------------------------------------------------------------------->
+	D | DATA
+<--------------------------------------------------------------------*/
+	this.updateObject = function(dom){
+		var newObj = self.constructObjectFromFields();
+		var obj = $.extend(self.current.object,newObj);
+		logit('object updated');
+		logit(obj);
+		self.hide();
+	}
+	
+	this.constructObjectFromFields = function(){
+		var object = {joeupdate:new Date()};
+		var prop;
+		$('.joe-object-field').find('input').each(function(){
+			switch($(this).attr('type')){
+				case 'text':
+				default:
+					prop = $(this).attr('name');
+					object[prop] = $(this).val();
+				break;
+			}
+		});
+		return object;
+	}
+
+/*<------------------------------------------------------------->*/
 	return this;
 }
 
