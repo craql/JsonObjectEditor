@@ -66,7 +66,7 @@ function JsonObjectEditor(specs){
 		var schema = schema || '';
 		specs.schema = ($.type(schema) == 'object')?schema:self.schemas[schema] || null;
 		self.current.schema = specs.schema;
-		specs.title = (specs.schema)?(specs.schema.title ||"Editing '"+schema+"' Object"):"Editing Object";	
+		specs.title = (specs.schema)?(specs.schema.title ||"Editing '"+(schema._Title || schema)+"' Object"):"Editing Object";	
 		
 	
 	//when object passed in
@@ -260,10 +260,14 @@ function JsonObjectEditor(specs){
 			
 		switch(prop.type){
 			case 'select':
-				html+= self.renderSelectField(prop)
+				html+= self.renderSelectField(prop);
 			break;
+			case 'guid':
+				html+= self.renderGuidField(prop);
+			break;
+			
 			default:
-				html+= self.renderTextField(prop)
+				html+= self.renderTextField(prop);
 			break;
 		}
 		html+='</div>';
@@ -325,6 +329,17 @@ function JsonObjectEditor(specs){
 			})
 			
 		html+='</select>';
+		return html;
+	}
+/*----------------------------->
+	G | Guid
+<-----------------------------*/
+	this.renderGuidField = function(prop){
+		var profile = self.current.profile;
+		
+		var html=/*
+		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
+		'<input class="joe-guid-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || cuid())+'"  disabled />';
 		return html;
 	}
 /*-------------------------------------------------------------------->

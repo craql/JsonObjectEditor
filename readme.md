@@ -1,13 +1,13 @@
 #Json Object Editor
-###Visually Edit Objects Using this GUID tool, what you do from there is up to you.
+Visually Edit Objects Using this GUID tool, what you do from there is up to you.
 
 ##required includes
 
-<link rel="stylesheet" type="text/css" href="css/joe-styles.css">
+`<link rel="stylesheet" type="text/css" href="css/joe-styles.css">
 <script src="js/jquery-1.10.2.min.js"></script>
 <script src="js/craydent-1.7.18.js"></script>
 <script src="js/JsonObjectEditor.jquery.craydent.js"></script>
-
+`
 
 ##instantiation
 
@@ -20,7 +20,7 @@ an object of field object definitions (profile independent)
 **defaultProfile**
 overwrites the default profile
 
-**extProfile
+**schemas:** a list of schema objects that can configure the editor fields
 
 
 ##usage
