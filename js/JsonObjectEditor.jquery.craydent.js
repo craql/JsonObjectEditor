@@ -392,9 +392,9 @@ function JsonObjectEditor(specs){
 		return html;
 	}
 	
-	this.showSchemaObject = function(id){
-		var list = self.current.list;
-		var idprop = self.current.schema._listID || 'id';
+	this.showSchemaObject = function(id,list,idprop){
+		var list = list || self.current.list;
+		var idprop = idprop || self.current.schema._listID || 'id';
 		
 		var object = list.filter(function(li){return li[idprop] == id;})[0]||false;
 		
@@ -403,6 +403,7 @@ function JsonObjectEditor(specs){
 			return;
 		}
 		self.populateFramework(object,self.current.schema);
+		$('.joe-overlay').addClass('active');
 	}
 /*-------------------------------------------------------------------->
 	5 | MENUS
