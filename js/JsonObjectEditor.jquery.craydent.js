@@ -268,6 +268,10 @@ function JsonObjectEditor(specs){
 			case 'number':
 				html+= self.renderNumberField(prop);
 			break;
+			case 'number':
+				html+= self.renderIntegerField(prop);
+			break;
+			
 			default:
 				html+= self.renderTextField(prop);
 			break;
@@ -290,7 +294,7 @@ function JsonObjectEditor(specs){
 	
 
 /*----------------------------->
-	B | Number Input
+	B | Number/Int Input
 <-----------------------------*/
 	this.renderNumberField = function(prop){
 		var profile = self.current.profile;
@@ -300,6 +304,17 @@ function JsonObjectEditor(specs){
 		var html=/*
 		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
 		'<input class="joe-number-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+bluraction+' '+disabled+' />';
+		return html;
+	}
+	
+	this.renderIntegerField = function(prop){
+		var profile = self.current.profile;
+		var disabled = (profile.lockedFields.indexOf(prop.name) != -1 || prop.locked)?
+			'disabled':'';
+		var bluraction = 'onblur="$(this).val(parseInt($(this).val()))"';
+		var html=/*
+		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
+		'<input class="joe-int-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+bluraction+' '+disabled+' />';
 		return html;
 	}
 /*----------------------------->
