@@ -68,7 +68,9 @@ function JsonObjectEditor(specs){
 		self.current.schema = specs.schema;
 		specs.title = (specs.schema)?(specs.schema.title ||"Editing '"+(schema._Title || schema)+"' Object"):"Editing Object";	
 		
-	
+/*-------------------------
+	Object
+-------------------------*/	
 	//when object passed in
 		if($.type(data) == 'object'){
 			specs.object = data;
@@ -78,6 +80,9 @@ function JsonObjectEditor(specs){
 			
 		}
 		
+/*-------------------------
+	Arrays 
+-------------------------*/			
 	//when array passed in	
 		if($.type(data) == 'array'){
 			specs.list = data;
@@ -88,6 +93,18 @@ function JsonObjectEditor(specs){
 
 		}
 		
+/*-------------------------
+	String
+-------------------------*/	
+	//when string passed in
+		if($.type(data) == 'string'){
+			specs.text = data;
+			//specs.menu = [{name:'save',label:'Save Object',action:'_joe.updateObject()'}];
+			specs.mode="text";
+			self.current.text = specs.text;
+			
+		}
+				
 	//setup profile
 		specs.profile = (profile)? 
 			(self.specs.profiles[profile]||self.specs.joeprofile):
@@ -268,7 +285,7 @@ function JsonObjectEditor(specs){
 			case 'number':
 				html+= self.renderNumberField(prop);
 			break;
-			case 'number':
+			case 'int':
 				html+= self.renderIntegerField(prop);
 			break;
 			
