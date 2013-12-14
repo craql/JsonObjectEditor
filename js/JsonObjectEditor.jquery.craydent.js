@@ -55,15 +55,19 @@ function JsonObjectEditor(specs){
 		'</div>';
 		return html;
 	}
-	this.populateFramework = function(data,schema,profile,callback){
-		var specs = {};
+	this.populateFramework = function(data,setts){
+	setts = setts || {};
+	
+	var schema = setts.schema || '';
+	var profile = setts.profile || null;
+	var callback = setts.callback || null;
+	
 	//callback
 	if(callback){self.current.callback = callback;}
 	else{self.current.callback = null;}
 	
 	
 	//setup schema + title
-		var schema = schema || '';
 		specs.schema = ($.type(schema) == 'object')?schema:self.schemas[schema] || null;
 		self.current.schema = specs.schema;
 		specs.title = (specs.schema)?(specs.schema.title ||"Editing '"+(schema._Title || schema)+"' Object"):"Editing Object";	
@@ -382,7 +386,7 @@ function JsonObjectEditor(specs){
 	this.renderListItem = function(listItem){
 		var idprop = self.current.schema._listID || 'id';
 		var id = listItem[idprop] || null;
-		var action = 'onclick="_joe.showSchemaObject(\''+id+'\');"';
+		var action = 'onclick="_joe.editObjectFromList(\''+id+'\');"';
 		
 		if(!self.current.schema._listTemplate){
 			var title = self.current.schema._listTitle || listItem.name || id || 'untitled';
@@ -392,9 +396,11 @@ function JsonObjectEditor(specs){
 		return html;
 	}
 	
-	this.showSchemaObject = function(id,list,idprop){
+	this.editObjectFromList = function(id,list,specs){
+		specs = specs || {};
+		self.current.schema = specs.schema || self.current.schema || null;
 		var list = list || self.current.list;
-		var idprop = idprop || self.current.schema._listID || 'id';
+		var idprop = (self.current.schema && self.current.schema._listID) || 'id';
 		
 		var object = list.filter(function(li){return li[idprop] == id;})[0]||false;
 		
@@ -402,7 +408,9 @@ function JsonObjectEditor(specs){
 			alert('error finding object');
 			return;
 		}
-		self.populateFramework(object,self.current.schema);
+		
+		var setts ={schema:self.current.schema,callback:specs.callback};
+		self.populateFramework(object,setts);
 		$('.joe-overlay').addClass('active');
 	}
 /*-------------------------------------------------------------------->
@@ -415,9 +423,15 @@ function JsonObjectEditor(specs){
 		$(dom).parents('.joe-overlay').toggleClass('active');
 	}
 	
-	this.show = function(data,schema,profile,callback){
+	//this.show = function(data,schema,profile,callback){
+	this.show = function(data,specs){
 		//profile = profile || null
-		self.populateFramework(data,schema,profile,callback);
+		var specs=specs || {
+			schema:schema || null,
+			profile:profile || null,
+			callback:callback || null
+		};
+		self.populateFramework(data,specs);
 		$('.joe-overlay').addClass('active');
 	}
 	this.hide = function(data){

@@ -21,11 +21,11 @@ Json Object Editor Demo Page
 
 <a href="javascript:_joe.show(cat);">edit Cat</a><br/>
 
-<a href="javascript:_joe.show(cat,'animal');">edit Cat(animal)</a><br/>
+<a href="javascript:_joe.show(cat,{schema:'animal'});">edit Cat(animal)</a><br/>
 
-<a href="javascript:_joe.show(animals,'animal');">edit Animals</a><br/>
+<a href="javascript:_joe.show(animals,{schema:'animal'});">edit Animals</a><br/>
 
-<a href="javascript:_joe.show({},'animal','',addAnimal);">Add Animal</a><br/>
+<a href="javascript:_joe.show({},{schema:'animal',callback:addAnimal});">Add Animal</a><br/>
 </div>
 <script>
 function addAnimal(obj){
