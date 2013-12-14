@@ -1,8 +1,10 @@
 //Dev'd By Corey Hadden
 /*TODO:
 	-conditional fields
-	-get rid of object object after going into list
+	
 	-merge specs (profile,schema,object,call?)
+	-required fields
+	
 */
 function JsonObjectEditor(specs){
 	var self = this;
@@ -59,22 +61,26 @@ function JsonObjectEditor(specs){
 		'</div>';
 		return html;
 	}
+	
+	
 	this.populateFramework = function(data,setts){
-	setts = setts || {};
-	
-	var schema = setts.schema || '';
-	var profile = setts.profile || null;
-	var callback = setts.callback || null;
-	
-	//callback
-	if(callback){self.current.callback = callback;}
-	else{self.current.callback = null;}
+		setts = setts || {};
+		
+		var schema = setts.schema || '';
+		var profile = setts.profile || null;
+		var callback = setts.callback || null;
+		
+		//callback
+		if(callback){self.current.callback = callback;}
+		else{self.current.callback = null;}
 	
 	
 	//setup schema + title
-		specs.schema = ($.type(schema) == 'object')?schema:self.schemas[schema] || null;
+		specs.schema = ($.type(schema) == 'object')? schema : self.schemas[schema] || null;
 		self.current.schema = specs.schema;
-		specs.title = (specs.schema)?(specs.schema.title ||"Editing '"+(schema._Title || schema)+"' Object"):"Editing Object";	
+		
+	//setup window title	
+		specs.title = (specs.schema)? specs.schema._title : "Editing Object";	
 		
 /*-------------------------
 	Object
@@ -224,7 +230,8 @@ function JsonObjectEditor(specs){
 					name:prop,
 					type:'text',
 					value:object[prop]	
-				},self.fields[prop]);
+				},
+				self.fields[prop]);
 				
 				fields += self.renderObjectField(propObj);
 			}
@@ -235,7 +242,15 @@ function JsonObjectEditor(specs){
 					name:prop,
 					type:'text',
 					value:object[prop]	
-				},self.fields[prop]);
+				},
+				{
+					onblur:specs.schema.onblur,
+					onchange:specs.schema.onchange,
+					onkeypress:specs.schema.onkeypress,
+					onkeyup:specs.schema.onkeypress
+				
+				},
+				self.fields[prop]);
 				
 				fields += self.renderObjectField(propObj);
 			})
@@ -273,6 +288,8 @@ function JsonObjectEditor(specs){
 		'</div>';
 		return html;
 	}
+	
+	
 /*-------------------------------------------------------------------->
 	3 | OBJECT FORM
 <--------------------------------------------------------------------*/
@@ -281,7 +298,7 @@ function JsonObjectEditor(specs){
 		var hidden = (prop.hidden)?'hidden':'';
 		var html = 
 			'<div class="joe-object-field '+hidden+'" data-type="'+prop.type+'" data-name="'+prop.name+'">'+
-			'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>';
+			'<label class="joe-field-label">'+(prop.display||prop.label||prop.name)+'</label>';
 			
 		switch(prop.type){
 			case 'select':
@@ -305,49 +322,113 @@ function JsonObjectEditor(specs){
 		return html;
 	}
 /*----------------------------->
-	A | Text Input
+	0 | Event Handlers
 <-----------------------------*/
-	this.renderTextField = function(prop){
+	this.getActionString = function(evt,prop){
+		var str = (prop[evt])? ' '+self.functionName(prop[evt])+'(this); ' : '' ;
+		return str;
+	}
+	
+	
+	this.renderFieldAttributes = function(prop, evts){
+		evts = evts ||{};
+		var bluraction = '';
+		var updateaction = '';
+		var keypressaction = '';
+		var keyupaction = '';
+		
 		var profile = self.current.profile;
+		
 		var disabled = (profile.lockedFields.indexOf(prop.name) == -1)?
 			'':'disabled';
 		
-		var html=
-		'<input class="joe-text-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+disabled+' />';
-		return html;
+		if(evts.onblur || prop.onblur){
+			bluraction = 'onblur="'+(evts.onblur||'')+' '+self.getActionString('onblur',prop)+'"';
+		}
+		if(evts.onupdate || prop.onupdate){
+			updateaction = 'onupdate="'+(evts.onupdate||'')+' '+self.getActionString('onupdate',prop)+'"';
+		}
+		if(evts.onkeypress || prop.onkeypress){
+			keypressaction = 'onkeypress="'+(evts.onkeypress||'')+' '+self.getActionString('onkeypress',prop)+'"';
+		}
+		if(evts.onkeyup || prop.onkeyup){
+			keyupaction = 'onkeyup="'+(evts.onkeyup||'')+' '+self.getActionString('onkeyup',prop)+'"';
+		}
+		return ' '+keyupaction+' '+keypressaction+' '+bluraction+' '+updateaction+' '+disabled+' ';
+	
 	}
+	
+/*----------------------------->
+	A | Text Input
+<-----------------------------*/
+	this.renderTextField = function(prop){
+		
+	/*	var disabled = (profile.lockedFields.indexOf(prop.name) == -1)?
+			'':'disabled';
+		
+	*/	
+		//var bluraction = 'onblur="'+self.getActionString('onblur',prop)+'"';
+		
+		var html=
+		'<input class="joe-text-field joe-field" type="text"  name="'+prop.name+'" value="'+(prop.value || '')+'" '+
+			self.renderFieldAttributes(prop)+
+		' />';
+		return html;
+	} 
 	
 
 /*----------------------------->
 	B | Number/Int Input
 <-----------------------------*/
 	this.renderNumberField = function(prop){
-		var profile = self.current.profile;
-		var disabled = (profile.lockedFields.indexOf(prop.name) != -1 || prop.locked)?
+		
+		/*var disabled = (profile.lockedFields.indexOf(prop.name) != -1 || prop.locked)?
 			'disabled':'';
-		var bluraction = 'onblur="$(this).val(parseFloat($(this).val()))"';
+	*/
+	//bluraction	
+		//var bluraction =  (prop.onblur)? ' '+self.functionName(prop.onblur)+'(this); ' : '' ;
+		//var bluraction = 'onblur=" '+self.getActionString('onblur',prop)+' "';
+		
 		var html=/*
 		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
-		'<input class="joe-number-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+bluraction+' '+disabled+' />';
+		'<input class="joe-number-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+
+			self.renderFieldAttributes(prop,{onblur:'_joe.returnNumber(this);'})+
+		' />';
+		return html;
+	}
+
+	this.returnNumber = function(dom){
+		if(!$(dom).val()){return;}
+		$(dom).val(parseFloat($(dom).val()));
+	}
+		
+	this.renderIntegerField = function(prop){
+		
+		/*var disabled = (profile.lockedFields.indexOf(prop.name) != -1 || prop.locked)?
+			'disabled':'';
+	*/
+	//bluraction
+		//var bluraction = 'onblur="_joe.returnInt(this); '+self.getActionString('onblur',prop)+'"';
+		
+		var html=/*
+		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
+		'<input class="joe-int-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+
+			self.renderFieldAttributes(prop,{onblur:'onblur="_joe.returnInt(this);'})+
+		' />';
 		return html;
 	}
 	
-	this.renderIntegerField = function(prop){
-		var profile = self.current.profile;
-		var disabled = (profile.lockedFields.indexOf(prop.name) != -1 || prop.locked)?
-			'disabled':'';
-		var bluraction = 'onblur="$(this).val(parseInt($(this).val()))"';
-		var html=/*
-		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
-		'<input class="joe-int-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+bluraction+' '+disabled+' />';
-		return html;
+	this.returnInt = function(dom){
+		if(!$(dom).val()){return;}
+		$(dom).val(parseInt($(dom).val()));
+	
 	}
 /*----------------------------->
 	C | Select
 <-----------------------------*/	
 	this.renderSelectField = function(prop){
-		var profile = self.current.profile;
-		var values = prop.values || [prop.value];
+		
+		var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values || [prop.value];
 		var valObjs = [];
 		if($.type(values[0]) != 'object'){
 			values.map(function(v){
@@ -357,14 +438,21 @@ function JsonObjectEditor(specs){
 		else{
 			valObjs = values;
 		}
+	
+	//bluraction
+//		var bluraction = 'onblur="'+self.getActionString('onblur',prop)+'"';
+/*		
 		var disabled = (profile.lockedFields.indexOf(prop.name) != -1 || prop.locked)?
-			'disabled':'';
+			'disabled':'';*/
 		
 		var selected;
 		var html=/*
 		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
 		
-		'<select class="joe-select-field joe-field" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+disabled+'>';
+		'<select class="joe-select-field joe-field" name="'+prop.name+'" value="'+(prop.value || '')+'" '+
+			self.renderFieldAttributes(prop)+
+		' >';
+		
 			valObjs.map(function(v){
 				selected = (prop.value == v.name)?'selected':'';
 				html += '<option value="'+v.name+'" '+selected+'>'+(v.display||v.label||v.name)+'</option>'	
@@ -473,6 +561,14 @@ function JsonObjectEditor(specs){
 		return object;
 	}
 
+/*-------------------------------------------------------------------->
+	H | HELPERS
+<--------------------------------------------------------------------*/
+	this.functionName = function(func){
+		var name=func.toString();
+		var reg=/function ([^\(]*)/;
+		return reg.exec(name)[1];
+	}
 /*<------------------------------------------------------------->*/
 	return this;
 }

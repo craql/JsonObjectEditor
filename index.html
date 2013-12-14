@@ -26,11 +26,10 @@ Json Object Editor Demo Page
 <a href="javascript:_joe.show(animals,{schema:'animal'});">edit Animals</a><br/>
 
 <a href="javascript:_joe.show({},{schema:'animal',callback:addAnimal});">Add Animal</a><br/>
+
+<input onkeyup="alert($(this).val());" />
 </div>
 <script>
-function addAnimal(obj){
-	animals.push(obj);
-}
 var cat = 
 {	name:'tom', 
 	legs:4,
@@ -49,20 +48,35 @@ var rat =
 {	name:'jerry', 
 	legs:4,
 	species:'rat',
+	weight:3.5,
 	id:cuid()
 };
 
 var animals =[cat,dog,rat];
+var animalLinks = ['cat','dog','rat'];
+
+function addAnimal(obj){
+	animals.push(obj);
+}
+
+function getAnimals(obj){
+	return animalLinks.filter(function(a){return a != obj.species;})
+}
+
+function logValue(dom){
+	logit($(dom).val());
+}
 
 var animalschema = 
 	{
 		_title:'Animal',
-		fields:['name','legs','id','species','color','gender'],
+		fields:['id','name','legs','species','weight','color','gender','animalLink'],
 		_listID:'id',
 		_listTitle:'${name} ${species}',
-		callback:function(obj){
+		/*callback:function(obj){
 			alert(obj.name);
-		}
+		},*/
+		onblur:logit
 		
 	}
 	
@@ -72,11 +86,16 @@ var animalschema =
 			hiddenFields:[]
 		},*/
 		fields:{
-			species:{label:'Species',type:'select', values:['cat','dog','rat']},
+			species:{label:'Species',type:'select', values:['cat','dog','rat'], onchange:logValue},
 			gender:{type:'select', values:['male','female']},
-			legs:{label:'# of Legs',type:'number'},
+			legs:{label:'# of Legs',type:'int', onblur:logit},
+			weight:{label:' Weight (lbs)',type:'number', onblur:logit},
+			name:{label:' pet Name', onkeyup:logValue},
 			//id:{label:'ID',type:'text', locked:true},
 			id:{label:'ID',type:'guid'},
+			
+		//example of select that takes function (function is passed item)	
+			animalLink:{label:'Link to other animal',type:'select', values:getAnimals},
 			hiddenizer:{hidden:true}
 		},
 		schemas:{
