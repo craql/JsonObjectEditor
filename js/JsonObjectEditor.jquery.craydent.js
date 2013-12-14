@@ -1,5 +1,9 @@
 //Dev'd By Corey Hadden
-
+/*TODO:
+	-conditional fields
+	-get rid of object object after going into list
+	-merge specs (profile,schema,object,call?)
+*/
 function JsonObjectEditor(specs){
 	var self = this;
 	window._joe = this;
@@ -426,11 +430,7 @@ function JsonObjectEditor(specs){
 	//this.show = function(data,schema,profile,callback){
 	this.show = function(data,specs){
 		//profile = profile || null
-		var specs=specs || {
-			schema:schema || null,
-			profile:profile || null,
-			callback:callback || null
-		};
+		var specs=specs || {};
 		self.populateFramework(data,specs);
 		$('.joe-overlay').addClass('active');
 	}
@@ -439,7 +439,7 @@ function JsonObjectEditor(specs){
 	}
 	
 	window.goJoe = this.show;
-	
+	window.listJoe = this.editObjectFromList;
 	
 	$(document).keyup(function(e) {
 		if (e.keyCode == 27) { self.hide(); }   // esc
