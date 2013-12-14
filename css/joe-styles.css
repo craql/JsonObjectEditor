@@ -25,7 +25,9 @@
 .joe-overlay.active{
 	display:block;
 }
-
+.joe-overlay.floater{
+	text-align:center;
+}
 /*-------------------------
 	UI Panels
 -------------------------*/	
@@ -42,7 +44,18 @@
 .joe-panel{
 	position:relative;
 }
+/*-------------------------
+	UI Panels Floating
+-------------------------*/	
 
+.floater .joe-overlay-panel {
+	position: relative;
+	width: 50%;
+	margin: 20px auto;
+	height: 80%;
+	text-align: left;
+	min-width: 340px;
+}
 /*-------------------------
 	UI Panel Header
 -------------------------*/	
