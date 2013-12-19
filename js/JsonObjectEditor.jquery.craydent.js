@@ -88,7 +88,10 @@ function JsonObjectEditor(specs){
 	//when object passed in
 		if($.type(data) == 'object'){
 			specs.object = data;
-			specs.menu = [{name:'save',label:'Save Object',action:'_joe.updateObject()'}];
+			specs.menu = __defaultObjectButtons;
+			//[
+			//	{name:'delete',label:'Delete Object',action:'_joe.deleteObject()'},
+			//	{name:'save',label:'Save Object',action:'_joe.updateObject()'}];
 			specs.mode="object";
 			self.current.object = data;
 			
@@ -265,7 +268,7 @@ function JsonObjectEditor(specs){
 <-----------------------------*/	
 	this.renderEditorFooter = function(specs){
 		specs = specs || {};
-		var menu = specs.menu || [{name:'save',label:'Save', action:'_joe.upateItem(this);'}]
+		var menu = specs.menu || __defaultObjectButtons;
 		var title = specs.title || 'untitled';
 		var display,action;
 		
@@ -277,7 +280,7 @@ function JsonObjectEditor(specs){
 			menu.map(function(m){
 				display = m.label || m.name;
 				action = m.action || 'alert(\''+display+'\')';
-				html+= '<div class="joe-footer-button" onclick="'+action+'" data-btnid="'+m.name+'" >'+display+'</div>';
+				html+= '<div class="joe-footer-button '+(m.css ||'')+'" onclick="'+action+'" data-btnid="'+m.name+'" >'+display+'</div>';
 			
 			},this);
 		
@@ -546,6 +549,23 @@ function JsonObjectEditor(specs){
 		callback(obj);
 	}
 	
+	this.deleteObject = function(callback){
+		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || logit;
+		var obj = self.current.object;
+		if(!self.current.list || !obj || self.current.list.indexOf(obj) == -1){
+		//no list or no item
+			alert('object or list not found');
+			self.hide();
+			callback(obj);	
+			return;
+		}
+		var index = self.current.list.indexOf(obj);
+		
+		self.current.list.removeAt(index);
+		logit('object deleted');
+		self.hide();
+		callback(obj);
+	}
 	this.constructObjectFromFields = function(){
 		var object = {joeUpdated:new Date()};
 		var prop;
@@ -574,3 +594,7 @@ function JsonObjectEditor(specs){
 }
 
 __clearDiv__ = '<div class="clear"></div>';
+__defaultObjectButtons = [
+	{name:'delete',label:'Delete',action:'_joe.deleteObject(this);', css:'joe-delete-button'},
+	{name:'save',label:'Save', action:'_joe.upateItem(this);', css:'joe-save-button'}
+]

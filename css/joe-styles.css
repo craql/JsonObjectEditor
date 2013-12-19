@@ -19,6 +19,7 @@
 	position: fixed;
 }
 
+
 /*-------------------------
 	UI Overlays
 -------------------------*/	
@@ -203,4 +204,7 @@
 }
 .joe-footer-button:hover {
     background-color: rgba(255,255,255,1);
+}
+.joe-delete-button {
+	float: left;
 }
