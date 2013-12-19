@@ -596,5 +596,5 @@ function JsonObjectEditor(specs){
 __clearDiv__ = '<div class="clear"></div>';
 __defaultObjectButtons = [
 	{name:'delete',label:'Delete',action:'_joe.deleteObject(this);', css:'joe-delete-button'},
-	{name:'save',label:'Save', action:'_joe.upateItem(this);', css:'joe-save-button'}
+	{name:'save',label:'Save', action:'_joe.updateObject(this);', css:'joe-save-button'}
 ]
