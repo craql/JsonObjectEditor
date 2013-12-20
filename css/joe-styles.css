@@ -18,8 +18,22 @@
 	display:none;
 	position: fixed;
 }
+/*-------------------------
+	JOE Button
+-------------------------*/
+.joe-button {
+    padding: 8px 16px;
+    margin: 5px;
+    background-color: rgba(255,255,255,.5);
+    box-shadow: 0 0 3px 0 rgba(0,0,0,.5);
+    cursor: pointer;
+}
+.joe-button:hover{
+	background-color: rgba(255,255,255,1);
+}
 
-
+.joe-button.center{text-align:center;}
+.joe-button.right{text-align:right;}
 /*-------------------------
 	UI Overlays
 -------------------------*/	
@@ -186,7 +200,7 @@
 	width: 100px;
 }
 /*-------------------------------------------------------------------->
-	1 | Footer
+	4 | Footer
 <--------------------------------------------------------------------*/	
 .joe-panel-footer {
     position: absolute;
@@ -196,15 +210,9 @@
 }
 .joe-footer-button {
     float: right;
-    padding: 8px 16px;
-    margin: 5px;
-    background-color: rgba(255,255,255,.5);
-    box-shadow: 0 0 3px 0 rgba(0,0,0,.5);
-    cursor: pointer;
+  
 }
-.joe-footer-button:hover {
-    background-color: rgba(255,255,255,1);
-}
+
 .joe-delete-button {
 	float: left;
 }

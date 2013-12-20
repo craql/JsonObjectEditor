@@ -280,7 +280,7 @@ function JsonObjectEditor(specs){
 			menu.map(function(m){
 				display = m.label || m.name;
 				action = m.action || 'alert(\''+display+'\')';
-				html+= '<div class="joe-footer-button '+(m.css ||'')+'" onclick="'+action+'" data-btnid="'+m.name+'" >'+display+'</div>';
+				html+= '<div class="joe-button joe-footer-button '+(m.css ||'')+'" onclick="'+action+'" data-btnid="'+m.name+'" >'+display+'</div>';
 			
 			},this);
 		
