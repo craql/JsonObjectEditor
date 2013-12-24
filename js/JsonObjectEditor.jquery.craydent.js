@@ -1,7 +1,6 @@
 //Dev'd By Corey Hadden
 /*TODO:
 	-conditional fields
-	
 	-merge specs (profile,schema,object,call?)
 	-required fields
 	
@@ -75,12 +74,12 @@ function JsonObjectEditor(specs){
 		else{self.current.callback = null;}
 	
 	
-	//setup schema + title
-		specs.schema = ($.type(schema) == 'object')? schema : self.schemas[schema] || null;
-		self.current.schema = specs.schema;
+	//setup schema 
+		specs.schema = this.setSchema(schema);
+	//	specs.schema = ($.type(schema) == 'object')? schema : self.schemas[schema] || null;
+	//	self.current.schema = specs.schema;
 		
-	//setup window title	
-		specs.title = (specs.schema)? specs.schema._title : "Editing Object";	
+
 		
 /*-------------------------
 	Object
@@ -103,7 +102,7 @@ function JsonObjectEditor(specs){
 	//when array passed in	
 		if($.type(data) == 'array'){
 			specs.list = data;
-			specs.menu = [];
+			specs.menu = __defaultButtons;
 			specs.mode="list";
 			self.current.list = data;
 			//self.current.object = null;
@@ -116,11 +115,15 @@ function JsonObjectEditor(specs){
 	//when string passed in
 		if($.type(data) == 'string'){
 			specs.text = data;
+			specs.menu = __defaultButtons;
 			//specs.menu = [{name:'save',label:'Save Object',action:'_joe.updateObject()'}];
 			specs.mode="text";
 			self.current.text = specs.text;
 			
 		}
+
+	//setup window title	
+		specs.title = (specs.schema)? specs.schema._title : "Viewing "+specs.mode.capitalize();	
 				
 	//setup profile
 		specs.profile = (profile)? 
@@ -511,6 +514,24 @@ function JsonObjectEditor(specs){
 /*-------------------------------------------------------------------->
 	5 | MENUS
 <--------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------->
+	6 | SCHEMAS
+<--------------------------------------------------------------------*/
+	this.setSchema = function(schemaName){
+		if(!schemaName){return false;}
+		//setup schema 
+		var schema = ($.type(schemaName) == 'object')? schemaName : self.schemas[schemaName] || null;
+		self.current.schema = schema;
+		return schema;
+	}
+	this.resetSchema = function(schemaName){
+		self.show(
+			self.current.object,
+			{schema:self.setSchema(schemaName) || self.current.schema}
+		)
+	}
+
 /*-------------------------------------------------------------------->
 	I | INTERACTIONS
 <--------------------------------------------------------------------*/
@@ -520,6 +541,7 @@ function JsonObjectEditor(specs){
 	
 	//this.show = function(data,schema,profile,callback){
 	this.show = function(data,specs){
+		var data = data || '';
 		//profile = profile || null
 		var specs=specs || {};
 		self.populateFramework(data,specs);
@@ -598,3 +620,4 @@ __defaultObjectButtons = [
 	{name:'delete',label:'Delete',action:'_joe.deleteObject(this);', css:'joe-delete-button'},
 	{name:'save',label:'Save', action:'_joe.updateObject(this);', css:'joe-save-button'}
 ]
+__defaultButtons = []

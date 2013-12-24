@@ -2,15 +2,20 @@
 Visually Edit Objects Using this GUID tool, what you do from there is up to you.
 
 ##required includes
++"css/joe-styles.css"
++js/jquery-1.10.2.min.js"
++"js/craydent-1.7.18.js"
++"js/JsonObjectEditor.jquery.craydent.js"
 
-`<link rel="stylesheet" type="text/css" href="css/joe-styles.css">
-<script src="js/jquery-1.10.2.min.js"></script>
-<script src="js/craydent-1.7.18.js"></script>
-<script src="js/JsonObjectEditor.jquery.craydent.js"></script>
-`
+##In the pipeline
++Remove Profiles
++Conditional Fields
++required fields
+
 
 ##instantiation
-
+	var JOE = new JsonObjectEditor(specs);
+	JOE.init();
 
 
 ##specs

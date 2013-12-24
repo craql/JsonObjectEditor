@@ -41,7 +41,7 @@
 .joe-overlay.active{
 	display:block;
 }
-.joe-overlay.floater{
+.joe-overlay.compact{
 	text-align:center;
 }
 /*-------------------------
@@ -64,7 +64,7 @@
 	UI Panels Floating
 -------------------------*/	
 
-.floater .joe-overlay-panel {
+.compact .joe-overlay-panel {
 	top: auto;
 	left: auto;
 	bottom: auto;
