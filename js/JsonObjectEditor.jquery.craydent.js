@@ -20,7 +20,8 @@ function JsonObjectEditor(specs){
 		},
 		profiles:{},
 		fields:{},
-		schemas:{}
+		schemas:{},
+		compact:false
 	},
 	specs||{})
 	
@@ -53,7 +54,7 @@ function JsonObjectEditor(specs){
 	this.renderFramework = function(content){
 		
 		var html = 
-		'<div class="joe-overlay">'+
+		'<div class="joe-overlay '+((self.specs.compact && ' compact ') || '')+'">'+
 			'<div class="joe-overlay-panel active">'+
 				(content || '')+
 			'</div>'+
@@ -339,7 +340,9 @@ function JsonObjectEditor(specs){
 	this.renderFieldAttributes = function(prop, evts){
 		evts = evts ||{};
 		var bluraction = '';
-		var updateaction = '';
+		//var updateaction = '';
+		var changeaction = '';
+		
 		var keypressaction = '';
 		var keyupaction = '';
 		
@@ -351,8 +354,8 @@ function JsonObjectEditor(specs){
 		if(evts.onblur || prop.onblur){
 			bluraction = 'onblur="'+(evts.onblur||'')+' '+self.getActionString('onblur',prop)+'"';
 		}
-		if(evts.onupdate || prop.onupdate){
-			updateaction = 'onupdate="'+(evts.onupdate||'')+' '+self.getActionString('onupdate',prop)+'"';
+		if(evts.onchange || prop.onchange){
+			changeaction = 'onchange="'+(evts.onchange||'')+' '+self.getActionString('onchange',prop)+'"';
 		}
 		if(evts.onkeypress || prop.onkeypress){
 			keypressaction = 'onkeypress="'+(evts.onkeypress||'')+' '+self.getActionString('onkeypress',prop)+'"';
@@ -360,7 +363,7 @@ function JsonObjectEditor(specs){
 		if(evts.onkeyup || prop.onkeyup){
 			keyupaction = 'onkeyup="'+(evts.onkeyup||'')+' '+self.getActionString('onkeyup',prop)+'"';
 		}
-		return ' '+keyupaction+' '+keypressaction+' '+bluraction+' '+updateaction+' '+disabled+' ';
+		return ' '+keyupaction+' '+keypressaction+' '+bluraction+' '+changeaction+' '+disabled+' ';
 	
 	}
 	
@@ -526,8 +529,10 @@ function JsonObjectEditor(specs){
 		return schema;
 	}
 	this.resetSchema = function(schemaName){
+		var newObj = self.constructObjectFromFields();
+		//var obj = $.extend(self.current.object,newObj);
 		self.show(
-			self.current.object,
+			$.extend(self.current.object,newObj),
 			{schema:self.setSchema(schemaName) || self.current.schema}
 		)
 	}

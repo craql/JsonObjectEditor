@@ -14,6 +14,26 @@ Visually Edit Objects Using this GUID tool, what you do from there is up to you.
 
 
 ##instantiation
+	var specs = {
+		fields:{
+			species:{label:'Species',type:'select', values:['cat','dog','rat','thing'], onchange:adjustSchema},
+			gender:{type:'select', values:['male','female']},
+			legs:{label:'# of Legs',type:'int', onblur:logit},
+			weight:{label:' Weight (lbs)',type:'number', onblur:logit},
+			name:{label:' pet Name', onkeyup:logValue},
+			//id:{label:'ID',type:'text', locked:true},
+			id:{label:'ID',type:'guid'},
+			
+		//example of select that takes function (function is passed item)	
+			animalLink:{label:'Link to other animal',type:'select', values:getAnimals},
+			hiddenizer:{hidden:true}
+		},
+		schemas:{
+			animal:animalschema,
+			thing:thingschema			
+		},
+		compact:true
+	}
 	var JOE = new JsonObjectEditor(specs);
 	JOE.init();
 
@@ -25,7 +45,21 @@ an object of field object definitions (profile independent)
 **defaultProfile**
 overwrites the default profile
 
-**schemas:** a list of schema objects that can configure the editor fields
+**schemas:** 
+a list of schema objects that can configure the editor fields, these can be given properties that are delegated to all the corresponding fields.
+
+var animalschema = 
+	{
+		_title:'Animal', *what shows as the panel header* 
+		fields:['id','name','legs','species','weight','color','gender','animalLink'], *list of visible fields*
+		_listID:'id', *the id for finding the object*
+		_listTitle:'${name} ${species}', *how to display items in the list*
+		/*callback:function(obj){
+			alert(obj.name);
+		},*/
+		onblur:logit
+		
+	}
 
 
 ##usage
@@ -34,4 +68,21 @@ _joe.show({},'animal','',addAnimal); //or goJoe(object,schema,profile,callback)
 
 function addAnimal(obj){
 	animals.push(obj);
+}
+
+###Conditional select that changes the item schema
+
+fields:{
+	species:{label:'Species',type:'select', values:['cat','dog','rat','thing'], onchange:adjustSchema},
+}
+
+function adjustSchema(dom){
+	var species = $(dom).val();
+	if(species == "thing"){
+		JOE.resetSchema('thing')
+	}
+	else{
+		JOE.resetSchema('animal')
+	
+	}
 }
