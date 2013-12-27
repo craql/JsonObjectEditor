@@ -607,7 +607,12 @@ function JsonObjectEditor(specs){
 		});
 		return object;
 	}
-
+	
+	this.exportJSON = function(object,objvar){
+		var obobj = JSON.stringify(object,'','    ');
+		goJoe('<b>'+((objvar && 'var '+objvar +' = ')|| 'Observatory JSON Object')+'</b><br/><pre>'+obobj+'</pre>')
+		console.log(obobj);
+	}
 /*-------------------------------------------------------------------->
 	H | HELPERS
 <--------------------------------------------------------------------*/
