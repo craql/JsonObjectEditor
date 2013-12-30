@@ -82,6 +82,7 @@ function JsonObjectEditor(specs){
 		var profile = setts.profile || null;
 		var callback = setts.callback || null;
 		var datatype = setts.datatype || '';
+		var title = setts.title || '';
 		
 		//callback
 		if(callback){self.current.callback = callback;}
@@ -154,8 +155,8 @@ function JsonObjectEditor(specs){
 
 		
 	//setup window title	
-		specs.title = (specs.schema)? specs.schema._title : "Viewing "+specs.mode.capitalize();	
-				
+		//specs.title = title || (specs.schema)? specs.schema._title : "Viewing "+specs.mode.capitalize();	
+		specs.title =(title || (specs.schema && specs.schema._title)  || "Viewing "+specs.mode.capitalize());		
 	//setup profile
 		specs.profile = (profile)? 
 			(self.specs.profiles[profile]||self.specs.joeprofile):
