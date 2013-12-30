@@ -8,28 +8,58 @@
 <script src="js/craydent-1.7.18.js"></script>
 <script src="js/JsonObjectEditor.jquery.craydent.js"></script>-->
 <script src="_joeinclude.js"></script>
-
+<style>
+#testEditableRegion{
+	margin:5px;
+	padding:5px;
+	border:1px solid #007ac2;
+	color:#444;
+	cursor:pointer;
+}
+#testEditableRegion:hover{
+	background:#eee;
+}
+#htmlInput {
+width: 100%;
+height: 300px;
+}
+</style>
 </head>
 
 <body>
-Json Object Editor Demo Page
+<div>Json Object Editor Demo Page</div>
 
-
+<h2></h2>
 <div>
-<h3>examples</h3>
+<h3>Animal Objects</h3>
 <a href="javascript:_joe.show();">Show JOE</a><br/>
 
 <a href="javascript:_joe.show(cat);">edit Cat</a><br/>
 
 <a href="javascript:_joe.show(cat,{schema:'animal'});">edit Cat(animal)</a><br/>
 
+<a href="javascript:_joe.show(dog,{schema:'thing'});">edit Dog(thing)</a><br/>
+
 <a href="javascript:_joe.show(animals,{schema:'animal'});">edit Animals</a><br/>
 
 <a href="javascript:_joe.show({},{schema:'animal',callback:addAnimal});">Add Animal</a><br/>
 
+<h3>Editing html Renderings</h3>
+<div id="testEditableRegion" onclick="JOE.replaceRendering(this)">
+    <h3>This div is editable</h3>
+    <p>You can change any of the specs.</p>
+    <p> On save, it will replace the current div.</p>
+    <p>The shortcut function is replaceRendering(domElement,specs)</p>
+</div>
+
+<p>Text field</p>
 <input onkeyup="alert($(this).val());" />
+
+
+
 </div>
 <script>
+Craydent.DEBUG_MODE =true;
 var cat = 
 {	name:'tom', 
 	legs:4,
@@ -92,7 +122,7 @@ var animalschema =
 var thingschema = 
 	{
 		_title:'Thing',
-		fields:['id','name','thingType','legs','species','weight','color','gender'],
+		fields:['id','name','thingType','legs','species','weight','color','gender','html'],
 		_listID:'id',
 		_listTitle:'${name} ${species}'
 		
@@ -111,6 +141,8 @@ var thingschema =
 			name:{label:' pet Name', onkeyup:logValue},
 			//id:{label:'ID',type:'text', locked:true},
 			id:{label:'ID',type:'guid'},
+		//rendering
+			html:{label:'HTML Rendering', type:'rendering'},
 			
 		//example of select that takes function (function is passed item)	
 			animalLink:{label:'Link to other animal',type:'select', values:getAnimals},
@@ -124,6 +156,13 @@ var thingschema =
 	}
 	var JOE = new JsonObjectEditor(specs);
 	JOE.init();
+	
+	
+function keyboardTracker(evt){
+	logit(evt);
+	
+}
+//$(window).keypress(keyboardTracker);
 </script>
 </body>
 </html>

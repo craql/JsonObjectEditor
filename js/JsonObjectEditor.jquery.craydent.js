@@ -4,6 +4,8 @@
 	-merge specs (profile,schema,object,call?)
 	-required fields
 	
+	!make rendering a field type as well as a datatype
+	
 */
 function JsonObjectEditor(specs){
 	var self = this;
@@ -12,7 +14,7 @@ function JsonObjectEditor(specs){
 /*-------------------------------------------------------------------->
 	0 | CONFIG
 <--------------------------------------------------------------------*/
-	this.specs = $.extend({
+	var defaults = {
 		container:'body',
 		joeprofile:{
 			lockedFields:['joeUpdated'],
@@ -20,10 +22,19 @@ function JsonObjectEditor(specs){
 		},
 		profiles:{},
 		fields:{},
-		schemas:{},
+		schemas:{
+			'rendering':	{
+				_title:'HTML Rendering',
+				callback:function(){alert('yo');}
+				//fields:['id','name','thingType','legs','species','weight','color','gender'],
+				//_listID:'id',
+				//_listTitle:'${name} ${species}'
+		
+		}},
 		compact:false
-	},
-	specs||{})
+	}
+	
+	this.specs = $.extend({},defaults,specs||{})
 	
 	this.current = {};
 	//TODO: check for class/id selector
@@ -65,10 +76,12 @@ function JsonObjectEditor(specs){
 	
 	this.populateFramework = function(data,setts){
 		setts = setts || {};
+		self.current.specs = setts; 
 		
 		var schema = setts.schema || '';
 		var profile = setts.profile || null;
 		var callback = setts.callback || null;
+		var datatype = setts.datatype || '';
 		
 		//callback
 		if(callback){self.current.callback = callback;}
@@ -86,7 +99,7 @@ function JsonObjectEditor(specs){
 	Object
 -------------------------*/	
 	//when object passed in
-		if($.type(data) == 'object'){
+		if($.type(data) == 'object' || datatype =='object'){
 			specs.object = data;
 			specs.menu = __defaultObjectButtons;
 			//[
@@ -101,7 +114,7 @@ function JsonObjectEditor(specs){
 	Arrays 
 -------------------------*/			
 	//when array passed in	
-		if($.type(data) == 'array'){
+		if($.type(data) == 'array' || datatype =='array'){
 			specs.list = data;
 			specs.menu = __defaultButtons;
 			specs.mode="list";
@@ -111,10 +124,25 @@ function JsonObjectEditor(specs){
 		}
 		
 /*-------------------------
+	Rendering
+-------------------------*/	
+	//when rendering passed in
+		if($.type(data) == 'string' && datatype == 'rendering'){
+			specs.rendering = data;
+			
+			specs.menu = [__replaceBtn__];
+			//specs.menu = [{name:'save',label:'Save Object',action:'_joe.updateObject()'}];
+			specs.mode="rendering";
+			self.current.rendering = specs.rendering;
+			//specs.schema
+			
+		}
+
+/*-------------------------
 	String
 -------------------------*/	
 	//when string passed in
-		if($.type(data) == 'string'){
+		else if($.type(data) == 'string' || datatype == 'string'){
 			specs.text = data;
 			specs.menu = __defaultButtons;
 			//specs.menu = [{name:'save',label:'Save Object',action:'_joe.updateObject()'}];
@@ -123,6 +151,8 @@ function JsonObjectEditor(specs){
 			
 		}
 
+
+		
 	//setup window title	
 		specs.title = (specs.schema)? specs.schema._title : "Viewing "+specs.mode.capitalize();	
 				
@@ -177,7 +207,7 @@ function JsonObjectEditor(specs){
 			case 'text':
 				content = self.renderTextContent(specs);
 			break;
-			case 'html':
+			case 'rendering':
 				content = self.renderHTMLContent(specs);
 			break;
 			case 'list':
@@ -206,7 +236,7 @@ function JsonObjectEditor(specs){
 	
 	this.renderHTMLContent = function(specs){
 		specs = specs || {};
-		var html = specs.html || '';
+		var html = '<textarea class="joe-rendering-field">'+(specs.rendering || '')+'</textarea>';
 		return html;
 		
 	}
@@ -304,7 +334,7 @@ function JsonObjectEditor(specs){
 		//requires {name,type}
 		var hidden = (prop.hidden)?'hidden':'';
 		var html = 
-			'<div class="joe-object-field '+hidden+'" data-type="'+prop.type+'" data-name="'+prop.name+'">'+
+			'<div class="joe-object-field '+hidden+' '+prop.type+'-field " data-type="'+prop.type+'" data-name="'+prop.name+'">'+
 			'<label class="joe-field-label">'+(prop.display||prop.label||prop.name)+'</label>';
 			
 		switch(prop.type){
@@ -319,6 +349,10 @@ function JsonObjectEditor(specs){
 			break;
 			case 'int':
 				html+= self.renderIntegerField(prop);
+			break;
+			
+			case 'rendering':
+				html+= self.renderRenderingField(prop);
 			break;
 			
 			default:
@@ -481,6 +515,16 @@ function JsonObjectEditor(specs){
 		'<input class="joe-guid-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || cuid())+'"  disabled />';
 		return html;
 	}
+/*----------------------------->
+	R | Rendering Field
+<-----------------------------*/
+	this.renderRenderingField = function(prop){
+		var profile = self.current.profile;
+		
+		var html=
+			'<textarea class="joe-rendering-field joe-field" name="'+prop.name+'" >'+(prop.value || "")+'</textarea>';
+		return html;
+	}
 /*-------------------------------------------------------------------->
 	4 | OBJECT LISTS
 <--------------------------------------------------------------------*/
@@ -515,11 +559,32 @@ function JsonObjectEditor(specs){
 		$('.joe-overlay').addClass('active');
 	}
 /*-------------------------------------------------------------------->
-	5 | MENUS
+	5 | HTML Renderings
+<--------------------------------------------------------------------*/
+	this.replaceRendering = function(dom,specs){
+		var rendering = dom.toString();
+		//var data = {rendering:html};
+		var specs = {datatype:'rendering', compact:false,dom:dom};
+		self.show(rendering,specs);
+	}
+	
+	this.updateRendering = function(dom, callback){
+		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || logit;
+		if(!self.current.specs.dom){
+			return false;
+		}
+		var newVal = $('.joe-rendering-field').val();
+		$(self.current.specs.dom).replaceWith(newVal);
+		logit('dom updated');
+		self.hide();
+		callback(newVal);
+	}
+/*-------------------------------------------------------------------->
+	MENUS
 <--------------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------->
-	6 | SCHEMAS
+	SCHEMAS
 <--------------------------------------------------------------------*/
 	this.setSchema = function(schemaName){
 		if(!schemaName){return false;}
@@ -549,11 +614,21 @@ function JsonObjectEditor(specs){
 		var data = data || '';
 		//profile = profile || null
 		var specs=specs || {};
+		if(specs.compact === true){$('.joe-overlay').addClass('compact');}
+		if(specs.compact === false){$('.joe-overlay').removeClass('compact');}
+		
 		self.populateFramework(data,specs);
 		$('.joe-overlay').addClass('active');
 	}
 	this.hide = function(data){
 		$('.joe-overlay').removeClass('active');
+	}
+	
+	this.compactMode = function(compact){
+		if(compact === true){$('.joe-overlay').addClass('compact');}
+		if(compact === false){$('.joe-overlay').removeClass('compact');}
+	
+	
 	}
 	
 	window.goJoe = this.show;
@@ -567,7 +642,7 @@ function JsonObjectEditor(specs){
 /*-------------------------------------------------------------------->
 	D | DATA
 <--------------------------------------------------------------------*/
-	this.updateObject = function(callback){
+	this.updateObject = function(dom,callback){
 		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || logit;
 		var newObj = self.constructObjectFromFields();
 		var obj = $.extend(self.current.object,newObj);
@@ -608,9 +683,12 @@ function JsonObjectEditor(specs){
 		return object;
 	}
 	
-	this.exportJSON = function(object,objvar){
-		var obobj = JSON.stringify(object,'','    ');
-		goJoe('<b>'+((objvar && 'var '+objvar +' = ')|| 'Observatory JSON Object')+'</b><br/><pre>'+obobj+'</pre>')
+	this.exportJSON = function(object,specs){
+		var minify =specs.minify || null;
+		var objvar = specs.objvar || '';
+		var obobj = (minify)?JSON.stringify(object):JSON.stringify(object,'','    ');
+		
+		goJoe('<b>'+((objvar && 'var '+objvar +' = ')|| 'JSON Object')+'</b><br/><pre>'+obobj+'</pre>')
 		console.log(obobj);
 	}
 /*-------------------------------------------------------------------->
@@ -625,9 +703,14 @@ function JsonObjectEditor(specs){
 	return this;
 }
 
-__clearDiv__ = '<div class="clear"></div>';
-__defaultObjectButtons = [
+var __clearDiv__ = '<div class="clear"></div>';
+
+var __saveBtn__ = {name:'save',label:'Save', action:'_joe.updateObject(this);', css:'joe-save-button'};
+var __replaceBtn__ = {name:'replace',label:'Replace', action:'_joe.updateRendering(this);', css:'joe-replace-button'};
+
+var __defaultButtons = [];
+var __defaultObjectButtons = [
 	{name:'delete',label:'Delete',action:'_joe.deleteObject(this);', css:'joe-delete-button'},
-	{name:'save',label:'Save', action:'_joe.updateObject(this);', css:'joe-save-button'}
+	__saveBtn__
 ]
-__defaultButtons = []
+

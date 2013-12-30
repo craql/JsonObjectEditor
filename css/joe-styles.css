@@ -186,6 +186,8 @@
 	padding: 8px 6px;
 	position: relative;
 }
+
+
 .joe-object-field.hidden{
 	display:none;
 }
@@ -198,6 +200,21 @@
 }
 .joe-object-field input[type=text].joe-int-field {
 	width: 100px;
+}
+
+/* Rendering */
+.joe-object-field.rendering-field {
+	min-height: 250px;
+}
+
+
+textarea.joe-rendering-field{
+	padding: 5px;
+	position: absolute;
+	top: 5px;
+	right: 5px;
+	bottom: 5px;
+	left: 5px;
 }
 /*-------------------------------------------------------------------->
 	4 | Footer
