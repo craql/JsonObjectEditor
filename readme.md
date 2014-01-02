@@ -74,6 +74,21 @@ function addAnimal(obj){
 
 fields:{
 	species:{label:'Species',type:'select', values:['cat','dog','rat','thing'], onchange:adjustSchema},
+	[field_id]:{
+		
+		+label : STR
+		+type : STR
+		value : STR (default value)
+		+values : ARRAY/FUNC (for select)
+		
+		//modifiers
+		+hidden:BOOL //don't show, but value is passed
+		+locked:BOOL // show, but uneditable
+		//events
+		+onchange : FUNC
+		+onblur : FUNC
+		+onkeypress : FUNC
+	}
 }
 
 function adjustSchema(dom){
@@ -86,3 +101,6 @@ function adjustSchema(dom){
 	
 	}
 }
+
+###exporting an object in pretty format json (or minified)
+JOE.exportJSON = function(object,objvarname,minify)

@@ -136,9 +136,9 @@ var thingschema =
 		fields:{
 			species:{label:'Species',type:'select', values:['cat','dog','rat','thing'], onchange:adjustSchema},
 			gender:{type:'select', values:['male','female']},
-			legs:{label:'# of Legs',type:'int', onblur:logit},
+			legs:{label:'# of Legs',type:'int', onblur:logit, value:4},
 			weight:{label:' Weight (lbs)',type:'number', onblur:logit},
-			name:{label:' pet Name', onkeyup:logValue},
+			name:{label:' pet Name', onkeyup:logValue, value:"Unnamed"},
 			//id:{label:'ID',type:'text', locked:true},
 			id:{label:'ID',type:'guid'},
 		//rendering
@@ -152,7 +152,7 @@ var thingschema =
 			animal:animalschema,
 			thing:thingschema			
 		},
-		compact:true
+		compact:false
 	}
 	var JOE = new JsonObjectEditor(specs);
 	JOE.init();
