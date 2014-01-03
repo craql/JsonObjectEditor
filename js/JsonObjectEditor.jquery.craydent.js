@@ -262,7 +262,7 @@ function JsonObjectEditor(specs){
 		var fields = '';
 		var propObj;
 		
-		if(!specs.schema){//no schema use items as own schema
+		if(!specs.schema || !specs.schema.fields){//no schema use items as own schema
 			for( var prop in object){
 				propObj = $.extend({
 					name:prop,
@@ -530,12 +530,20 @@ function JsonObjectEditor(specs){
 	4 | OBJECT LISTS
 <--------------------------------------------------------------------*/
 	this.renderListItem = function(listItem){
-		var idprop = self.current.schema._listID || 'id';
+		var listSchema  = $.extend(
+			{
+				_listID:'id'	
+			},
+			self.current.schema,
+			self.current.specs
+		);
+		
+		var idprop = listSchema._listID;
 		var id = listItem[idprop] || null;
 		var action = 'onclick="_joe.editObjectFromList(\''+id+'\');"';
 		
-		if(!self.current.schema._listTemplate){
-			var title = self.current.schema._listTitle || listItem.name || id || 'untitled';
+		if(!listSchema._listTemplate){
+			var title = listSchema._listTitle || listItem.name || id || 'untitled';
 			var html = '<div class="joe-panel-content-option" '+action+'>'+fillTemplate(title,listItem)+'</div>';
 		}
 		
