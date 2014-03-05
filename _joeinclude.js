@@ -1,25 +1,27 @@
 /* JavaScript include for: Json Object Editor
-last updated: CH December 2013
+last updated: CH March 2014
 */
 
 var includes = "",
-web_dir = "",
+web_dir = "//webapps-cdn.esri.com/tools/JOE/",
 projectName = 'JsonObjectEditor';
-switch(location.hostname){
-	case 'webapps-cdn-stg.esri.com':
-		web_dir = "http://webapps-cdn-stg.esri.com/tools/"+projectName+"/";
-	break;
-	case 'webapps-cdn.esri.com':
-		web_dir = "http://webapps-cdn.esri.com/tools/"+projectName+"/";
-	break;
-	
-	case 'localhost':
-	case 'localhost:81':
-		web_dir ='http://'+location.hostname+':'+location.port+"/"+projectName+'/';
-	break;
-	case 'coreyh.esri.com':
-		web_dir = 'http://coreyh.esri.com:81/'+projectName+'/';
-	break;
+if(location && location.hostname){//fix for devices
+	switch(location.hostname){
+		case 'webapps-cdn-stg.esri.com':
+			web_dir = "http://webapps-cdn-stg.esri.com/tools/"+projectName+"/";
+		break;
+		case 'webapps-cdn.esri.com':
+			web_dir = "http://webapps-cdn.esri.com/tools/JOE/";
+		break;
+		
+		case 'localhost':
+		case 'localhost:81':
+			web_dir ='http://'+location.hostname+':'+location.port+"/"+projectName+'/';
+		break;
+		case 'coreyh.esri.com':
+			web_dir = 'http://coreyh.esri.com:81/'+projectName+'/';
+		break;
+	}
 }
 var
 scripts_dir = web_dir+"js/",
