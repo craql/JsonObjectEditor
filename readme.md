@@ -48,7 +48,7 @@ overwrites the default profile
 **schemas:** 
 a list of schema objects that can configure the editor fields, these can be given properties that are delegated to all the corresponding fields.
 
-var animalschema = 
+	var animalschema = 
 	{
 		_title:'Animal', *what shows as the panel header* 
 		fields:['id','name','legs','species','weight','color','gender','animalLink'], *list of visible fields*
@@ -64,11 +64,14 @@ var animalschema =
 
 ##usage
 ###adding a new object
-_joe.show({},'animal','',addAnimal); //or goJoe(object,schema,profile,callback)
 
-function addAnimal(obj){
-	animals.push(obj);
-}
+	_joe.show({},{schema:'animal',callback:addAnimal); 
+	//or goJoe(object,specs)
+
+	...
+	function addAnimal(obj){
+		animals.push(obj);
+	}
 
 ###Conditional select that changes the item schema
 
