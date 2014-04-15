@@ -102,7 +102,7 @@ function JsonObjectEditor(specs){
 	//when object passed in
 		if($.type(data) == 'object' || datatype =='object'){
 			specs.object = data;
-			specs.menu = __defaultObjectButtons;
+			specs.menu = specs.menu || __defaultObjectButtons;
 			//[
 			//	{name:'delete',label:'Delete Object',action:'_joe.deleteObject()'},
 			//	{name:'save',label:'Save Object',action:'_joe.updateObject()'}];
@@ -302,7 +302,7 @@ function JsonObjectEditor(specs){
 	C | Footer
 <-----------------------------*/	
 	this.renderEditorFooter = function(specs){
-		specs = specs || {};
+		specs = specs || this.specs || {};
 		var menu = specs.menu || __defaultObjectButtons;
 		var title = specs.title || 'untitled';
 		var display,action;

@@ -225,11 +225,12 @@ textarea.joe-rendering-field{
     left: 0;
     right: 0;
 }
+.joe-right-button,
 .joe-footer-button {
-    float: right;
-  
+    float: right; 
 }
 
+.joe-left-button,
 .joe-delete-button {
 	float: left;
 }

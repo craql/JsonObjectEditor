@@ -61,6 +61,13 @@ a list of schema objects that can configure the editor fields, these can be give
 		
 	}
 
+**menu:**
+an array of menu buttons
+
+    //the default save button
+    //this is the dom object, 
+    //use _joe.current.object for current object
+    var __saveBtn__ = {name:'save',label:'Save', action:'_joe.updateObject(this);', css:'joe-save-button'};
 
 ##usage
 ###adding a new object
