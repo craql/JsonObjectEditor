@@ -33,7 +33,8 @@ if (typeof Craydent == 'undefined') {
    scripts.push("craydent-1.7.18.js");
 }
 scripts.push(
-	"JsonObjectEditor.jquery.craydent.js"
+	"JsonObjectEditor.jquery.craydent.js",
+	"zebra_datepicker.js"
 );
 
 var

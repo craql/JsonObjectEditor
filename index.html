@@ -109,7 +109,7 @@ function logValue(dom){
 var animalschema = 
 	{
 		_title:'Animal',
-		fields:['id','name','legs','species','weight','color','gender','animalLink'],
+		fields:['id','name','legs','species','weight','color','gender','animalLink','birthday'],
 		_listID:'id',
 		_listTitle:'${name} ${species}',
 		/*callback:function(obj){
@@ -139,6 +139,7 @@ var thingschema =
 			legs:{label:'# of Legs',type:'int', onblur:logit, value:4},
 			weight:{label:' Weight (lbs)',type:'number', onblur:logit},
 			name:{label:' pet Name', onkeyup:logValue, value:"Unnamed"},
+			birthday:{label:'birthday', type:'date'},
 			//id:{label:'ID',type:'text', locked:true},
 			id:{label:'ID',type:'guid'},
 		//rendering

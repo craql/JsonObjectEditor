@@ -177,7 +177,7 @@ function JsonObjectEditor(specs){
 <-----------------------------*/	
 	this.renderEditorHeader = function(specs){
 		specs = specs || {}
-		var title = specs.title || 'Json Object Editor';
+		var title = fillTemplate(specs.title || 'Json Object Editor',_joe.current.object);
 		action = 'onclick="_joe.toggleOverlay(this)"';
 		var html = 
 		'<div class="joe-panel-header">'+
@@ -356,6 +356,10 @@ function JsonObjectEditor(specs){
 				html+= self.renderRenderingField(prop);
 			break;
 			
+			case 'date':
+				html+= self.renderDateField(prop);
+			break;
+			
 			default:
 				html+= self.renderTextField(prop);
 			break;
@@ -467,6 +471,7 @@ function JsonObjectEditor(specs){
 		$(dom).val(parseInt($(dom).val()));
 	
 	}
+
 /*----------------------------->
 	C | Select
 <-----------------------------*/	
@@ -503,6 +508,17 @@ function JsonObjectEditor(specs){
 			})
 			
 		html+='</select>';
+		return html;
+	}
+/*----------------------------->
+	D | Date Field
+<-----------------------------*/
+	this.renderDateField = function(prop){
+				var html=
+		'<input class="joe-date-field joe-field" type="text"  name="'+prop.name+'" value="'+(prop.value || '')+'" '+
+			self.renderFieldAttributes(prop)+
+		' />';
+		
 		return html;
 	}
 /*----------------------------->
@@ -627,7 +643,9 @@ function JsonObjectEditor(specs){
 		if(specs.compact === false){$('.joe-overlay').removeClass('compact');}
 		
 		self.populateFramework(data,specs);
+		
 		$('.joe-overlay').addClass('active');
+		setTimeout(self.onPanelShow(),0);
 	}
 	this.hide = function(data){
 		$('.joe-overlay').removeClass('active');
@@ -647,6 +665,10 @@ function JsonObjectEditor(specs){
 		if (e.keyCode == 27) { self.hide(); }   // esc
 	});
 
+	this.onPanelShow = function(){
+		//init datepicker
+		$('.joe-date-field').Zebra_DatePicker();
+	}
 
 /*-------------------------------------------------------------------->
 	D | DATA
@@ -654,6 +676,7 @@ function JsonObjectEditor(specs){
 	this.updateObject = function(dom,callback){
 		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || logit;
 		var newObj = self.constructObjectFromFields();
+		newObj.joeUpdated = new Date();
 		var obj = $.extend(self.current.object,newObj);
 		logit('object updated');
 		self.hide();
