@@ -122,7 +122,7 @@ var animalschema =
 var thingschema = 
 	{
 		_title:'Thing',
-		fields:['id','name','thingType','legs','species','weight','color','gender','html'],
+		fields:['id','name','thingType','legs','species','weight','color','gender','html','friends'],
 		_listID:'id',
 		_listTitle:'${name} ${species}'
 		
@@ -135,6 +135,7 @@ var thingschema =
 		},*/
 		fields:{
 			species:{label:'Species',type:'select', values:['cat','dog','rat','thing'], onchange:adjustSchema},
+			friends:{label:'Friends - multi',type:'select', values:['cat','dog','rat','thing'], multiple:true},
 			gender:{type:'select', values:['male','female']},
 			legs:{label:'# of Legs',type:'int', onblur:logit, value:4},
 			weight:{label:' Weight (lbs)',type:'number', onblur:logit},

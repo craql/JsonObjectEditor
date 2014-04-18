@@ -342,6 +342,9 @@ function JsonObjectEditor(specs){
 			case 'select':
 				html+= self.renderSelectField(prop);
 			break;
+			case 'multi-select':
+				html+= self.renderMultiSelectField(prop);
+			break;
 			case 'guid':
 				html+= self.renderGuidField(prop);
 			break;
@@ -495,11 +498,13 @@ function JsonObjectEditor(specs){
 			'disabled':'';*/
 		
 		var selected;
+		var multiple =(prop.multiple)?' multiple ':'';
 		var html=/*
 		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
 		
 		'<select class="joe-select-field joe-field" name="'+prop.name+'" value="'+(prop.value || '')+'" '+
 			self.renderFieldAttributes(prop)+
+			multiple+
 		' >';
 		
 			valObjs.map(function(v){
@@ -510,6 +515,39 @@ function JsonObjectEditor(specs){
 		html+='</select>';
 		return html;
 	}
+/*----------------------------->
+	C2 | Multi-Select
+<-----------------------------*/
+/*	this.renderSelectField = function(prop){
+		
+		var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values || [prop.value];
+		var valObjs = [];
+		if($.type(values[0]) != 'object'){
+			values.map(function(v){
+				valObjs.push({name:v});
+			});
+		}
+		else{
+			valObjs = values;
+		}
+	
+		
+		var selected;
+		var html=/*
+		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
+		
+		'<select class="joe-multiselect-field joe-field" name="'+prop.name+'" value="'+(prop.value || '')+'" '+
+			self.renderFieldAttributes(prop)+
+		' >';
+		
+			valObjs.map(function(v){
+				selected = (prop.value == v.name)?'selected':'';
+				html += '<option value="'+v.name+'" '+selected+'>'+(v.display||v.label||v.name)+'</option>'	
+			})
+			
+		html+='</select>';
+		return html;
+	}*/
 /*----------------------------->
 	D | Date Field
 <-----------------------------*/
