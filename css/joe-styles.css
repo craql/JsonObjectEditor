@@ -202,6 +202,10 @@
 	width: 100px;
 }
 
+.joe-select-field {
+width: 314px;
+}
+
 /* Rendering */
 .joe-object-field.rendering-field {
 	min-height: 250px;

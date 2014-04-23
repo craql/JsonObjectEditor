@@ -533,8 +533,7 @@ function JsonObjectEditor(specs){
 	
 		
 		var selected;
-		var html=/*
-		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
+		var html=
 		
 		'<select class="joe-multiselect-field joe-field" name="'+prop.name+'" value="'+(prop.value || '')+'" '+
 			self.renderFieldAttributes(prop)+
