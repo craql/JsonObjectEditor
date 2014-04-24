@@ -1,16 +1,18 @@
 #Json Object Editor
-Visually Edit Objects Using this GUID tool, what you do from there is up to you.
+Visually Edit Objects Using this GUI tool, what you do from there is up to you.
 
 ##required includes
-+"css/joe-styles.css"
-+js/jquery-1.10.2.min.js"
-+"js/craydent-1.7.18.js"
-+"js/JsonObjectEditor.jquery.craydent.js"
+
++ jquery
++ craydent
++ "js/JsonObjectEditor.jquery.craydent.js"
++ "css/joe-styles.css"
 
 ##In the pipeline
-+Remove Profiles
-+Conditional Fields
-+required fields
++ Remove Profiles
++ Conditional Fields
++ required fields
++ autocomplete field
 
 
 ##instantiation
