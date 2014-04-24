@@ -567,17 +567,93 @@ function JsonObjectEditor(specs){
 	E | Geo Field
 <-----------------------------*/
 	this.renderGeoField = function(prop){
-		var center = prop.mapcenter;
-	map.setView([37.85750715625203,-96.15234375],3)	
-	var map = L.map('map').setView([51.505, -0.09], 13);
+		var center = (prop.value && eval(prop.value)) || prop.center || [40.513,-96.020];
+		var zoom = prop.zoom || 4;
+	//map.setView([37.85750715625203,-96.15234375],3)	
+	//var map = L.map('map').setView(center, zoom);
+	var mapDiv = 'joeGEO_'+prop.name;
+	var val = prop.value||'';
 	var html=
-		'<input class="joe-date-field joe-field" type="text"  name="'+prop.name+'" value="'+(prop.value || '')+'" '+
-			self.renderFieldAttributes(prop)+
-		' />';
+		'<div class="joe-geo-map joe-field" name="'+prop.name+'" id="'+mapDiv+'" '
+			+'data-center="'+JSON.stringify(center)+'" data-zoom="'+zoom+'" '
+			+'data-value="'+val+'" '
+			+'onload="_joe.initGeoMap(this);"></div>'
+		+'<input class="joe-geo-field joe-field" type="text" value="'+val+'" name="'+prop.name+'"/>'
+		+'<script type="text/javascript">setTimeout(function(){_joe.initGeoMap("'+mapDiv+'");},100)</script>'
+		;
 		
 		return html;
 	}	
 	
+	this.initGeoMap = function(id){
+
+		var mapspecs = $('#'+id).data();
+		map = L.map(id).setView(mapspecs.center,mapspecs.zoom);
+		//var map = L.map(id).setView([51.505, -0.09], 13);
+		L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+   			//attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+		}).addTo(map);
+		map.on('click', _joe.onMapClick);
+		map.prop = $('#'+id).attr('name');
+		if(mapspecs.value){
+			//var ll = eval(mapspecs.value);
+			var myIcon = L.icon({
+					iconUrl: '/JsonObjectEditor/img/mapstar.png',
+					iconSize: [30, 30],
+					//iconAnchor: [22, 94],
+					//popupAnchor: [-3, -76],
+					//shadowUrl: 'my-icon-shadow.png',
+					//shadowRetinaUrl: 'my-icon-shadow@2x.png',
+					//shadowSize: [68, 95],
+					//shadowAnchor: [22, 94]
+				});
+				map.marker = L.marker(mapspecs.value,{
+					draggable:true,
+					icon:myIcon
+				}).addTo(map);
+				map.marker.map = map;
+				map.marker.on('dragend', _joe.onMapClick);
+			}
+	}
+	
+	this.onMapClick = function(e){
+		var map = (e.type=="click")?e.target : this.map;
+		
+		//map.setView(e.latlng);
+		var ll = (e && e.latlng) || this.getLatLng()
+		map.setView(ll);
+		
+		if(e.type=="dragend"){
+			
+		}else if(map.marker){
+			map.marker.setLatLng(e.latlng);
+		}else{
+			var myIcon = L.icon({
+				iconUrl: '/JsonObjectEditor/img/mapstar.png',
+				iconSize: [30, 30],
+				//iconAnchor: [22, 94],
+				//popupAnchor: [-3, -76],
+				//shadowUrl: 'my-icon-shadow.png',
+				//shadowRetinaUrl: 'my-icon-shadow@2x.png',
+				//shadowSize: [68, 95],
+				//shadowAnchor: [22, 94]
+			});
+			map.marker = L.marker(e.latlng,{
+				draggable:true,
+				icon:myIcon
+			}).addTo(map);
+			map.marker.map = map;
+			map.marker.on('dragend', _joe.onMapClick);
+	
+		}
+		$('input[name='+map.prop+']').val('['+ll.lat+','+ll.lng+']');
+		
+		
+	//	logit(e);
+		
+
+		
+	}
 /*----------------------------->
 	G | Guid
 <-----------------------------*/

@@ -39,13 +39,28 @@ Visually Edit Objects Using this GUID tool, what you do from there is up to you.
 
 
 ##specs
-**fields:**
-an object of field object definitions (profile independent)
 
-**defaultProfile**
+###fields
+
+an object of field object definitions (profile independent)
+types ("type" property)
+
+- text: default single line text.
+- int: integer field
+- number: number (float) field
+- select: select list. 
+	- multiple(bool)
+	- values(array of objects, [{value:"",name/display:""])
+- geo: shows a map
+	- **takes a string array "[lat,lon]"**
+	- center:[lat,lon], center of map
+	- zoom: zoom level (higher zooms in more)
+	- returns "[lat,lon]"
+
+###defaultProfile
 overwrites the default profile
 
-**schemas:** 
+###schemas 
 a list of schema objects that can configure the editor fields, these can be given properties that are delegated to all the corresponding fields.
 
 	var animalschema = 
@@ -60,14 +75,25 @@ a list of schema objects that can configure the editor fields, these can be give
 		onblur:logit
 		
 	}
-
-**menu:**
+##menu##
 an array of menu buttons
 
     //the default save button
     //this is the dom object, 
     //use _joe.current.object for current object
     var __saveBtn__ = {name:'save',label:'Save', action:'_joe.updateObject(this);', css:'joe-save-button'};
+
+###Addition properties
+**Changing the schema on the fly?**
+
+	_joe.resetSchema(new schema name);
+
+
+
+**css (included) options**
+
+- joe-left-button
+- joe-right-button
 
 ##usage
 ###adding a new object
@@ -82,35 +108,35 @@ an array of menu buttons
 
 ###Conditional select that changes the item schema
 
-fields:{
-	species:{label:'Species',type:'select', values:['cat','dog','rat','thing'], onchange:adjustSchema},
-	[field_id]:{
-		
-		+label : STR
-		+type : STR
-		value : STR (default value)
-		+values : ARRAY/FUNC (for select)
-		
-		//modifiers
-		+hidden:BOOL //don't show, but value is passed
-		+locked:BOOL // show, but uneditable
-		//events
-		+onchange : FUNC
-		+onblur : FUNC
-		+onkeypress : FUNC
+	fields:{
+		species:{label:'Species',type:'select', values:['cat','dog','rat','thing'], onchange:adjustSchema},
+		[field_id]:{
+			
+			+label : STR
+			+type : STR
+			value : STR (default value)
+			+values : ARRAY/FUNC (for select)
+			
+			//modifiers
+			+hidden:BOOL //don't show, but value is passed
+			+locked:BOOL // show, but uneditable
+			//events
+			+onchange : FUNC
+			+onblur : FUNC
+			+onkeypress : FUNC
+		}
 	}
-}
 
-function adjustSchema(dom){
-	var species = $(dom).val();
-	if(species == "thing"){
-		JOE.resetSchema('thing')
+	function adjustSchema(dom){
+		var species = $(dom).val();
+		if(species == "thing"){
+			JOE.resetSchema('thing')
+		}
+		else{
+			JOE.resetSchema('animal')
+		
+		}
 	}
-	else{
-		JOE.resetSchema('animal')
-	
-	}
-}
 
 ###exporting an object in pretty format json (or minified)
 JOE.exportJSON = function(object,objvarname,minify)

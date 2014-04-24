@@ -220,6 +220,14 @@ textarea.joe-rendering-field{
 	bottom: 5px;
 	left: 5px;
 }
+/* Geo */
+.joe-geo-map {
+	height: 250px;
+	margin-bottom: 10px;
+	width: 100%;
+	position: relative;
+
+}
 /*-------------------------------------------------------------------->
 	4 | Footer
 <--------------------------------------------------------------------*/	
