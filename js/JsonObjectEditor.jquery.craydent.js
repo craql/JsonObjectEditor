@@ -363,6 +363,11 @@ function JsonObjectEditor(specs){
 				html+= self.renderDateField(prop);
 			break;
 			
+			case 'geo':
+			case 'map':
+				html += self.renderGeoField(prop);
+			break;
+			
 			default:
 				html+= self.renderTextField(prop);
 			break;
@@ -558,6 +563,21 @@ function JsonObjectEditor(specs){
 		
 		return html;
 	}
+/*----------------------------->
+	E | Geo Field
+<-----------------------------*/
+	this.renderGeoField = function(prop){
+		var center = prop.mapcenter;
+	map.setView([37.85750715625203,-96.15234375],3)	
+	var map = L.map('map').setView([51.505, -0.09], 13);
+	var html=
+		'<input class="joe-date-field joe-field" type="text"  name="'+prop.name+'" value="'+(prop.value || '')+'" '+
+			self.renderFieldAttributes(prop)+
+		' />';
+		
+		return html;
+	}	
+	
 /*----------------------------->
 	G | Guid
 <-----------------------------*/

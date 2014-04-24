@@ -27,19 +27,21 @@ var
 scripts_dir = web_dir+"js/",
 scripts = [];
 if (typeof jQuery == 'undefined') {  
-   scripts.push("jquery-1.10.2.min.js");
+   scripts.push("jquery-1.11.0.min.js");
 }
 if (typeof Craydent == 'undefined') {  
    scripts.push("craydent-1.7.18.js");
 }
 scripts.push(
 	"JsonObjectEditor.jquery.craydent.js",
+	"leaflet.js",
 	"zebra_datepicker.js"
 );
 
 var
 styles_dir = web_dir+"css/",
 styles =[
+   "leaflet.css",
    "joe-styles.css"
 ],
 script,style,sc,st,
