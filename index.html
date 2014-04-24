@@ -44,6 +44,12 @@ height: 300px;
 
 <a href="javascript:_joe.show({},{schema:'animal',callback:addAnimal});">Add Animal</a><br/>
 
+<div>
+<p>City with geo + multiselect</p>
+<a href="javascript:_joe.show({},{schema:'city',callback:addCity});">Add City</a><br/>
+<a href="javascript:goJoe(cities,{schema:'city'});">View Cities</a><br/>
+</div>
+
 <h3>Editing html Renderings</h3>
 <div id="testEditableRegion" onclick="JOE.replaceRendering(this)">
     <h3>This div is editable</h3>
@@ -85,8 +91,13 @@ var rat =
 var animals =[cat,dog,rat];
 var animalLinks = ['cat','dog','rat'];
 
+var cities =[];
 function addAnimal(obj){
 	animals.push(obj);
+}
+
+function addCity(obj){
+	cities.push(obj);
 }
 
 function getAnimals(obj){
@@ -128,6 +139,14 @@ var thingschema =
 		
 	}
 	
+var citySchema = 
+	{
+		_title:'City',
+		fields:['id','name','geo','city_demos'],
+		_listID:'id',
+		_listTitle:'${name} <br/>${geo}'
+		
+	}
 	var specs = {
 /*		defaultProfile:{
 			lockedFields:['joeUpdated','id'],
@@ -139,8 +158,10 @@ var thingschema =
 			gender:{type:'select', values:['male','female']},
 			legs:{label:'# of Legs',type:'int', onblur:logit, value:4},
 			weight:{label:' Weight (lbs)',type:'number', onblur:logit},
-			name:{label:' pet Name', onkeyup:logValue, value:"Unnamed"},
+			name:{label:'Name', onkeyup:logValue, value:"Unnamed"},
 			birthday:{label:'birthday', type:'date'},
+			geo:{label:'Geography [lat,lon]', type:'geo'},
+			city_demos:{label:'City Demographics', type:'select', multiple:true,values:['Business','Residential','Metropolis','Agricultural']},
 			//id:{label:'ID',type:'text', locked:true},
 			id:{label:'ID',type:'guid'},
 		//rendering
@@ -152,7 +173,8 @@ var thingschema =
 		},
 		schemas:{
 			animal:animalschema,
-			thing:thingschema			
+			thing:thingschema,
+			city:citySchema			
 		},
 		compact:false
 	}

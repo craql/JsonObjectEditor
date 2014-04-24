@@ -43,21 +43,22 @@ Visually Edit Objects Using this GUI tool, what you do from there is up to you.
 ##specs
 
 ###fields
+Properties for all Fields
 
-an object of field object definitions (profile independent)
-types ("type" property)
-
-- text: default single line text.
-- int: integer field
-- number: number (float) field
-- select: select list. 
-	- multiple(bool)
-	- values(array of objects, [{value:"",name/display:""])
-- geo: shows a map
-	- **takes a string array "[lat,lon]"**
-	- center:[lat,lon], center of map
-	- zoom: zoom level (higher zooms in more)
-	- returns "[lat,lon]"
+- `label`: what the field should display as 
+- `value`: default value if not one in object
+- `type`: what type of field should JOE show
+	- `text`: default single line text.
+	- `int`: integer field
+	- `number`: number (float) field
+	- `select`: select list. 
+		- multiple(bool)
+		- values(array of objects, [{value:"",name/display:""])
+	- `geo`: shows a map
+		- *takes a string array "[lat,lon]"*
+		- center:[lat,lon], center of map
+		- zoom: zoom level (higher zooms in more)
+		- returns "[lat,lon]"
 
 ###defaultProfile
 overwrites the default profile

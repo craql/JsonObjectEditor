@@ -75,7 +75,7 @@ function JsonObjectEditor(specs){
 	
 	
 	this.populateFramework = function(data,setts){
-		setts = setts || {};
+		var specs = setts || {};
 		self.current.specs = setts; 
 		
 		var schema = setts.schema || '';
@@ -102,7 +102,7 @@ function JsonObjectEditor(specs){
 	//when object passed in
 		if($.type(data) == 'object' || datatype =='object'){
 			specs.object = data;
-			specs.menu = specs.menu || __defaultObjectButtons;
+			specs.menu = specs.menu || specs.schema.menu || __defaultObjectButtons;
 			//[
 			//	{name:'delete',label:'Delete Object',action:'_joe.deleteObject()'},
 			//	{name:'save',label:'Save Object',action:'_joe.updateObject()'}];
@@ -278,8 +278,7 @@ function JsonObjectEditor(specs){
 			(specs.schema.fields||[]).map(function(prop){
 				propObj = $.extend({
 					name:prop,
-					type:'text',
-					value:object[prop]	
+					type:'text'
 				},
 				{
 					onblur:specs.schema.onblur,
@@ -288,7 +287,10 @@ function JsonObjectEditor(specs){
 					onkeyup:specs.schema.onkeypress
 				
 				},
-				self.fields[prop]);
+				self.fields[prop],
+				//overwrite with value
+				{value:object[prop]}
+			);
 				
 				fields += self.renderObjectField(propObj);
 			})
@@ -513,7 +515,16 @@ function JsonObjectEditor(specs){
 		' >';
 		
 			valObjs.map(function(v){
-				selected = (prop.value == v.name)?'selected':'';
+				if($.type(prop.value) == 'array'){
+					selected = '';
+					selected = (prop.value.indexOf(v.name) != -1)?'selected':'';
+					
+					/*prop.value.map(function(pval){
+						if(pval.indexOf)
+					});*/
+				}else{
+					selected = (prop.value == v.name)?'selected':'';
+				}
 				html += '<option value="'+v.name+'" '+selected+'>'+(v.display||v.label||v.name)+'</option>'	
 			})
 			

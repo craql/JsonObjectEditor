@@ -30,7 +30,7 @@ if (typeof jQuery == 'undefined') {
    scripts.push("jquery-1.11.0.min.js");
 }
 if (typeof Craydent == 'undefined') {  
-   scripts.push("craydent-1.7.18.js");
+   scripts.push("craydent-1.7.21.js");
 }
 scripts.push(
 	"JsonObjectEditor.jquery.craydent.js",
