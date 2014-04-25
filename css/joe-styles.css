@@ -228,6 +228,25 @@ textarea.joe-rendering-field{
 	position: relative;
 
 }
+
+/* Autocomplete */
+.joe-text-autocomplete {
+    position: absolute;
+    z-index: 100;
+    background: #eee;
+    width: 312px;
+	display:none;
+}
+.joe-text-autocomplete.active{
+	display:block;
+}
+.joe-text-autocomplete-option {
+    padding: 5px;
+    cursor: pointer;
+}
+.joe-text-autocomplete-option:hover {
+    background: #ccc;
+}
 /*-------------------------------------------------------------------->
 	4 | Footer
 <--------------------------------------------------------------------*/	

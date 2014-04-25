@@ -344,8 +344,8 @@ function JsonObjectEditor(specs){
 			case 'select':
 				html+= self.renderSelectField(prop);
 			break;
-			case 'multi-select':
-				html+= self.renderMultiSelectField(prop);
+/*			case 'multi-select':
+				html+= self.renderMultiSelectField(prop);*/
 			break;
 			case 'guid':
 				html+= self.renderGuidField(prop);
@@ -420,19 +420,37 @@ function JsonObjectEditor(specs){
 	A | Text Input
 <-----------------------------*/
 	this.renderTextField = function(prop){
-		
+		var autocomplete;
+		if(prop.autocomplete && prop.values && $.type(prop.values) == 'array'){
+		autocomplete =true;
+		}
 	/*	var disabled = (profile.lockedFields.indexOf(prop.name) == -1)?
 			'':'disabled';
 		
 	*/	
 		//var bluraction = 'onblur="'+self.getActionString('onblur',prop)+'"';
+			//show autocomplete
 		
 		var html=
-		'<input class="joe-text-field joe-field" type="text"  name="'+prop.name+'" value="'+(prop.value || '')+'" '+
-			self.renderFieldAttributes(prop)+
-		' />';
+		'<input class="joe-text-field joe-field" type="text"  name="'+prop.name+'" value="'+(prop.value || '')+'" '
+			+self.renderFieldAttributes(prop)
+			+((autocomplete && ' onkeyup="$(this).next(\'.joe-text-autocomplete\').addClass(\'active\')"') ||'')
+		+' />';
+		
+		if(autocomplete){
+			html+='<div class="joe-text-autocomplete">';
+			for(var v = 0, len = prop.values.length; v < len; v++){
+				html+='<div class="joe-text-autocomplete-option" '
+					+'onclick="$(this).previous(\'.joe-text-field\').val($(this).html()); $(this).removeClass(\'active\');">'+prop.values[v]+'</div>';	
+			}
+			
+			html+='</div>';	
+		}
+		//add onblur: hide panel
+
 		return html;
 	} 
+	
 	
 
 /*----------------------------->
@@ -516,7 +534,7 @@ function JsonObjectEditor(specs){
 		
 		var val;
 			valObjs.map(function(v){
-				val = v.value||v.name;
+				val = v.value||v.name||'';
 				if($.type(prop.value) == 'array'){
 					selected = '';
 					selected = (prop.value.indexOf(val) != -1)?'selected':'';
