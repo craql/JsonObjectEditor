@@ -102,7 +102,7 @@ function JsonObjectEditor(specs){
 	//when object passed in
 		if($.type(data) == 'object' || datatype =='object'){
 			specs.object = data;
-			specs.menu = specs.menu || specs.schema.menu || __defaultObjectButtons;
+			specs.menu = specs.menu || specs.schema.menu || self.specs.menu || __defaultObjectButtons;
 			//[
 			//	{name:'delete',label:'Delete Object',action:'_joe.deleteObject()'},
 			//	{name:'save',label:'Save Object',action:'_joe.updateObject()'}];
