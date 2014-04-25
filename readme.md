@@ -109,6 +109,13 @@ an array of menu buttons
 		animals.push(obj);
 	}
 
+###viewing a list of objects
+**properties**
+
+- _listTemplate: html tempalte that uses ${var} to write out the dom element for the list item.
+	- standard css class `joe-panel-content-option`
+
+
 ###Conditional select that changes the item schema
 
 	fields:{

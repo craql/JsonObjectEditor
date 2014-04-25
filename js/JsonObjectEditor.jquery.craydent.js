@@ -689,6 +689,10 @@ function JsonObjectEditor(specs){
 			var title = listSchema._listTitle || listItem.name || id || 'untitled';
 			var html = '<div class="joe-panel-content-option" '+action+'>'+fillTemplate(title,listItem)+'</div>';
 		}
+		//if there is a list template
+		else{
+			html = fillTemplate(listSchema._listTemplate,listItem);
+		}
 		
 		return html;
 	}
