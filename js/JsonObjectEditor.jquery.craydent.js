@@ -514,18 +514,20 @@ function JsonObjectEditor(specs){
 			multiple+
 		' >';
 		
+		var val;
 			valObjs.map(function(v){
+				val = v.value||v.name;
 				if($.type(prop.value) == 'array'){
 					selected = '';
-					selected = (prop.value.indexOf(v.name) != -1)?'selected':'';
+					selected = (prop.value.indexOf(val) != -1)?'selected':'';
 					
 					/*prop.value.map(function(pval){
 						if(pval.indexOf)
 					});*/
 				}else{
-					selected = (prop.value == v.name)?'selected':'';
+					selected = (prop.value == val)?'selected':'';
 				}
-				html += '<option value="'+v.name+'" '+selected+'>'+(v.display||v.label||v.name)+'</option>'	
+				html += '<option value="'+val+'" '+selected+'>'+(v.display||v.label||v.name)+'</option>'	
 			})
 			
 		html+='</select>';
