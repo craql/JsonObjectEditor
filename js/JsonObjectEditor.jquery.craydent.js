@@ -608,23 +608,8 @@ function JsonObjectEditor(specs){
 		map.prop = $('#'+id).attr('name');
 		if(mapspecs.value){
 			//var ll = eval(mapspecs.value);
-			var myIcon = L.icon({
-					iconUrl: '/JsonObjectEditor/img/mapstar.png',
-					iconSize: [30, 30],
-					//iconAnchor: [22, 94],
-					//popupAnchor: [-3, -76],
-					//shadowUrl: 'my-icon-shadow.png',
-					//shadowRetinaUrl: 'my-icon-shadow@2x.png',
-					//shadowSize: [68, 95],
-					//shadowAnchor: [22, 94]
-				});
-				map.marker = L.marker(mapspecs.value,{
-					draggable:true,
-					icon:myIcon
-				}).addTo(map);
-				map.marker.map = map;
-				map.marker.on('dragend', _joe.onMapClick);
-			}
+			self.addMapIcon(map,mapspecs.value);
+		}
 	}
 	
 	this.onMapClick = function(e){
@@ -637,33 +622,31 @@ function JsonObjectEditor(specs){
 		if(e.type=="dragend"){
 			
 		}else if(map.marker){
-			map.marker.setLatLng(e.latlng);
+			map.marker.setLatLng(ll);
 		}else{
-			var myIcon = L.icon({
-				iconUrl: '/JsonObjectEditor/img/mapstar.png',
-				iconSize: [30, 30],
-				//iconAnchor: [22, 94],
-				//popupAnchor: [-3, -76],
-				//shadowUrl: 'my-icon-shadow.png',
-				//shadowRetinaUrl: 'my-icon-shadow@2x.png',
-				//shadowSize: [68, 95],
-				//shadowAnchor: [22, 94]
-			});
-			map.marker = L.marker(e.latlng,{
-				draggable:true,
-				icon:myIcon
-			}).addTo(map);
-			map.marker.map = map;
-			map.marker.on('dragend', _joe.onMapClick);
-	
+			self.addMapIcon(map,ll);
 		}
 		$('input[name='+map.prop+']').val('['+ll.lat+','+ll.lng+']');
-		
-		
-	//	logit(e);
-		
-
-		
+	}
+	
+	this.addMapIcon = function(map,latlng,specs){
+		specs = specs || {};
+		var myIcon = L.icon({
+			iconUrl: specs.icon||'/JsonObjectEditor/img/mapstar.png',
+			iconSize: [30, 30],
+			//iconAnchor: [22, 94],
+			//popupAnchor: [-3, -76],
+			//shadowUrl: 'my-icon-shadow.png',
+			//shadowRetinaUrl: 'my-icon-shadow@2x.png',
+			//shadowSize: [68, 95],
+			//shadowAnchor: [22, 94]
+		});
+		map.marker = L.marker(latlng,{
+			draggable:true,
+			icon:myIcon
+		}).addTo(map);
+		map.marker.map = map;
+		map.marker.on('dragend', _joe.onMapClick);
 	}
 /*----------------------------->
 	G | Guid
