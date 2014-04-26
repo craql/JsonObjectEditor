@@ -434,14 +434,14 @@ function JsonObjectEditor(specs){
 		var html=
 		'<input class="joe-text-field joe-field" type="text"  name="'+prop.name+'" value="'+(prop.value || '')+'" '
 			+self.renderFieldAttributes(prop)
-			+((autocomplete && ' onkeyup="$(this).next(\'.joe-text-autocomplete\').addClass(\'active\')"') ||'')
+			+((autocomplete && ' onblur = "$(this).find(\'.joe-text-autocomplete\').removeClass(\'active\');" onkeyup="$(this).next(\'.joe-text-autocomplete\').addClass(\'active\')"') ||'')
 		+' />';
 		
 		if(autocomplete){
 			html+='<div class="joe-text-autocomplete">';
 			for(var v = 0, len = prop.values.length; v < len; v++){
 				html+='<div class="joe-text-autocomplete-option" '
-					+'onclick="$(this).previous(\'.joe-text-field\').val($(this).html()); $(this).removeClass(\'active\');">'+prop.values[v]+'</div>';	
+					+'onclick=" _joe.autocompleteTextField(this);">'+prop.values[v]+'</div>';	
 			}
 			
 			html+='</div>';	
@@ -451,6 +451,11 @@ function JsonObjectEditor(specs){
 		return html;
 	} 
 	
+	this.autocompleteTextField = function(dom){
+		$(dom).parent().prev('.joe-text-field').val($(dom).html());
+		$(dom).parent().removeClass('active');
+		//$(dom).previous('.joe-text-field').val($(dom).html());
+	}
 	
 
 /*----------------------------->
