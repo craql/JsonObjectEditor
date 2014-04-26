@@ -219,6 +219,8 @@ textarea.joe-rendering-field{
 	right: 5px;
 	bottom: 5px;
 	left: 5px;
+	width: 60%;
+	min-width: 304px;
 }
 /* Geo */
 .joe-geo-map {

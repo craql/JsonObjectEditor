@@ -78,6 +78,9 @@ function JsonObjectEditor(specs){
 		var specs = setts || {};
 		self.current.specs = setts; 
 		
+	//clean copy for later;
+		self.current.userSpecs = $.extend({},setts);
+		
 		var schema = setts.schema || '';
 		var profile = setts.profile || null;
 		var callback = setts.callback || null;
@@ -856,6 +859,21 @@ function JsonObjectEditor(specs){
 		self.hide();
 		callback(obj);
 	}
+	
+	this.duplicateObject = function(specs){
+		//takes fields to be deleted
+		specs = specs || {};
+		var deletes = specs.deletes || [];
+		var itemobj = $.extend({},self.current.object);
+		delete itemobj.joeUpdated;
+		itemobj.name = itemobj.name +' copy';
+		deletes.map(function(d){
+			delete itemobj[d];
+		})
+		
+		self.hide();
+		goJoe(itemobj,self.current.userSpecs);
+	}
 	this.constructObjectFromFields = function(){
 		var object = {joeUpdated:new Date()};
 		var prop;
@@ -895,6 +913,7 @@ var __clearDiv__ = '<div class="clear"></div>';
 
 var __saveBtn__ = {name:'save',label:'Save', action:'_joe.updateObject(this);', css:'joe-save-button'};
 var __replaceBtn__ = {name:'replace',label:'Replace', action:'_joe.updateRendering(this);', css:'joe-replace-button'};
+var __duplicateBtn__ = {name:'duplicate',label:'Duplicate', action:'_joe.duplicateObject();', css:'joe-left-button'};
 
 var __defaultButtons = [];
 var __defaultObjectButtons = [

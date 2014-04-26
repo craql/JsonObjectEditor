@@ -48,6 +48,7 @@ Properties for all Fields
 - `label`: what the field should display as 
 - `value`: default value if not one in object
 - `type`: what type of field should JOE show
+- `rendering`: for css html and js
 	- `text`: default single line text.
 	- `int`: integer field
 	- `number`: number (float) field
@@ -147,6 +148,16 @@ an array of menu buttons
 		
 		}
 	}
+
+###duplicating an item
+
+	//duplicates the currently active object (being edited)
+	_joe.duplicateObject(specs);
+
+**specs**
+
+- `deletes`:array of properties to clear for new item
+	- note that you will need to delete guid/id fields or the id will be the same.	
 
 ###exporting an object in pretty format json (or minified)
 JOE.exportJSON = function(object,objvarname,minify)
