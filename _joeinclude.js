@@ -35,13 +35,17 @@ if (typeof Craydent == 'undefined') {
 scripts.push(
 	"JsonObjectEditor.jquery.craydent.js",
 	"leaflet.js",
+	"esri-leaflet-geocoder.js",
+	
 	"zebra_datepicker.js"
+	
 );
 
 var
 styles_dir = web_dir+"css/",
 styles =[
    "leaflet.css",
+   "esri-leaflet-geocoder.css",
    "joe-styles.css"
 ],
 script,style,sc,st,

@@ -632,6 +632,10 @@ function JsonObjectEditor(specs){
 		L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
    			//attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
 		}).addTo(map);
+	
+	//add geocoder	
+		var searchControl = new L.esri.Controls.Geosearch().addTo(map);
+		
 		map.on('click', _joe.onMapClick);
 		map.prop = $('#'+id).attr('name');
 		if(mapspecs.value){
