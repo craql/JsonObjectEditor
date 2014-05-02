@@ -15,6 +15,7 @@ function JsonObjectEditor(specs){
 	0 | CONFIG
 <--------------------------------------------------------------------*/
 	var defaults = {
+		
 		container:'body',
 		joeprofile:{
 			lockedFields:['joeUpdated'],
@@ -31,7 +32,8 @@ function JsonObjectEditor(specs){
 				//_listTitle:'${name} ${species}'
 		
 		}},
-		compact:false
+		compact:false,
+		useControlEnter:true
 	}
 	
 	this.specs = $.extend({},defaults,specs||{})
@@ -826,6 +828,10 @@ function JsonObjectEditor(specs){
 	
 	$(document).keyup(function(e) {
 		if (e.keyCode == 27) { self.hide(); }   // esc
+	//ctrl + enter
+		else if(e.ctrlKey && e.keyCode == 13 && self.specs.useControlEnter){
+			$('.joe-save-button').click();
+		}
 	});
 
 	this.onPanelShow = function(){

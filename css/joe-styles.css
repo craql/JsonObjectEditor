@@ -1,6 +1,10 @@
 @charset "utf-8";
 /* JOE UI Styles */
 
+.clear{
+	clear:both;
+}
+
 .joe-overlay{
 	font-family:Cambria, "Hoefler Text", "Liberation Serif", Times, "Times New Roman", serif;
 }
@@ -21,6 +25,9 @@
 /*-------------------------
 	JOE Button
 -------------------------*/
+.joe-panel-menu {
+	padding: 0 1px 2px 1px;
+}
 .joe-button {
     padding: 8px 16px;
     margin: 5px;
