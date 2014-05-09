@@ -68,8 +68,11 @@ function JsonObjectEditor(specs){
 		
 		var html = 
 		'<div class="joe-overlay '+((self.specs.compact && ' compact ') || '')+'">'+
-			'<div class="joe-overlay-panel active">'+
+			'<div class="joe-overlay-panel">'+
 				(content || '')+
+			'</div>'+
+		//mini	
+			'<div class="joe-mini-panel">'+
 			'</div>'+
 		'</div>';
 		return html;
@@ -183,7 +186,7 @@ function JsonObjectEditor(specs){
 	this.renderEditorHeader = function(specs){
 		specs = specs || {}
 		var title = fillTemplate(specs.title || 'Json Object Editor',_joe.current.object);
-		action = 'onclick="_joe.toggleOverlay(this)"';
+		action = specs.action||'onclick="_joe.toggleOverlay(this)"';
 		var html = 
 		'<div class="joe-panel-header">'+
 			'<div class="joe-panel-title">'+
@@ -774,6 +777,46 @@ function JsonObjectEditor(specs){
 <--------------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------->
+	MUTATE - Adding Properties
+<--------------------------------------------------------------------*/
+	this.showPropertyEditor = function(prop){
+		self.current.mutant = prop;
+		
+		
+	}
+	
+	this.addPropertyToEditor = function(prop){
+		
+	}
+
+	this.minis = {};
+/*-------------------------------------------------------------------->
+	MINIJOE WIndow
+<-------------------------------------------------------------------*/
+	this.showMiniJoe = function(specs){
+		var mini = {};
+		if(!(specs && specs.prop)){
+			return;
+		}
+		mini.name=specs.prop.name||specs.prop.id || specs.prop._id;
+		mini.id = "mini-"+mini.name;
+		
+		//var html = '<div class="joe-mini-panel joe-panel">';
+
+		var html = 
+			self.renderEditorHeader({title:mini.name,action:'onclick="_joe.hideMini()"'})
+			+'<div class="joe-panel-content joe-inset"></div>'
+			+self.renderEditorFooter();
+		//html+=	'</div>';
+		$('.joe-mini-panel').addClass('active').html(html);
+		
+		self.minis[mini.id] = mini;
+	}
+	
+	this.hideMini = function(){
+		$('.joe-mini-panel').removeClass('active')
+	}
+/*-------------------------------------------------------------------->
 	SCHEMAS
 <--------------------------------------------------------------------*/
 	this.setSchema = function(schemaName){
@@ -823,6 +866,7 @@ function JsonObjectEditor(specs){
 	
 	}
 	
+	window.joeMini = this.showMiniJoe;
 	window.goJoe = this.show;
 	window.listJoe = this.editObjectFromList;
 	
@@ -830,7 +874,7 @@ function JsonObjectEditor(specs){
 		if (e.keyCode == 27) { self.hide(); }   // esc
 	//ctrl + enter
 		else if(e.ctrlKey && e.keyCode == 13 && self.specs.useControlEnter){
-			$('.joe-save-button').click();
+			$('.joe-confirm-button').click();
 		}
 	});
 
@@ -921,8 +965,8 @@ function JsonObjectEditor(specs){
 
 var __clearDiv__ = '<div class="clear"></div>';
 
-var __saveBtn__ = {name:'save',label:'Save', action:'_joe.updateObject(this);', css:'joe-save-button'};
-var __replaceBtn__ = {name:'replace',label:'Replace', action:'_joe.updateRendering(this);', css:'joe-replace-button'};
+var __saveBtn__ = {name:'save',label:'Save', action:'_joe.updateObject(this);', css:'joe-save-button joe-confirm-button'};
+var __replaceBtn__ = {name:'replace',label:'Replace', action:'_joe.updateRendering(this);', css:'joe-replace-button joe-confirm-button'};
 var __duplicateBtn__ = {name:'duplicate',label:'Duplicate', action:'_joe.duplicateObject();', css:'joe-left-button'};
 
 var __defaultButtons = [];

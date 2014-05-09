@@ -32,15 +32,18 @@
     padding: 8px 16px;
     margin: 5px;
     background-color: rgba(255,255,255,.5);
-    box-shadow: 0 0 3px 0 rgba(0,0,0,.5);
-    cursor: pointer;
+    box-shadow: 0 1px 2px 0px rgba(0,0,0,.3);
+	cursor: pointer;
+	transition: .2s;
 }
 .joe-button:hover{
-	background-color: rgba(255,255,255,1);
+	background-color: #f7f7f8;
 }
 
 .joe-button.center{text-align:center;}
 .joe-button.right{text-align:right;}
+.joe-confirm-button{background:#6BB476;}
+.joe-confirm-button:hover{background:#5BD16D;}
 /*-------------------------
 	UI Overlays
 -------------------------*/	
@@ -66,6 +69,20 @@
 
 .joe-panel{
 	position:relative;
+}
+
+.joe-mini-panel {
+	margin: 100px auto;
+	box-shadow: 0 0 20px 1px #000;
+	position: relative;
+	min-height: 250px;
+	background: #eee;
+	width: 60%;
+	min-width:300px;
+	display:none;
+}
+.joe-mini-panel.active{
+	display:block;
 }
 /*-------------------------
 	UI Panels Floating
