@@ -1,0 +1,20 @@
+{
+  "name": "Esri-CDN",
+  "version": "0.1.0",
+  "description": "Esri.com CDN Tools folder",
+  "main": "Gruntfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "esri",
+    "cdn"
+  ],
+  "author": "webops",
+  "dependencies": {
+    "grunt": "~0.4.1"
+  },
+  "devDependencies": {
+    "load-grunt-tasks": "~0.2.0"
+  }
+}
