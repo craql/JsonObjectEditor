@@ -29,7 +29,7 @@ module.exports = function(grunt) {
       // IconLicensing Project
       DEV: {
         options: {
-          src: "<%= projects.Local %>/",
+          src: "<%= projects.Local %>",
           dest: "<%= projects.remote %>/<%= projects.Server %>/",
           host: "corey@webapps-cdn-dev.esri.com",
         }
@@ -43,7 +43,7 @@ module.exports = function(grunt) {
       },
       PRD: {
         options: {
-          src: "<%= projects.Local %>/",
+          src: "<%= projects.Local %>",
           dest: "<%= projects.remote %>/<%= projects.Server %>/",
           host: "corey@webapps-cdn.esri.com",
         }
@@ -57,6 +57,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-rsync');
   require('load-grunt-tasks')(grunt);
   
+  grunt.file.setBase('../')
   
   // Push Form Creator
   grunt.registerTask( 'sync-<%= projects.Command %>-dev', [ 'rsync:DEV' ] );
