@@ -343,6 +343,13 @@ function JsonObjectEditor(specs){
 <--------------------------------------------------------------------*/
 	this.renderObjectField = function(prop){
 		//requires {name,type}
+		
+	//set default value
+		//prop.value = (prop.value != undefined || prop.default || null;
+		if(prop.value == undefined && prop.default != undefined){
+			prop.value = prop.default;
+		}
+		
 		var hidden = (prop.hidden)?'hidden':'';
 		var html = 
 			'<div class="joe-object-field '+hidden+' '+prop.type+'-field " data-type="'+prop.type+'" data-name="'+prop.name+'">'+
@@ -697,11 +704,10 @@ function JsonObjectEditor(specs){
 		var profile = self.current.profile;
 		
 		var html=
-		'<label class="joe-field-label">'+(prop.display||prop.name)
-		+ '<input class="joe-boolean-field joe-field" type="checkbox" name="'+prop.name+'" '
+		//'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'
+		'<input class="joe-boolean-field joe-field" type="checkbox" name="'+prop.name+'" '
 			+(prop.value == true&&'checked' || '')
-		+'" />'
-		'</label>';
+		+' />';
 		return html;
 	}
 
