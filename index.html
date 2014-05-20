@@ -142,7 +142,7 @@ var thingschema =
 var citySchema = 
 	{
 		_title:'City',
-		fields:['id','name','geo','city_demos'],
+		fields:['id','name','city_css','geo','city_demos'],
 		_listID:'id',
 		_listTitle:'${name} <br/>${geo}'
 		
@@ -162,6 +162,7 @@ var citySchema =
 			birthday:{label:'birthday', type:'date'},
 			geo:{label:'Geography [lat,lon]', type:'geo'},
 			city_demos:{label:'City Demographics', type:'select', multiple:true,values:['Business','Residential','Metropolis','Agricultural']},
+			city_css:{type:'text',autocomplete:true,values:['happy','sad','frivilous','distinguished']},
 			//id:{label:'ID',type:'text', locked:true},
 			id:{label:'ID',type:'guid'},
 		//rendering
