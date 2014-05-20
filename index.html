@@ -142,7 +142,7 @@ var thingschema =
 var citySchema = 
 	{
 		_title:'City',
-		fields:['id','name','city_css','geo','city_demos'],
+		fields:['id','name','city_css','geo','city_demos','isChecked'],
 		_listID:'id',
 		_listTitle:'${name} <br/>${geo}'
 		
@@ -163,6 +163,7 @@ var citySchema =
 			geo:{label:'Geography [lat,lon]', type:'geo'},
 			city_demos:{label:'City Demographics', type:'select', multiple:true,values:['Business','Residential','Metropolis','Agricultural']},
 			city_css:{type:'text',autocomplete:true,values:['happy','sad','frivilous','distinguished']},
+			isChecked:{type:'boolean'},
 			//id:{label:'ID',type:'text', locked:true},
 			id:{label:'ID',type:'guid'},
 		//rendering

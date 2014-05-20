@@ -373,6 +373,10 @@ function JsonObjectEditor(specs){
 				html+= self.renderDateField(prop);
 			break;
 			
+			case 'boolean':
+				html+= self.renderBooleanField(prop);
+			break;
+			
 			case 'geo':
 			case 'map':
 				html += self.renderGeoField(prop);
@@ -689,6 +693,19 @@ function JsonObjectEditor(specs){
 /*----------------------------->
 	F | Boolean
 <-----------------------------*/
+	this.renderBooleanField = function(prop){
+		var profile = self.current.profile;
+		
+		var html=
+		'<label class="joe-field-label">'+(prop.display||prop.name)
+		+ '<input class="joe-boolean-field joe-field" type="checkbox" name="'+prop.name+'" '
+			+(prop.value == true&&'checked' || '')
+		+'" />'
+		'</label>';
+		return html;
+	}
+
+
 /*----------------------------->
 	G | Guid
 <-----------------------------*/
@@ -939,7 +956,12 @@ function JsonObjectEditor(specs){
 			switch($(this).attr('type')){
 				case 'checkbox':
 					prop = $(this).attr('name');
-					object[prop] = $(this).attr(checked);
+					if($(this).is(':checked')){
+						object[prop] = true;
+					}else{
+						object[prop] = false;
+					
+					}
 				break;
 				case 'text':
 				default:
