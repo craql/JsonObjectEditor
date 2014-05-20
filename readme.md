@@ -50,6 +50,8 @@ Properties for all Fields
 - `type`: what type of field should JOE show
 - `rendering`: for css html and js
 	- `text`: default single line text.
+		- autocomplete: boolean
+			- values:array of possibilities
 	- `int`: integer field
 	- `number`: number (float) field
 	- `select`: select list. 

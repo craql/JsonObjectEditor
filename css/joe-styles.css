@@ -258,7 +258,7 @@ textarea.joe-rendering-field{
 /* Autocomplete */
 .joe-text-autocomplete {
     position: absolute;
-    z-index: 100;
+    z-index: 1001;
     background: #eee;
     width: 312px;
 	display:none;
@@ -269,6 +269,10 @@ textarea.joe-rendering-field{
 .joe-text-autocomplete-option {
     padding: 5px;
     cursor: pointer;
+	display:none;
+}
+.joe-text-autocomplete-option.visible{
+	display:block;
 }
 .joe-text-autocomplete-option:hover {
     background: #ccc;
