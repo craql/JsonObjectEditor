@@ -564,38 +564,7 @@ function JsonObjectEditor(specs){
 		html+='</select>';
 		return html;
 	}
-/*----------------------------->
-	C2 | Multi-Select
-<-----------------------------*/
-/*	this.renderSelectField = function(prop){
-		
-		var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values || [prop.value];
-		var valObjs = [];
-		if($.type(values[0]) != 'object'){
-			values.map(function(v){
-				valObjs.push({name:v});
-			});
-		}
-		else{
-			valObjs = values;
-		}
-	
-		
-		var selected;
-		var html=
-		
-		'<select class="joe-multiselect-field joe-field" name="'+prop.name+'" value="'+(prop.value || '')+'" '+
-			self.renderFieldAttributes(prop)+
-		' >';
-		
-			valObjs.map(function(v){
-				selected = (prop.value == v.name)?'selected':'';
-				html += '<option value="'+v.name+'" '+selected+'>'+(v.display||v.label||v.name)+'</option>'	
-			})
-			
-		html+='</select>';
-		return html;
-	}*/
+
 /*----------------------------->
 	D | Date Field
 <-----------------------------*/
@@ -621,6 +590,7 @@ function JsonObjectEditor(specs){
 		'<div class="joe-geo-map joe-field" name="'+prop.name+'" id="'+mapDiv+'" '
 			+'data-center="'+JSON.stringify(center)+'" data-zoom="'+zoom+'" '
 			+'data-value="'+val+'" '
+			+'data-hideattribution="'+(prop.hideAttribution||'')+'" '
 			+'onload="_joe.initGeoMap(this);"></div>'
 		+'<input class="joe-geo-field joe-field" type="text" value="'+val+'" name="'+prop.name+'"/>'
 		+'<script type="text/javascript">setTimeout(function(){_joe.initGeoMap("'+mapDiv+'");},100)</script>'
@@ -632,7 +602,7 @@ function JsonObjectEditor(specs){
 	this.initGeoMap = function(id){
 
 		var mapspecs = $('#'+id).data();
-		map = L.map(id).setView(mapspecs.center,mapspecs.zoom);
+		var map = L.map(id).setView(mapspecs.center,mapspecs.zoom);
 		//var map = L.map(id).setView([51.505, -0.09], 13);
 		L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
    			//attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -640,6 +610,11 @@ function JsonObjectEditor(specs){
 	
 	//add geocoder	
 		var searchControl = new L.esri.Controls.Geosearch().addTo(map);
+	
+	//hide leaflet and esri attribution	
+		if(mapspecs.hideattribution){
+			$('.leaflet-control-attribution').hide();
+		}
 		
 		map.on('click', _joe.onMapClick);
 		map.prop = $('#'+id).attr('name');
@@ -685,6 +660,9 @@ function JsonObjectEditor(specs){
 		map.marker.map = map;
 		map.marker.on('dragend', _joe.onMapClick);
 	}
+/*----------------------------->
+	F | Boolean
+<-----------------------------*/
 /*----------------------------->
 	G | Guid
 <-----------------------------*/
@@ -933,6 +911,10 @@ function JsonObjectEditor(specs){
 		var prop;
 		$('.joe-object-field').find('.joe-field').each(function(){
 			switch($(this).attr('type')){
+				case 'checkbox':
+					prop = $(this).attr('name');
+					object[prop] = $(this).attr(checked);
+				break;
 				case 'text':
 				default:
 					prop = $(this).attr('name');
