@@ -778,6 +778,35 @@ function JsonObjectEditor(specs){
 		self.populateFramework(object,setts);
 		$('.joe-overlay').addClass('active');
 	}
+/*----------------------------->
+	List Filtering
+<-----------------------------*/	
+	this.filterList = function(props,specs,list){
+		//var list = list || self.current.list;
+		specs = specs || {};
+		var arr = list || self.current.list;
+		var found = arr.filter(function(arrobj){
+			for(var p in props){
+				if(arrobj[p] != props[p]){
+					return false;
+				}
+			}
+			return true;
+		});
+		if(found.length){
+			if(specs.single){
+				return found[0];
+			}
+			return found;
+		}else{
+			return false;
+		}
+		
+	}
+/*----------------------------->
+	List Subsets
+<-----------------------------*/		
+	
 /*-------------------------------------------------------------------->
 	5 | HTML Renderings
 <--------------------------------------------------------------------*/
