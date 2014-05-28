@@ -1,4 +1,8 @@
 #Json Object Editor
+**by Corey Hadden**
+
+*v1.2*
+
 Visually Edit Objects Using this GUI tool, what you do from there is up to you.
 
 ##required includes
@@ -8,11 +12,14 @@ Visually Edit Objects Using this GUI tool, what you do from there is up to you.
 + "js/JsonObjectEditor.jquery.craydent.js"
 + "css/joe-styles.css"
 
+##What's new
++ List subset Selector
++Autocomplete textfield
+
 ##In the pipeline
 + Remove Profiles
 + Conditional Fields
 + required fields
-+ autocomplete field
 
 
 ##instantiation
@@ -102,7 +109,7 @@ an array of menu buttons
 - joe-right-button
 
 ##usage
-###adding a new object
+### a | adding a new object
 
 	_joe.show({},{schema:'animal',callback:addAnimal); 
 	//or goJoe(object,specs)
@@ -112,14 +119,20 @@ an array of menu buttons
 		animals.push(obj);
 	}
 
-###viewing a list of objects
+### b | viewing a list of objects
+
+	goJoe([array of objects],specs:{schema,subsets,subset})
+	goJoe.show(animals,{schema:'animal',subsets:[{name:'Two-Legged',filter:{legs:2}}]});
+	//use the specs property subset to pre-select a subset by name
+
 **properties**
 
+- subsets: name:string, filter:object 
 - _listTemplate: html tempalte that uses ${var} to write out the dom element for the list item.
 	- standard css class `joe-panel-content-option`
 
 
-###Conditional select that changes the item schema
+###c | Conditional select that changes the item schema
 
 	fields:{
 		species:{label:'Species',type:'select', values:['cat','dog','rat','thing'], onchange:adjustSchema},
@@ -151,7 +164,7 @@ an array of menu buttons
 		}
 	}
 
-###duplicating an item
+###d | duplicating an item
 
 	//duplicates the currently active object (being edited)
 	_joe.duplicateObject(specs);
@@ -161,5 +174,5 @@ an array of menu buttons
 - `deletes`:array of properties to clear for new item
 	- note that you will need to delete guid/id fields or the id will be the same.	
 
-###exporting an object in pretty format json (or minified)
+### e | exporting an object in pretty format json (or minified)
 JOE.exportJSON = function(object,objvarname,minify)

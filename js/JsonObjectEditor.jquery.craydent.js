@@ -189,10 +189,12 @@ function JsonObjectEditor(specs){
 		action = specs.action||'onclick="_joe.toggleOverlay(this)"';
 		var html = 
 		'<div class="joe-panel-header">'+
+			((specs.subsets && self.renderSubsetselector(specs)) || '')+
 			'<div class="joe-panel-title">'+
 				(title || 'Json Object Editor')+
 			'</div>'+
 			'<div class="joe-panel-close" '+action+'>close</div>'+	
+			'<div class="clear"></div>'+
 		'</div>';
 		return html;
 	}
@@ -255,10 +257,16 @@ function JsonObjectEditor(specs){
 		var schema = specs.schema;
 		var list = specs.list || [];
 		var html = '';
+		if(!self.current.subset){
 			list.map(function(li){
 				html += self.renderListItem(li);
 			})
-		
+		}
+		else{
+			self.filterList(list,self.current.subset.filter).map(function(li){
+				html += self.renderListItem(li);
+			})
+		}
 		return html;
 		
 	}
@@ -781,7 +789,7 @@ function JsonObjectEditor(specs){
 /*----------------------------->
 	List Filtering
 <-----------------------------*/	
-	this.filterList = function(props,specs,list){
+	this.filterList = function(list,props,specs){
 		//var list = list || self.current.list;
 		specs = specs || {};
 		var arr = list || self.current.list;
@@ -806,6 +814,42 @@ function JsonObjectEditor(specs){
 /*----------------------------->
 	List Subsets
 <-----------------------------*/		
+	this.renderSubsetselector = function(specs){
+		
+		var html=
+		'<div class="joe-subset-selector" >'
+			+self.renderSubsetSelectorOptions(specs)
+		+'</div>';
+		return html;
+	}
+	
+	this.renderSubsetSelectorOptions = function(specs){
+		function renderOption(opt){
+			var html='<div class="selector-option" onclick="_joe.selectSubset(\''+opt.name+'\');">'+opt.name+'</div>';
+			return html;
+		}
+		if(specs.subset){
+			self.current.subset = specs.subsets.filter(function(s){
+				return s.name == specs.subset;
+			})[0]||false;
+		}
+		var subsetlabel = (self.current.subset && self.current.subset.name) || 'All';
+		var html=
+		'<div class="selector-label selector-option" onclick="$(this).parent().toggleClass(\'active\')">'+subsetlabel+'</div>'
+		+'<div class="selector-options">'
+			+renderOption({name:'All',filter:{}})
+			+specs.subsets.map(renderOption)
+		+'</div>';
+		return html;
+	}
+	
+	this.selectSubset=function(subset){
+		//if (!e) var e = window.event;
+		//e.cancelBubble = true;
+		//if (e.stopPropagation) e.stopPropagation();
+		_joe.hide();
+		goJoe(self.current.list,merge(self.current.userSpecs,{subset:subset}));
+	}
 	
 /*-------------------------------------------------------------------->
 	5 | HTML Renderings
