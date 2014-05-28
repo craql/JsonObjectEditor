@@ -225,6 +225,27 @@
 	position: relative;
 }
 
+/*-------------------------
+	Multiedit
+-------------------------*/	
+
+.joe-field-multiedit-toggle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 28px;
+    height: 28px;
+    border: 1px solid #eee;
+    margin: 5px;
+    cursor: pointer;
+}
+.joe-object-field.multi-selected{
+		border-color:#007ac2;
+}
+
+.multi-selected .joe-field-multiedit-toggle{
+	background:rgba(0,100,200,.4)
+}
 
 .joe-object-field.hidden{
 	display:none;

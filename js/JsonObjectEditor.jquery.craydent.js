@@ -65,7 +65,6 @@ function JsonObjectEditor(specs){
 	2 | FRAMEWORK
 <--------------------------------------------------------------------*/
 	this.renderFramework = function(content){
-		
 		var html = 
 		'<div class="joe-overlay '+((self.specs.compact && ' compact ') || '')+'">'+
 			'<div class="joe-overlay-panel">'+
@@ -80,6 +79,7 @@ function JsonObjectEditor(specs){
 	
 	
 	this.populateFramework = function(data,setts){
+
 		var specs = setts || {};
 		self.current.specs = setts; 
 		
@@ -110,7 +110,7 @@ function JsonObjectEditor(specs){
 	//when object passed in
 		if($.type(data) == 'object' || datatype =='object'){
 			specs.object = data;
-			specs.menu = specs.menu || specs.schema.menu || self.specs.menu || __defaultObjectButtons;
+			specs.menu = specs.menu || specs.schema.menu || self.specs.menu || (specs.multiedit && __defaultMutliButtons) || __defaultObjectButtons;
 			//[
 			//	{name:'delete',label:'Delete Object',action:'_joe.deleteObject()'},
 			//	{name:'save',label:'Save Object',action:'_joe.updateObject()'}];
@@ -251,8 +251,8 @@ function JsonObjectEditor(specs){
 	}
 //LIST
 	this.renderListContent = function(specs){
-		self.selectedListItems=[];
-		self.anchorListItem=null;
+		self.current.selectedListItems=[];
+		self.current.anchorListItem=null;
 		
 		specs = specs || {};
 		var schema = specs.schema;
@@ -316,25 +316,22 @@ function JsonObjectEditor(specs){
 <-----------------------------*/	
 	this.renderEditorFooter = function(specs){
 		specs = specs || this.specs || {};
-		var menu = specs.menu || __defaultObjectButtons;
-		if(self.current.list){
-			menu.push({label:'Multi-Edit', name:'multiEdit', css:'joe-multi-only'})
-		}
+		var menu = specs.menu || (specs.multiedit && __defaultMutliButtons) || __defaultObjectButtons;
+		
 		var title = specs.title || 'untitled';
 		var display,action;
 		
 		var html = 
 		'<div class="joe-panel-footer">'+
 			'<div class="joe-panel-menu">';
-		
-			
+
 			menu.map(function(m){
-				display = m.label || m.name;
-				action = m.action || 'alert(\''+display+'\')';
-				html+= '<div class="joe-button joe-footer-button '+(m.css ||'')+'" onclick="'+action+'" data-btnid="'+m.name+'" >'+display+'</div>';
+				html+= self.renderFooterMenuItem(m);
 			
 			},this);
-		
+			if(self.current.list){
+				html+= self.renderFooterMenuItem({label:'Multi-Edit', name:'multiEdit', css:'joe-multi-only', action:'_joe.editMultiple()'});
+			}
 				
 		html+=
 			__clearDiv__+	
@@ -343,7 +340,13 @@ function JsonObjectEditor(specs){
 		return html;
 	}
 	
-	
+	this.renderFooterMenuItem=function(m){//takes a menuitem
+		var display,action,html='';
+		display = m.label || m.name;
+		action = m.action || 'alert(\''+display+'\')';
+		html+= '<div class="joe-button joe-footer-button '+(m.css ||'')+'" onclick="'+action+'" data-btnid="'+m.name+'" >'+display+'</div>';
+		return html;
+	}
 /*-------------------------------------------------------------------->
 	3 | OBJECT FORM
 <--------------------------------------------------------------------*/
@@ -360,7 +363,12 @@ function JsonObjectEditor(specs){
 		var html = 
 			'<div class="joe-object-field '+hidden+' '+prop.type+'-field " data-type="'+prop.type+'" data-name="'+prop.name+'">'+
 			'<label class="joe-field-label">'+(prop.display||prop.label||prop.name)+'</label>';
-			
+	
+	//add multi-edit checkbox	
+		if(self.current.userSpecs.multiedit){
+			html+='<div class="joe-field-multiedit-toggle" onclick="$(this).parent().toggleClass(\'multi-selected\')"></div>';	
+		}
+		
 		switch(prop.type){
 			case 'select':
 				html+= self.renderSelectField(prop);
@@ -768,16 +776,18 @@ function JsonObjectEditor(specs){
 	}
 	
 	this.listItemClickHandler=function(specs){
+		self.current.selectedListItems = [];
 		if(!window.event.shiftKey && !window.event.ctrlKey){
 			self.editObjectFromList(specs);
 		}else if(window.event.ctrlKey){
+			
 			$(specs.dom).toggleClass('selected');
 			$('.joe-panel-content-option.selected').map(function(i,listitem){
-				self.selectedListItems.push($(listitem).data('id'));
+				self.current.selectedListItems.push($(listitem).data('id'));
 			})
 			
 		}
-		if(self.selectedListItems.length){
+		if(self.current.selectedListItems.length){
 			$(specs.dom).parents('.joe-overlay-panel').addClass('multi-edit');
 		}else{
 			$(specs.dom).parents('.joe-overlay-panel').removeClass('multi-edit');
@@ -790,7 +800,7 @@ function JsonObjectEditor(specs){
 		self.current.schema = specs.schema || self.current.schema || null;
 		var list = specs.list || self.current.list;
 		var id = specs.id;
-		var idprop = (self.current.schema && self.current.schema._listID) || 'id';
+		var idprop = self.getIDProp();//(self.current.schema && self.current.schema._listID) || 'id';
 		
 		var object = list.filter(function(li){return li[idprop] == id;})[0]||false;
 		
@@ -802,6 +812,34 @@ function JsonObjectEditor(specs){
 		var setts ={schema:self.current.schema,callback:specs.callback};
 		self.populateFramework(object,setts);
 		$('.joe-overlay').addClass('active');
+	}
+/*----------------------------->
+	List Multi Select
+<-----------------------------*/	
+	this.editMultiple = function(){
+		//create object from shared properties of multiple
+		var haystack = self.current.list;
+		var idprop = self.getIDProp();
+		var needles = self.current.selectedListItems;
+		
+		var items = [];
+		var protoItem ={};
+		haystack.map(function(i){
+			
+			if(needles.indexOf(i[idprop]) == -1){//not selected
+				return;
+			}else{
+				protoItem = merge(protoItem,i);
+				items.push(i);
+			}
+		});
+		
+		goJoe(protoItem,{title:'Multi-Edit '+(self.current.schema._title||'')+': '+items.length+' items',schema:(self.current.schema||null),multiedit:true})
+		//buttons
+			//delete multiple
+			//save multiple
+		
+		//combine object on save	
 	}
 /*----------------------------->
 	List Filtering
@@ -912,7 +950,7 @@ function JsonObjectEditor(specs){
 		//var obj = $.extend(self.current.object,newObj);
 		self.show(
 			$.extend(self.current.object,newObj),
-			{schema:self.setSchema(schemaName) || self.current.schema}
+			merge(self.current.userSpecs,{schema:self.setSchema(schemaName) || self.current.schema})
 		)
 	}
 
@@ -925,9 +963,11 @@ function JsonObjectEditor(specs){
 	
 	//this.show = function(data,schema,profile,callback){
 	this.show = function(data,specs){
+		
 		var data = data || '';
 		//profile = profile || null
 		var specs=specs || {};
+		$('.joe-overlay-panel').attr('class', 'joe-overlay-panel');
 		if(specs.compact === true){$('.joe-overlay').addClass('compact');}
 		if(specs.compact === false){$('.joe-overlay').removeClass('compact');}
 		
@@ -1013,6 +1053,11 @@ function JsonObjectEditor(specs){
 		var object = {joeUpdated:new Date()};
 		var prop;
 		$('.joe-object-field').find('.joe-field').each(function(){
+			if(self.current.userSpecs.multiedit){
+				if(!$(this).parent().hasClass('multi-selected')){
+					return;
+				}
+			}
 			switch($(this).attr('type')){
 				case 'checkbox':
 					prop = $(this).attr('name');
@@ -1041,6 +1086,61 @@ function JsonObjectEditor(specs){
 		goJoe('<b>'+((objvar && 'var '+objvar +' = ')|| 'JSON Object')+'</b><br/><pre>'+obobj+'</pre>')
 		console.log(obobj);
 	}
+	
+/*-------------------------
+	Multi Functions
+-------------------------*/		
+	this.updateMultipleObjects = function(dom,callback){
+		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || logit;
+		
+		var idprop = self.getIDProp();
+		var newObj = self.constructObjectFromFields();
+		newObj.joeUpdated = new Date();
+	
+	//clear id from merged object	
+		delete newObj[idprop];
+		delete newObj['id'];
+		delete newObj['_id'];
+		
+		var haystack = self.current.list;
+
+		var needles = self.current.selectedListItems;
+		//var items = [];
+		haystack.map(function(i){
+			
+			if(needles.indexOf(i[idprop]) == -1){//not selected
+				return;
+			}else{//make updates to items
+				//protoItem = merge(protoItem,i);
+				$.extend(i,newObj);
+				logit('object updated');
+				callback(i);
+				//items.push(i);
+			}
+		});
+		
+			
+		
+		self.hide();
+	}
+	
+	this.deleteMultipleObjects = function(callback){
+		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || logit;
+		var obj = self.current.object;
+		if(!self.current.list || !obj || self.current.list.indexOf(obj) == -1){
+		//no list or no item
+			alert('object or list not found');
+			self.hide();
+			callback(obj);	
+			return;
+		}
+		var index = self.current.list.indexOf(obj);
+		
+		self.current.list.removeAt(index);
+		logit('object deleted');
+		self.hide();
+		callback(obj);
+	}
 /*-------------------------------------------------------------------->
 	H | HELPERS
 <--------------------------------------------------------------------*/
@@ -1049,6 +1149,11 @@ function JsonObjectEditor(specs){
 		var reg=/function ([^\(]*)/;
 		return reg.exec(name)[1];
 	}
+	
+	this.getIDProp = function(){
+		var prop = (self.current.schema && self.current.schema._listID) || 'id' || '_id';
+		return prop;
+	}
 /*<------------------------------------------------------------->*/
 	return this;
 }
@@ -1056,12 +1161,14 @@ function JsonObjectEditor(specs){
 var __clearDiv__ = '<div class="clear"></div>';
 
 var __saveBtn__ = {name:'save',label:'Save', action:'_joe.updateObject(this);', css:'joe-save-button joe-confirm-button'};
+var __deleteBtn__ = {name:'delete',label:'Delete',action:'_joe.deleteObject(this);', css:'joe-delete-button'};
+var __multisaveBtn__ = {name:'save_multi',label:'Multi Save', action:'_joe.updateMultipleObjects(this);', css:'joe-save-button joe-confirm-button'};
+var __multideleteBtn__ = {name:'delete_multi',label:'Multi Delete',action:'_joe.deleteMultipleObjects(this);', css:'joe-delete-button'};
 var __replaceBtn__ = {name:'replace',label:'Replace', action:'_joe.updateRendering(this);', css:'joe-replace-button joe-confirm-button'};
 var __duplicateBtn__ = {name:'duplicate',label:'Duplicate', action:'_joe.duplicateObject();', css:'joe-left-button'};
 
+
 var __defaultButtons = [];
-var __defaultObjectButtons = [
-	{name:'delete',label:'Delete',action:'_joe.deleteObject(this);', css:'joe-delete-button'},
-	__saveBtn__
-]
+var __defaultObjectButtons = [__deleteBtn__,__saveBtn__];
+var __defaultMutliButtons = [__multisaveBtn__,__multideleteBtn__];
 
