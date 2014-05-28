@@ -1,11 +1,14 @@
 #Json Object Editor
 **by Corey Hadden**
 
-*v1.2*
-
 Visually Edit Objects Using this GUI tool, what you do from there is up to you.
 
-##what's new
+*v1.3*
+##What's new
++ List subset Selector
++ Multi-Select in Object List
++ Multi Update
++Autocomplete textfield
 
 ##required includes
 
@@ -14,9 +17,7 @@ Visually Edit Objects Using this GUI tool, what you do from there is up to you.
 + "js/JsonObjectEditor.jquery.craydent.js"
 + "css/joe-styles.css"
 
-##What's new
-+ List subset Selector
-+Autocomplete textfield
+
 
 ##In the pipeline
 + Remove Profiles
