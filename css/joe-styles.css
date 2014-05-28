@@ -5,6 +5,14 @@
 	clear:both;
 }
 
+.joe-no-select{
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
 .joe-overlay{
 	font-family:Cambria, "Hoefler Text", "Liberation Serif", Times, "Times New Roman", serif;
 }
@@ -113,20 +121,23 @@
 }
 
 .joe-panel-close{
-    position: absolute;
-    top: 0;
-    right: 0;
-    line-height: 40px;
-    background: #ddd;
-	background-color: rgba(0,0,0,.1);
-    /* padding: 0 10px; */
-    font-size: 14px;
-    width: 40px;
-    text-align: center;
-    cursor: pointer;
+	position: absolute;
+	top: 0;
+	right: 0;
+	line-height: 40px;
+	font-size: 14px;
+	width: 30px;
+	text-align: center;
+	cursor: pointer;
+	height: 28px;
+	background: url(../img/close-x.png) center center no-repeat;
+	background-color: #DDD;
+	background-color: rgba(0, 0, 0, 0.1);
+	margin: 5px;
+	border: 1px solid #AAA;
 }
 .joe-panel-close:hover{
-    background: #ccc;
+    background-color: #ccc;
 }
 
 .joe-panel-title{
@@ -207,6 +218,9 @@ Subset Selector
 .joe-panel-content-option:hover {
     background-color: rgba(0,0,0,.1);
 }
+.joe-panel-content-option.selected{
+	 background-color: rgba(0,100,200,.1);
+}
 /*-------------------------
 	UI Panel Content Types
 -------------------------*/
@@ -249,6 +263,27 @@ Subset Selector
 	position: relative;
 }
 
+/*-------------------------
+	Multiedit
+-------------------------*/	
+
+.joe-field-multiedit-toggle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 28px;
+    height: 28px;
+    border: 1px solid #eee;
+    margin: 5px;
+    cursor: pointer;
+}
+.joe-object-field.multi-selected{
+		border-color:#007ac2;
+}
+
+.multi-selected .joe-field-multiedit-toggle{
+	background:rgba(0,100,200,.4)
+}
 
 .joe-object-field.hidden{
 	display:none;
@@ -344,6 +379,13 @@ textarea.joe-rendering-field{
 	float: left;
 }
 
+.joe-multi-only{
+	display:none;
+}
+
+.multi-edit .joe-multi-only{
+	display:block;
+}
 
 
 
