@@ -553,7 +553,7 @@ function JsonObjectEditor(specs){
 		var html=/*
 		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
 		'<input class="joe-int-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+
-			self.renderFieldAttributes(prop,{onblur:'onblur="_joe.returnInt(this);'})+
+			self.renderFieldAttributes(prop,{onblur:'_joe.returnInt(this);'})+
 		' />';
 		return html;
 	}
