@@ -108,9 +108,10 @@
 	text-align: left;
 	min-width: 340px;
 }
-/*-------------------------
+
+/*-------------------------------------------------------------------->
 	UI Panel Header
--------------------------*/	
+<--------------------------------------------------------------------*/
 .joe-panel-header{
 	height:40px;
 	position:relative;
@@ -145,6 +146,43 @@
     color: #007ac2;
 	line-height:30px;
 }
+
+/*-------------------------
+Subset Selector
+-------------------------*/	
+.joe-subset-selector {
+    line-height: 40px;
+    padding: 0 10px;
+
+    cursor: pointer;
+    z-index: 10;
+    position: absolute;
+    right: 50px;
+    min-width: 120px;
+}
+
+.joe-subset-selector .selector-option{
+    background: rgba(0,0,0,.2);
+	padding:0 10px;
+}
+.joe-subset-selector .selector-option:hover{
+    background: rgba(0,0,0,.4);	
+}
+.joe-subset-selector .selector-label{
+    background: rgba(0,0,0,.2);
+	    padding-right: 30px;
+}
+
+.joe-subset-selector .selector-options{
+	display:none;
+}
+.joe-subset-selector.active .selector-options{
+	display:block;
+}
+
+
+
+
 
 /*-------------------------
 	UI Panel Content
@@ -272,15 +310,25 @@ width: 314px;
 
 
 textarea.joe-rendering-field{
-	padding: 5px;
+/*	padding: 5px;
 	position: absolute;
 	top: 5px;
 	right: 5px;
 	bottom: 5px;
 	left: 5px;
 	width: 60%;
+	min-width: 304px;*/
+	padding: 1%;
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	width: 96%;
 	min-width: 304px;
+	margin: 1%;
 }
+
 /* Geo */
 .joe-geo-map {
 	height: 250px;

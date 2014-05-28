@@ -40,7 +40,7 @@ height: 300px;
 
 <a href="javascript:_joe.show(dog,{schema:'thing', title:'Thing with Rendering'});">edit Dog(thing)</a><br/>
 
-<a href="javascript:_joe.show(animals,{schema:'animal'});">edit Animals</a><br/>
+<a href="javascript:_joe.show(animals,{schema:'animal',subsets:[{name:'Two-Legged',filter:{legs:2}}]});">edit Animals</a><br/>
 
 <a href="javascript:_joe.show({},{schema:'animal',callback:addAnimal});">Add Animal</a><br/>
 
@@ -88,7 +88,15 @@ var rat =
 	id:cuid()
 };
 
-var animals =[cat,dog,rat];
+var monkey =
+{	name:'Chimp', 
+	legs:2,
+	species:'monkey',
+	weight:12,
+	id:cuid()
+};
+
+var animals =[cat,dog,rat,monkey];
 var animalLinks = ['cat','dog','rat'];
 
 var cities =[];
