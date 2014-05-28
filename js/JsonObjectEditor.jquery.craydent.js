@@ -192,7 +192,7 @@ function JsonObjectEditor(specs){
 			'<div class="joe-panel-title">'+
 				(title || 'Json Object Editor')+
 			'</div>'+
-			'<div class="joe-panel-close" '+action+'>close</div>'+	
+			'<div class="joe-panel-close" '+action+'></div>'+	
 		'</div>';
 		return html;
 	}
@@ -251,6 +251,9 @@ function JsonObjectEditor(specs){
 	}
 //LIST
 	this.renderListContent = function(specs){
+		self.selectedListItems=[];
+		self.anchorListItem=null;
+		
 		specs = specs || {};
 		var schema = specs.schema;
 		var list = specs.list || [];
@@ -314,6 +317,9 @@ function JsonObjectEditor(specs){
 	this.renderEditorFooter = function(specs){
 		specs = specs || this.specs || {};
 		var menu = specs.menu || __defaultObjectButtons;
+		if(self.current.list){
+			menu.push({label:'Multi-Edit', name:'multiEdit', css:'joe-multi-only'})
+		}
 		var title = specs.title || 'untitled';
 		var display,action;
 		
@@ -747,11 +753,11 @@ function JsonObjectEditor(specs){
 		
 		var idprop = listSchema._listID;
 		var id = listItem[idprop] || null;
-		var action = 'onclick="_joe.editObjectFromList(\''+id+'\');"';
-		
+		//var action = 'onclick="_joe.editObjectFromList(\''+id+'\');"';
+		var action = 'onclick="_joe.listItemClickHandler({dom:this,id:\''+id+'\'});"';
 		if(!listSchema._listTemplate){
 			var title = listSchema._listTitle || listItem.name || id || 'untitled';
-			var html = '<div class="joe-panel-content-option" '+action+'>'+fillTemplate(title,listItem)+'</div>';
+			var html = '<div class="joe-panel-content-option joe-no-select" '+action+' data-id="'+id+'">'+fillTemplate(title,listItem)+'</div>';
 		}
 		//if there is a list template
 		else{
@@ -761,10 +767,29 @@ function JsonObjectEditor(specs){
 		return html;
 	}
 	
-	this.editObjectFromList = function(id,list,specs){
+	this.listItemClickHandler=function(specs){
+		if(!window.event.shiftKey && !window.event.ctrlKey){
+			self.editObjectFromList(specs);
+		}else if(window.event.ctrlKey){
+			$(specs.dom).toggleClass('selected');
+			$('.joe-panel-content-option.selected').map(function(i,listitem){
+				self.selectedListItems.push($(listitem).data('id'));
+			})
+			
+		}
+		if(self.selectedListItems.length){
+			$(specs.dom).parents('.joe-overlay-panel').addClass('multi-edit');
+		}else{
+			$(specs.dom).parents('.joe-overlay-panel').removeClass('multi-edit');
+		}
+	}
+	
+	this.editObjectFromList = function(specs){
 		specs = specs || {};
+		
 		self.current.schema = specs.schema || self.current.schema || null;
-		var list = list || self.current.list;
+		var list = specs.list || self.current.list;
+		var id = specs.id;
 		var idprop = (self.current.schema && self.current.schema._listID) || 'id';
 		
 		var object = list.filter(function(li){return li[idprop] == id;})[0]||false;
