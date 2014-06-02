@@ -102,8 +102,15 @@ function JsonObjectEditor(specs){
 	//	specs.schema = ($.type(schema) == 'object')? schema : self.schemas[schema] || null;
 	//	self.current.schema = specs.schema;
 		
-
-		
+/*-------------------------
+	Preformat Functions
+-------------------------*/	
+	specs.preformat = 
+		specs.schema.preformat ||
+		specs.preformat ||
+		function(d){return d;}
+	
+	data = specs.preformat(data);	
 /*-------------------------
 	Object
 -------------------------*/	
@@ -283,36 +290,45 @@ function JsonObjectEditor(specs){
 		
 		if(!specs.schema || !specs.schema.fields){//no schema use items as own schema
 			for( var prop in object){
-				propObj = $.extend({
-					name:prop,
-					type:'text',
-					value:object[prop]	
-				},
-				self.fields[prop]);
-				
-				fields += self.renderObjectField(propObj);
+				if(object.hasOwnProperty(prop)){
+					propObj = $.extend({
+						name:prop,
+						type:'text',
+						value:object[prop]	
+					},
+					self.fields[prop]);
+					
+					fields += self.renderObjectField(propObj);
+				}
 			}
 		}
 		else{
 			(specs.schema.fields||[]).map(function(prop){
-				propObj = $.extend({
-					name:prop,
-					type:'text'
-				},
-				{
-					onblur:specs.schema.onblur,
-					onchange:specs.schema.onchange,
-					onkeypress:specs.schema.onkeypress,
-					onkeyup:specs.schema.onkeypress
 				
-				},
-				self.fields[prop],
-				//overwrite with value
-				{value:object[prop]}
-			);
-				
-				fields += self.renderObjectField(propObj);
-			})
+				//if(object.hasOwnProperty(prop)){
+					
+				//merge all the items	
+					propObj = $.extend(
+						{
+							name:prop,
+							type:'text'
+						},
+						{
+							onblur:specs.schema.onblur,
+							onchange:specs.schema.onchange,
+							onkeypress:specs.schema.onkeypress,
+							onkeyup:specs.schema.onkeypress
+						
+						},
+						self.fields[prop],
+						//overwrite with value
+						{value:object[prop]}
+					);
+					
+					fields += self.renderObjectField(propObj);
+				//}
+			
+			})//end map
 			
 		}
 		var html = '<div class="joe-object-content">'+fields+'</div>';

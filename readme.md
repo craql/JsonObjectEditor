@@ -91,6 +91,9 @@ a list of schema objects that can configure the editor fields, these can be give
 		onblur:logit
 		
 	}
+###Pre-formating
+you can preformat at the joe call or schema level. The data item will be affected by the passed function (which should return the preformated item). 
+
 ##menu##
 an array of menu buttons
 
@@ -131,7 +134,7 @@ an array of menu buttons
 **properties**
 
 - subsets: name:string, filter:object 
-- _listTemplate: html tempalte that uses ${var} to write out the dom element for the list item.
+- _listTemplate: html template that uses ${var} to write out the item properties for the list item.
 	- standard css class `joe-panel-content-option`
 
 
