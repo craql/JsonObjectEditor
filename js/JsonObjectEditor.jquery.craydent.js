@@ -354,6 +354,7 @@ function JsonObjectEditor(specs){
 			
 			},this);
 			if(self.current.list){
+				html+= self.renderFooterMenuItem(__selectAllBtn__);
 				html+= self.renderFooterMenuItem({label:'Multi-Edit', name:'multiEdit', css:'joe-multi-only', action:'_joe.editMultiple()'});
 			}
 				
@@ -1201,6 +1202,14 @@ function JsonObjectEditor(specs){
 		self.hide();
 		callback(obj);
 	}
+	
+	this.selectAllItems = function(){
+		$('.joe-panel-content-option').addClass('selected');
+		$('.joe-overlay-panel').addClass('multi-edit');
+		$('.joe-panel-content-option.selected').map(function(i,listitem){
+			self.current.selectedListItems.push($(listitem).data('id'));
+		})
+	}
 /*-------------------------------------------------------------------->
 	H | HELPERS
 <--------------------------------------------------------------------*/
@@ -1224,6 +1233,8 @@ var __saveBtn__ = {name:'save',label:'Save', action:'_joe.updateObject(this);', 
 var __deleteBtn__ = {name:'delete',label:'Delete',action:'_joe.deleteObject(this);', css:'joe-delete-button'};
 var __multisaveBtn__ = {name:'save_multi',label:'Multi Save', action:'_joe.updateMultipleObjects(this);', css:'joe-save-button joe-confirm-button'};
 var __multideleteBtn__ = {name:'delete_multi',label:'Multi Delete',action:'_joe.deleteMultipleObjects(this);', css:'joe-delete-button'};
+var __selectAllBtn__ = {name:'select_all',label:'select all',action:'_joe.selectAllItems();', css:'joe-left-button'};
+
 var __replaceBtn__ = {name:'replace',label:'Replace', action:'_joe.updateRendering(this);', css:'joe-replace-button joe-confirm-button'};
 var __duplicateBtn__ = {name:'duplicate',label:'Duplicate', action:'_joe.duplicateObject();', css:'joe-left-button'};
 
