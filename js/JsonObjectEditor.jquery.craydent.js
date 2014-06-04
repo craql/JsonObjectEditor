@@ -117,7 +117,7 @@ function JsonObjectEditor(specs){
 	//when object passed in
 		if($.type(data) == 'object' || datatype =='object'){
 			specs.object = data;
-			specs.menu = specs.menu || specs.schema.menu || self.specs.menu || (specs.multiedit && __defaultMutliButtons) || __defaultObjectButtons;
+			specs.menu = specs.menu || specs.schema.menu || self.specs.menu || (specs.multiedit && __defaultMultiButtons) || __defaultObjectButtons;
 			//[
 			//	{name:'delete',label:'Delete Object',action:'_joe.deleteObject()'},
 			//	{name:'save',label:'Save Object',action:'_joe.updateObject()'}];
@@ -132,7 +132,7 @@ function JsonObjectEditor(specs){
 	//when array passed in	
 		if($.type(data) == 'array' || datatype =='array'){
 			specs.list = data;
-			specs.menu = __defaultButtons;
+			specs.menu = specs.listMenu || specs.schema.listMenu || __defaultButtons;//__defaultMultiButtons; 
 			specs.mode="list";
 			self.current.list = data;
 			//self.current.object = null;
@@ -340,7 +340,7 @@ function JsonObjectEditor(specs){
 <-----------------------------*/	
 	this.renderEditorFooter = function(specs){
 		specs = specs || this.specs || {};
-		var menu = specs.menu || (specs.multiedit && __defaultMutliButtons) || __defaultObjectButtons;
+		var menu = specs.menu || (specs.multiedit && __defaultMultiButtons) || __defaultObjectButtons;
 		
 		var title = specs.title || 'untitled';
 		var display,action;
@@ -975,19 +975,23 @@ function JsonObjectEditor(specs){
 <-------------------------------------------------------------------*/
 	this.showMiniJoe = function(specs){
 		var mini = {};
-		if(!(specs && specs.prop)){
+		if(!(specs && specs.props)){
 			return;
 		}
-		mini.name=specs.prop.name||specs.prop.id || specs.prop._id;
-		mini.id = "mini-"+mini.name;
+		title=specs.title || 'Object Focus';
+		//mini.name=specs.prop.name||specs.prop.id || specs.prop._id;
+		mini.id = cuid();
 		
 		//var html = '<div class="joe-mini-panel joe-panel">';
 
 		var html = 
-			self.renderEditorHeader({title:mini.name,action:'onclick="_joe.hideMini()"'})
-			+'<div class="joe-panel-content joe-inset"></div>'
-			+self.renderEditorFooter();
-		//html+=	'</div>';
+			self.renderEditorHeader({title:title,action:'onclick="_joe.hideMini()"'})
+			+'<div class="joe-panel-content joe-inset">'
+				+self.renderObjectContent({object:specs.props})
+				+JSON.stringify(specs.props)
+			+'</div>'
+			+self.renderEditorFooter(specs);
+			
 		$('.joe-mini-panel').addClass('active').html(html);
 		
 		self.minis[mini.id] = mini;
@@ -995,6 +999,31 @@ function JsonObjectEditor(specs){
 	
 	this.hideMini = function(){
 		$('.joe-mini-panel').removeClass('active')
+	}
+	
+	this.constructObjectFromMiniFields = function(){
+		var object = {};
+		var prop;
+		$('.joe-mini-panel.active .joe-object-field').find('.joe-field').each(function(){
+
+			switch($(this).attr('type')){
+				case 'checkbox':
+					prop = $(this).attr('name');
+					if($(this).is(':checked')){
+						object[prop] = true;
+					}else{
+						object[prop] = false;
+					
+					}
+				break;
+				case 'text':
+				default:
+					prop = $(this).attr('name');
+					object[prop] = $(this).val();
+				break;
+			}
+		});
+		return object;
 	}
 /*-------------------------------------------------------------------->
 	SCHEMAS
@@ -1241,5 +1270,5 @@ var __duplicateBtn__ = {name:'duplicate',label:'Duplicate', action:'_joe.duplica
 
 var __defaultButtons = [];
 var __defaultObjectButtons = [__deleteBtn__,__saveBtn__];
-var __defaultMutliButtons = [__multisaveBtn__,__multideleteBtn__];
+var __defaultMultiButtons = [__multisaveBtn__,__multideleteBtn__];
 
