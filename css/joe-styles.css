@@ -268,14 +268,16 @@ Subset Selector
 -------------------------*/	
 
 .joe-field-multiedit-toggle {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 28px;
-    height: 28px;
-    border: 1px solid #eee;
-    margin: 5px;
-    cursor: pointer;
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 24px;
+	height: 24px;
+	border: 1px solid #DDD;
+	margin: 8px;
+	cursor: pointer;
+	background: #EFEFEF;
+
 }
 .joe-object-field.multi-selected{
 		border-color:#007ac2;
