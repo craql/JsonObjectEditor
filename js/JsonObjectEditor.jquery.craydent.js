@@ -82,7 +82,7 @@ function JsonObjectEditor(specs){
 
 		var specs = setts || {};
 		self.current.specs = setts; 
-		
+		self.current.data = data;
 	//clean copy for later;
 		self.current.userSpecs = $.extend({},setts);
 		
@@ -353,7 +353,7 @@ function JsonObjectEditor(specs){
 				html+= self.renderFooterMenuItem(m);
 			
 			},this);
-			if(self.current.list){
+			if(self.current.list && $.type(_joe.current.data) == 'array'){
 				html+= self.renderFooterMenuItem(__selectAllBtn__);
 				html+= self.renderFooterMenuItem({label:'Multi-Edit', name:'multiEdit', css:'joe-multi-only', action:'_joe.editMultiple()'});
 			}
