@@ -988,7 +988,7 @@ function JsonObjectEditor(specs){
 			self.renderEditorHeader({title:title,action:'onclick="_joe.hideMini()"'})
 			+'<div class="joe-panel-content joe-inset">'
 				+self.renderObjectContent({object:specs.props})
-				+JSON.stringify(specs.props)
+			//	+JSON.stringify(specs.props)
 			+'</div>'
 			+self.renderEditorFooter(specs);
 			
