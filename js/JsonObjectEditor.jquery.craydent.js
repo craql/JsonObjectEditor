@@ -33,7 +33,8 @@ function JsonObjectEditor(specs){
 		
 		}},
 		compact:false,
-		useControlEnter:true
+		useControlEnter:true,
+		autoInit:false
 	}
 	
 	this.specs = $.extend({},defaults,specs||{})
@@ -1077,6 +1078,10 @@ function JsonObjectEditor(specs){
 	
 	}
 	
+	this.printObject = function(obj){
+		goJoe('<pre>'+JSON.stringify(obj,'  ','    ')+'</pre>');
+	}
+	
 	window.joeMini = this.showMiniJoe;
 	window.goJoe = this.show;
 	window.listJoe = this.editObjectFromList;
@@ -1253,6 +1258,10 @@ function JsonObjectEditor(specs){
 		return prop;
 	}
 /*<------------------------------------------------------------->*/
+
+	if(self.specs.autoInit){
+		self.init();
+	}
 	return this;
 }
 
