@@ -7,9 +7,14 @@
 	!make rendering a field type as well as a datatype
 	
 */
+
 function JsonObjectEditor(specs){
 	var self = this;
-	window._joe = this;
+	window._joes = window._joes || [];
+	this.joe_index = window._joes.length;
+	if(!window._joes.length){window._joe = this;} 
+	 
+	window._joes.push(this);	
 	
 /*-------------------------------------------------------------------->
 	0 | CONFIG
@@ -58,6 +63,8 @@ function JsonObjectEditor(specs){
 			self.renderEditorFooter()		
 		);
 		self.container.append(html);
+		self.overlay = $('.joe-overlay[data-joeindex='+self.joe_index+']');
+		
 	}
 
 
@@ -67,7 +74,7 @@ function JsonObjectEditor(specs){
 <--------------------------------------------------------------------*/
 	this.renderFramework = function(content){
 		var html = 
-		'<div class="joe-overlay '+((self.specs.compact && ' compact ') || '')+'">'+
+		'<div class="joe-overlay '+((self.specs.compact && ' compact ') || '')+'" data-joeindex="'+this.joe_index+'">'+
 			'<div class="joe-overlay-panel">'+
 				(content || '')+
 			'</div>'+
@@ -119,9 +126,7 @@ function JsonObjectEditor(specs){
 		if($.type(data) == 'object' || datatype =='object'){
 			specs.object = data;
 			specs.menu = specs.menu || specs.schema.menu || self.specs.menu || (specs.multiedit && __defaultMultiButtons) || __defaultObjectButtons;
-			//[
-			//	{name:'delete',label:'Delete Object',action:'_joe.deleteObject()'},
-			//	{name:'save',label:'Save Object',action:'_joe.updateObject()'}];
+
 			specs.mode="object";
 			self.current.object = data;
 			
@@ -148,7 +153,6 @@ function JsonObjectEditor(specs){
 			specs.rendering = data;
 			
 			specs.menu = [__replaceBtn__];
-			//specs.menu = [{name:'save',label:'Save Object',action:'_joe.updateObject()'}];
 			specs.mode="rendering";
 			self.current.rendering = specs.rendering;
 			//specs.schema
@@ -183,8 +187,9 @@ function JsonObjectEditor(specs){
 		var html = 
 			self.renderEditorHeader(specs)+
 			self.renderEditorContent(specs)+
-			self.renderEditorFooter(specs)
-		$('.joe-overlay-panel').html(html);
+			self.renderEditorFooter(specs);
+		self.overlay.find('.joe-overlay-panel').html(html);
+		//$('.joe-overlay-panel').html(html);
 		
 		return html;
 	}
@@ -193,8 +198,8 @@ function JsonObjectEditor(specs){
 <-----------------------------*/	
 	this.renderEditorHeader = function(specs){
 		specs = specs || {}
-		var title = fillTemplate(specs.title || 'Json Object Editor',_joe.current.object);
-		action = specs.action||'onclick="_joe.toggleOverlay(this)"';
+		var title = fillTemplate(specs.title || 'Json Object Editor',self.current.object);
+		action = specs.action||'onclick="getJoe('+self.joe_index+').toggleOverlay(this)"';
 		var html = 
 		'<div class="joe-panel-header">'+
 			((specs.subsets && self.renderSubsetselector(specs)) || '')+
@@ -274,7 +279,7 @@ function JsonObjectEditor(specs){
 			})
 		}
 		else{
-			self.filterList(list,self.current.subset.filter).map(function(li){
+			(self.filterList(list,self.current.subset.filter)||[]).map(function(li){
 				html += self.renderListItem(li);
 			})
 		}
@@ -297,7 +302,10 @@ function JsonObjectEditor(specs){
 						type:'text',
 						value:object[prop]	
 					},
-					self.fields[prop]);
+					self.fields[prop],				
+					//overwrite with value
+					{value:object[prop]}
+					);
 					
 					fields += self.renderObjectField(propObj);
 				}
@@ -354,9 +362,13 @@ function JsonObjectEditor(specs){
 				html+= self.renderFooterMenuItem(m);
 			
 			},this);
-			if(self.current.list && $.type(_joe.current.data) == 'array'){
+			if(self.current.list && $.type(self.current.data) == 'array'){
 				html+= self.renderFooterMenuItem(__selectAllBtn__);
-				html+= self.renderFooterMenuItem({label:'Multi-Edit', name:'multiEdit', css:'joe-multi-only', action:'_joe.editMultiple()'});
+				html+= self.renderFooterMenuItem(
+				{	label:'Multi-Edit', 
+					name:'multiEdit', 
+					css:'joe-multi-only', 
+					action:'getJoe("'+self.joe_index+'").editMultiple()'});
 			}
 				
 		html+=
@@ -494,8 +506,8 @@ function JsonObjectEditor(specs){
 		'<input class="joe-text-field joe-field" type="text"  name="'+prop.name+'" value="'+(prop.value || '')+'" '
 			+self.renderFieldAttributes(prop)
 			+((autocomplete && 
-				' onblur="_joe.hideTextFieldAutoComplete($(this));"'
-				+' onkeyup="_joe.showTextFieldAutoComplete($(this));"'
+				' onblur="getJoe('+self.joe_index+').hideTextFieldAutoComplete($(this));"'
+				+' onkeyup="getJoe('+self.joe_index+').showTextFieldAutoComplete($(this));"'
 				) 
 			||''
 			)
@@ -505,7 +517,7 @@ function JsonObjectEditor(specs){
 			html+='<div class="joe-text-autocomplete">';
 			for(var v = 0, len = prop.values.length; v < len; v++){
 				html+='<div class="joe-text-autocomplete-option" '
-					+'onclick=" _joe.autocompleteTextFieldOptionClick(this);">'+prop.values[v]+'</div>';	
+					+'onclick=" getJoe('+self.joe_index+').autocompleteTextFieldOptionClick(this);">'+prop.values[v]+'</div>';	
 			}
 			
 			html+='</div>';	
@@ -518,7 +530,7 @@ function JsonObjectEditor(specs){
 	this.showTextFieldAutoComplete = function(dom){
 		var autocomplete = dom.next('.joe-text-autocomplete');
 		autocomplete.find('.joe-text-autocomplete-option').each(function(i,obj){
-			_joe.checkAutocompleteValue(dom.val(),obj.innerHTML,obj);
+			self.checkAutocompleteValue(dom.val(),obj.innerHTML,obj);
 		});
 		autocomplete.addClass('active');
 	}
@@ -558,7 +570,7 @@ function JsonObjectEditor(specs){
 		var html=/*
 		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
 		'<input class="joe-number-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+
-			self.renderFieldAttributes(prop,{onblur:'_joe.returnNumber(this);'})+
+			self.renderFieldAttributes(prop,{onblur:'getJoe('+self.joe_index+').returnNumber(this);'})+
 		' />';
 		return html;
 	}
@@ -579,7 +591,7 @@ function JsonObjectEditor(specs){
 		var html=/*
 		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
 		'<input class="joe-int-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+
-			self.renderFieldAttributes(prop,{onblur:'_joe.returnInt(this);'})+
+			self.renderFieldAttributes(prop,{onblur:'getJoe('+self.joe_index+').returnInt(this);'})+
 		' />';
 		return html;
 	}
@@ -668,9 +680,9 @@ function JsonObjectEditor(specs){
 			+'data-center="'+JSON.stringify(center)+'" data-zoom="'+zoom+'" '
 			+'data-value="'+val+'" '
 			+'data-hideattribution="'+(prop.hideAttribution||'')+'" '
-			+'onload="_joe.initGeoMap(this);"></div>'
+			+'onload="getJoe('+self.joe_index+').initGeoMap(this);"></div>'
 		+'<input class="joe-geo-field joe-field" type="text" value="'+val+'" name="'+prop.name+'"/>'
-		+'<script type="text/javascript">setTimeout(function(){_joe.initGeoMap("'+mapDiv+'");},100)</script>'
+		+'<script type="text/javascript">setTimeout(function(){getJoe('+self.joe_index+').initGeoMap("'+mapDiv+'");},100)</script>'
 		;
 		
 		return html;
@@ -693,7 +705,7 @@ function JsonObjectEditor(specs){
 			$('.leaflet-control-attribution').hide();
 		}
 		
-		map.on('click', _joe.onMapClick);
+		map.on('click', self.onMapClick);
 		map.prop = $('#'+id).attr('name');
 		if(mapspecs.value){
 			//var ll = eval(mapspecs.value);
@@ -735,7 +747,7 @@ function JsonObjectEditor(specs){
 			icon:myIcon
 		}).addTo(map);
 		map.marker.map = map;
-		map.marker.on('dragend', _joe.onMapClick);
+		map.marker.on('dragend', self.onMapClick);
 	}
 /*----------------------------->
 	F | Boolean
@@ -788,7 +800,7 @@ function JsonObjectEditor(specs){
 		var idprop = listSchema._listID;
 		var id = listItem[idprop] || null;
 		//var action = 'onclick="_joe.editObjectFromList(\''+id+'\');"';
-		var action = 'onclick="_joe.listItemClickHandler({dom:this,id:\''+id+'\'});"';
+		var action = 'onclick="getJoe('+self.joe_index+').listItemClickHandler({dom:this,id:\''+id+'\'});"';
 		if(!listSchema._listTemplate){
 			var title = listSchema._listTitle || listItem.name || id || 'untitled';
 			var html = '<div class="joe-panel-content-option joe-no-select" '+action+' data-id="'+id+'">'+fillTemplate(title,listItem)+'</div>';
@@ -837,7 +849,7 @@ function JsonObjectEditor(specs){
 		
 		var setts ={schema:self.current.schema,callback:specs.callback};
 		self.populateFramework(object,setts);
-		$('.joe-overlay').addClass('active');
+		self.overlay.addClass('active');
 	}
 /*----------------------------->
 	List Multi Select
@@ -906,7 +918,7 @@ function JsonObjectEditor(specs){
 	
 	this.renderSubsetSelectorOptions = function(specs){
 		function renderOption(opt){
-			var html='<div class="selector-option" onclick="_joe.selectSubset(\''+opt.name+'\');">'+opt.name+'</div>';
+			var html='<div class="selector-option" onclick="getJoe('+self.joe_index+').selectSubset(\''+opt.name+'\');">'+opt.name+'</div>';
 			return html;
 		}
 		if(specs.subset){
@@ -928,7 +940,7 @@ function JsonObjectEditor(specs){
 		//if (!e) var e = window.event;
 		//e.cancelBubble = true;
 		//if (e.stopPropagation) e.stopPropagation();
-		_joe.hide();
+		self.hide();
 		goJoe(self.current.list,merge(self.current.userSpecs,{subset:subset}));
 	}
 	
@@ -986,7 +998,7 @@ function JsonObjectEditor(specs){
 		//var html = '<div class="joe-mini-panel joe-panel">';
 
 		var html = 
-			self.renderEditorHeader({title:title,action:'onclick="_joe.hideMini()"'})
+			self.renderEditorHeader({title:title,action:'onclick="getJoe('+self.joe_index+').hideMini()"'})
 			+'<div class="joe-panel-content joe-inset">'
 				+self.renderObjectContent({object:specs.props})
 			//	+JSON.stringify(specs.props)
@@ -1037,7 +1049,7 @@ function JsonObjectEditor(specs){
 		return schema;
 	}
 	this.resetSchema = function(schemaName){
-		var newObj = self.constructObjectFromFields();
+		var newObj = self.constructObjectFromFields(self.joe_index);
 		//var obj = $.extend(self.current.object,newObj);
 		self.show(
 			$.extend(self.current.object,newObj),
@@ -1058,22 +1070,22 @@ function JsonObjectEditor(specs){
 		var data = data || '';
 		//profile = profile || null
 		var specs=specs || {};
-		$('.joe-overlay-panel').attr('class', 'joe-overlay-panel');
-		if(specs.compact === true){$('.joe-overlay').addClass('compact');}
-		if(specs.compact === false){$('.joe-overlay').removeClass('compact');}
+		self.overlay.find('.joe-overlay-panel').attr('class', 'joe-overlay-panel');
+		if(specs.compact === true){self.overlay.addClass('compact');}
+		if(specs.compact === false){self.overlay.removeClass('compact');}
 		
 		self.populateFramework(data,specs);
 		
-		$('.joe-overlay').addClass('active');
+		self.overlay.addClass('active');
 		setTimeout(self.onPanelShow(),0);
 	}
 	this.hide = function(data){
-		$('.joe-overlay').removeClass('active');
+		self.overlay.removeClass('active');
 	}
 	
 	this.compactMode = function(compact){
-		if(compact === true){$('.joe-overlay').addClass('compact');}
-		if(compact === false){$('.joe-overlay').removeClass('compact');}
+		if(compact === true){self.overlay.addClass('compact');}
+		if(compact === false){self.overlay.removeClass('compact');}
 	
 	
 	}
@@ -1082,21 +1094,25 @@ function JsonObjectEditor(specs){
 		goJoe('<pre>'+JSON.stringify(obj,'  ','    ')+'</pre>');
 	}
 	
-	window.joeMini = this.showMiniJoe;
-	window.goJoe = this.show;
-	window.listJoe = this.editObjectFromList;
-	
+	if(self.joe_index == 0){
+		window.joeMini = this.showMiniJoe;
+		window.goJoe = this.show;
+		window.listJoe = this.editObjectFromList;
+	}
+	window.getJoe = function(index){
+		return (window._joes[index] || false)
+	}
 	$(document).keyup(function(e) {
 		if (e.keyCode == 27) { self.hide(); }   // esc
 	//ctrl + enter
 		else if(e.ctrlKey && e.keyCode == 13 && self.specs.useControlEnter){
-			$('.joe-confirm-button').click();
+			self.overlay.find('.joe-confirm-button').click();
 		}
 	});
 
 	this.onPanelShow = function(){
 		//init datepicker
-		$('.joe-date-field').Zebra_DatePicker();
+		self.overlay.find('.joe-date-field').Zebra_DatePicker();
 	}
 
 /*-------------------------------------------------------------------->
@@ -1104,7 +1120,7 @@ function JsonObjectEditor(specs){
 <--------------------------------------------------------------------*/
 	this.updateObject = function(dom,callback){
 		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || logit;
-		var newObj = self.constructObjectFromFields();
+		var newObj = self.constructObjectFromFields(self.joe_index);
 		newObj.joeUpdated = new Date();
 		var obj = $.extend(self.current.object,newObj);
 		logit('object updated');
@@ -1144,10 +1160,20 @@ function JsonObjectEditor(specs){
 		self.hide();
 		goJoe(itemobj,self.current.userSpecs);
 	}
-	this.constructObjectFromFields = function(){
+	this.constructObjectFromFields = function(index){
 		var object = {joeUpdated:new Date()};
 		var prop;
-		$('.joe-object-field').find('.joe-field').each(function(){
+		
+		//var parentFind = $('.joe-object-field');
+		var parentFind = $('.joe-overlay.active');
+		
+		if(index){
+		parentFind = self.overlay.find('.joe-object-field');
+		
+		}
+		//var parentFind = $('.joe-overlay.active');
+		
+		parentFind.find('.joe-field').each(function(){
 			if(self.current.userSpecs.multiedit){
 				if(!$(this).parent().hasClass('multi-selected')){
 					return;
@@ -1189,7 +1215,7 @@ function JsonObjectEditor(specs){
 		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || logit;
 		
 		var idprop = self.getIDProp();
-		var newObj = self.constructObjectFromFields();
+		var newObj = self.constructObjectFromFields(self.joe_index);
 		newObj.joeUpdated = new Date();
 	
 	//clear id from merged object	
@@ -1238,9 +1264,9 @@ function JsonObjectEditor(specs){
 	}
 	
 	this.selectAllItems = function(){
-		$('.joe-panel-content-option').addClass('selected');
-		$('.joe-overlay-panel').addClass('multi-edit');
-		$('.joe-panel-content-option.selected').map(function(i,listitem){
+		self.overlay.find('.joe-panel-content-option').addClass('selected');
+		self.overlay.addClass('multi-edit');
+		self.overlay.find('.joe-panel-content-option.selected').map(function(i,listitem){
 			self.current.selectedListItems.push($(listitem).data('id'));
 		})
 	}
