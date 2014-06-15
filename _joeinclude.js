@@ -28,6 +28,7 @@ scripts_dir = web_dir+"js/",
 scripts = [];
 if (typeof jQuery == 'undefined') {  
    scripts.push("jquery-1.11.0.min.js");
+   scripts.push("jquery-ui-1.10.4.custom.min.js");
 }
 if (typeof Craydent == 'undefined') {  
    scripts.push("craydent-1.7.21.js");
@@ -39,6 +40,7 @@ scripts.push(
 	
 	"zebra_datepicker.js"
 	
+	
 );
 
 var
@@ -46,7 +48,8 @@ styles_dir = web_dir+"css/",
 styles =[
    "leaflet.css",
    "esri-leaflet-geocoder.css",
-   "joe-styles.css"
+   "joe-styles.css",
+   "jquery-ui-1.10.4.custom.min.css"
 ],
 script,style,sc,st,
 sc_len = scripts.length,st_len = styles.length;

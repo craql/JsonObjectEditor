@@ -800,9 +800,9 @@ function JsonObjectEditor(specs){
 	}
 	
 /*----------------------------->
-	H | Multisorter
+	H | Sorter
 <-----------------------------*/
-this.renderMultisorterField = function(prop){
+this.renderSorterField = function(prop){
 		
 		var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values || [prop.value];
 		var valObjs = [];
@@ -836,7 +836,7 @@ this.renderMultisorterField = function(prop){
 		var selected;
 		
 		var html=
-		'<div class="joe-multisorter-field joe-field">'+
+		'<div class="joe-multisorter-field joe-field" name="'+prop.name+'">'+
 		'<ul class="joe-multisorter-bin options-bin"></ul>'+
 		'<ul class="joe-multisorter-bin selections-bin"></ul>'+
 		
@@ -853,9 +853,9 @@ this.renderMultisorterField = function(prop){
 		return html;
 	}
 /*----------------------------->
-	I | Sorter
+	I | Multisorter
 <-----------------------------*/
-this.renderSorterField = function(prop){
+	this.renderMultisorterField = function(prop){
 		
 		var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];
 		var valObjs = [];
@@ -863,29 +863,44 @@ this.renderSorterField = function(prop){
 		
 	//sort values into selected or option	
 		var val;
-		var opt=[];
-		var sel =[];
+		var optionsHtml ='';
+		var selectionsHtml ='';
+		
+		var idprop = prop[idprop] ||'id'||'_id';
+		var template = prop.template || '${name} (${'+idprop+'})'; 
+		var value = prop.value || [];
+		var li;
 			values.map(function(v){
-				
+				li = '<li data-id="'+v[idprop]+'" onclick="_joe.toggleMultisorterBin(this);">'+fillTemplate(template,v)+'</li>';
+				if(value.indexOf(v[idprop]) != -1){//currently selected
+					selectionsHtml += li;
+				}else{
+					optionsHtml += li;
+				}
 			});
 		var selected;
 		
 		var html=
-		'<div class="joe-multisorter-field joe-field">'+
-		'<ul class="joe-multisorter-bin options-bin"></ul>'+
-		'<ul class="joe-multisorter-bin selections-bin"></ul>'+
-		
-		'<ul class="joe-multisorter-field joe-field" name="'+prop.name+'" '+
-			//self.renderFieldAttributes(prop)+
-		' >';
-		/*'<select class="joe-multisorter-field joe-field" name="'+prop.name+'" value="'+(prop.value || '')+'" '+
-			//self.renderFieldAttributes(prop)+
-		' >';*/
-		
-		
-			
-		html+='</div>';
+		'<div class="joe-multisorter-field joe-field" name="'+prop.name+'" data-ftype="multisorter">'+
+			'<p style="text-align:center;"> click item to switch columns.</p>'+
+			'<ul class="joe-multisorter-bin options-bin">'+optionsHtml+'</ul>'+
+			'<ul class="joe-multisorter-bin selections-bin">'+selectionsHtml+'</ul>'+
+			__clearDiv__
+	
+		+'</div>';
 		return html;
+	}
+	this.toggleMultisorterBin = function(dom){
+		var id = $(dom).data('id');
+		var target = $(dom).parents('.joe-multisorter-bin').siblings('.joe-multisorter-bin');
+		var newDom = $(dom).parents('.joe-multisorter-bin').find('li[data-id='+id+']').detach();
+		target.prepend(newDom);
+/*	//reset divs
+	var opts = $.unique($('.joe-multisorter-bin.options-bin').find('li'))	
+	$('.joe-multisorter-bin.options-bin').empty();
+	$('.joe-multisorter-bin.options-bin').html(opts);*/
+	
+		
 	}
 /*----------------------------->
 	R | Rendering Field
@@ -960,8 +975,9 @@ this.renderSorterField = function(prop){
 		}
 		
 		var setts ={schema:self.current.schema,callback:specs.callback};
-		self.populateFramework(object,setts);
-		self.overlay.addClass('active');
+		/*self.populateFramework(object,setts);
+		self.overlay.addClass('active');*/
+		goJoe(object,setts);
 	}
 /*----------------------------->
 	List Multi Select
@@ -1230,6 +1246,7 @@ this.renderSorterField = function(prop){
 	this.onPanelShow = function(){
 		//init datepicker
 		self.overlay.find('.joe-date-field').Zebra_DatePicker();
+		//self.overlay.find('.joe-multisorter-bin').sortable({});
 	}
 
 /*-------------------------------------------------------------------->
@@ -1306,10 +1323,24 @@ this.renderSorterField = function(prop){
 					
 					}
 				break;
+
 				case 'text':
 				default:
+					
 					prop = $(this).attr('name');
-					object[prop] = $(this).val();
+					
+					switch($(this).data('ftype')){
+						case 'multisorter':
+							var vals = [];
+							$(this).find('.selections-bin').find('li').each(function(){
+								vals.push($(this).data('id'));
+							});
+							object[prop] = vals;
+						break;
+						default:
+						object[prop] = $(this).val();
+						break;
+					}
 				break;
 			}
 		});

@@ -362,6 +362,26 @@ textarea.joe-rendering-field{
 .joe-text-autocomplete-option:hover {
     background: #ccc;
 }
+
+/* MultiSorter */
+.joe-multisorter-bin {
+	width: 48%;
+	background: #EEE;
+	min-height: 100px;
+	float: left;
+	margin: 0 1%;
+	list-style: none;
+	max-height: 500px;
+	overflow: auto;
+}
+.joe-multisorter-bin li {
+	line-height: 30px;
+	padding: 5px;
+	cursor: move;
+}
+.joe-multisorter-bin li:hover{
+	background:rgba(0,0,0,.1);
+}
 /*-------------------------------------------------------------------->
 	4 | Footer
 <--------------------------------------------------------------------*/	
