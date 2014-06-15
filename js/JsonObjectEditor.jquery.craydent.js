@@ -135,16 +135,25 @@ function JsonObjectEditor(specs){
 /*-------------------------
 	Arrays 
 -------------------------*/			
+	
 	//when array passed in	
 		if($.type(data) == 'array' || datatype =='array'){
 			specs.list = data;
 			specs.menu = specs.listMenu || specs.schema.listMenu || __defaultButtons;//__defaultMultiButtons; 
 			specs.mode="list";
+			//TODO: filter list items here.
 			self.current.list = data;
+			
+			//setup subsets
+			self.current.subsets = setts.subsets ||(specs.schema && specs.schema.subsets)||null;
+			if(typeof self.current.subsets == 'function'){
+				self.current.subsets = self.current.subsets(); 
+			}
 			//self.current.object = null;
 
 		}
-		
+	
+	
 /*-------------------------
 	Rendering
 -------------------------*/	
@@ -176,7 +185,10 @@ function JsonObjectEditor(specs){
 		
 	//setup window title	
 		//specs.title = title || (specs.schema)? specs.schema._title : "Viewing "+specs.mode.capitalize();	
-		specs.title =(title || (specs.schema && specs.schema._title)  || "Viewing "+specs.mode.capitalize());		
+		specs.title =(
+			title 
+			|| (specs.list && (specs._listMenuTitle || (specs.schema && specs.schema._listMenuTitle))) 
+			|| (specs.schema && specs.schema._title)  || "Viewing "+specs.mode.capitalize());		
 	//setup profile
 		specs.profile = (profile)? 
 			(self.specs.profiles[profile]||self.specs.joeprofile):
@@ -198,11 +210,15 @@ function JsonObjectEditor(specs){
 <-----------------------------*/	
 	this.renderEditorHeader = function(specs){
 		specs = specs || {}
-		var title = fillTemplate(specs.title || 'Json Object Editor',self.current.object);
+		var titleObj = self.current.object
+		if(specs.list){
+			titleObj = $.extend({},self.current.object,{_listCount:specs.list.length});
+		}
+		var title = fillTemplate(specs.title || 'Json Object Editor',titleObj);
 		action = specs.action||'onclick="getJoe('+self.joe_index+').toggleOverlay(this)"';
 		var html = 
 		'<div class="joe-panel-header">'+
-			((specs.subsets && self.renderSubsetselector(specs)) || '')+
+			((specs.schema && specs.schema.subsets && self.renderSubsetselector(specs.schema)) || (specs.subsets && self.renderSubsetselector(specs)) || '')+
 			'<div class="joe-panel-title">'+
 				(title || 'Json Object Editor')+
 			'</div>'+
@@ -273,7 +289,7 @@ function JsonObjectEditor(specs){
 		var schema = specs.schema;
 		var list = specs.list || [];
 		var html = '';
-		if(!self.current.subset){
+		if(!self.current.subset || self.current.subsets.indexOf(self.current.subset) == -1){
 			list.map(function(li){
 				html += self.renderListItem(li);
 			})
@@ -368,7 +384,7 @@ function JsonObjectEditor(specs){
 				{	label:'Multi-Edit', 
 					name:'multiEdit', 
 					css:'joe-multi-only', 
-					action:'getJoe("'+self.joe_index+'").editMultiple()'});
+					action:'getJoe('+self.joe_index+').editMultiple()'});
 			}
 				
 		html+=
@@ -410,6 +426,13 @@ function JsonObjectEditor(specs){
 		switch(prop.type){
 			case 'select':
 				html+= self.renderSelectField(prop);
+			break;
+			case 'multisort':
+			case 'multisorter':
+				html+= self.renderMultisorterField(prop);
+			break;
+			case 'sorter':
+				html+= self.renderSorterField(prop);
 			break;
 /*			case 'multi-select':
 				html+= self.renderMultiSelectField(prop);*/
@@ -775,6 +798,95 @@ function JsonObjectEditor(specs){
 		'<input class="joe-guid-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || cuid())+'"  disabled />';
 		return html;
 	}
+	
+/*----------------------------->
+	H | Multisorter
+<-----------------------------*/
+this.renderMultisorterField = function(prop){
+		
+		var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values || [prop.value];
+		var valObjs = [];
+		if($.type(values[0]) != 'object'){
+			values.map(function(v){
+				valObjs.push({name:v});
+			});
+		}
+		else{
+			valObjs = values;
+		}
+	
+		
+		var val;
+		var opt=[];
+		var sel = [];
+			valObjs.map(function(v){
+				val = v.value||v.name||'';
+				if($.type(prop.value) == 'array'){
+					selected = '';
+					selected = (prop.value.indexOf(val) != -1)?'selected':'';
+					
+					/*prop.value.map(function(pval){
+						if(pval.indexOf)
+					});*/
+				}else{
+					selected = (prop.value == val)?'selected':'';
+				}
+				html += '<option value="'+val+'" '+selected+'>'+(v.display||v.label||v.name)+'</option>'	
+			});
+		var selected;
+		
+		var html=
+		'<div class="joe-multisorter-field joe-field">'+
+		'<ul class="joe-multisorter-bin options-bin"></ul>'+
+		'<ul class="joe-multisorter-bin selections-bin"></ul>'+
+		
+		'<ul class="joe-multisorter-field joe-field" name="'+prop.name+'" '+
+			//self.renderFieldAttributes(prop)+
+		' >';
+		/*'<select class="joe-multisorter-field joe-field" name="'+prop.name+'" value="'+(prop.value || '')+'" '+
+			//self.renderFieldAttributes(prop)+
+		' >';*/
+		
+		
+			
+		html+='</div>';
+		return html;
+	}
+/*----------------------------->
+	I | Sorter
+<-----------------------------*/
+this.renderSorterField = function(prop){
+		
+		var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];
+		var valObjs = [];
+		
+		
+	//sort values into selected or option	
+		var val;
+		var opt=[];
+		var sel =[];
+			values.map(function(v){
+				
+			});
+		var selected;
+		
+		var html=
+		'<div class="joe-multisorter-field joe-field">'+
+		'<ul class="joe-multisorter-bin options-bin"></ul>'+
+		'<ul class="joe-multisorter-bin selections-bin"></ul>'+
+		
+		'<ul class="joe-multisorter-field joe-field" name="'+prop.name+'" '+
+			//self.renderFieldAttributes(prop)+
+		' >';
+		/*'<select class="joe-multisorter-field joe-field" name="'+prop.name+'" value="'+(prop.value || '')+'" '+
+			//self.renderFieldAttributes(prop)+
+		' >';*/
+		
+		
+			
+		html+='</div>';
+		return html;
+	}
 /*----------------------------->
 	R | Rendering Field
 <-----------------------------*/
@@ -917,22 +1029,27 @@ function JsonObjectEditor(specs){
 	}
 	
 	this.renderSubsetSelectorOptions = function(specs){
+		var subsets = self.current.subsets;
+		if(typeof subsets == 'function'){
+			subsets = subsets();
+		}
 		function renderOption(opt){
-			var html='<div class="selector-option" onclick="getJoe('+self.joe_index+').selectSubset(\''+opt.name+'\');">'+opt.name+'</div>';
+			var html='<div class="selector-option" onclick="getJoe('+self.joe_index+').selectSubset(\''+opt.id+'\');">'+opt.name+'</div>';
 			return html;
 		}
-		if(specs.subset){
-			self.current.subset = specs.subsets.filter(function(s){
-				return s.name == specs.subset;
+		if(self.current.specs.subset){
+			self.current.subset = subsets.filter(function(s){
+				s.id = s.id || s.name;
+				return s.id == self.current.specs.subset;
 			})[0]||false;
 		}
 		var subsetlabel = (self.current.subset && self.current.subset.name) || 'All';
 		var html=
 		'<div class="selector-label selector-option" onclick="$(this).parent().toggleClass(\'active\')">'+subsetlabel+'</div>'
 		+'<div class="selector-options">'
-			+renderOption({name:'All',filter:{}})
-			+specs.subsets.map(renderOption)
-		+'</div>';
+			+renderOption({name:'All',filter:{}});
+			subsets.map(function(s){html += renderOption(s);})
+		html+='</div>';
 		return html;
 	}
 	

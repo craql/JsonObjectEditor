@@ -133,6 +133,7 @@ an array of menu buttons
 
 **properties**
 
+- _listCount: added to the current object and can be used in the title.
 - subsets: name:string, filter:object 
 - _listTemplate: html template that uses ${var} to write out the item properties for the list item.
 	- standard css class `joe-panel-content-option`
