@@ -471,6 +471,11 @@ function JsonObjectEditor(specs){
 				html += self.renderGeoField(prop);
 			break;
 			
+			case 'image':
+			case 'img':
+				html+= self.renderImageField(prop);
+			break;
+			
 			default:
 				html+= self.renderTextField(prop);
 			break;
@@ -860,7 +865,30 @@ this.renderSorterField = function(prop){
 		return html;
 	}
 /*----------------------------->
-	I | Multisorter
+	I | Image
+<-----------------------------*/
+	this.renderImageField = function(prop){
+		var html=
+		'<input class="joe-image-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'" '
+		+	self.renderFieldAttributes(prop)
+		+' onkeyup="_joe.updateImageFieldImage(this);"/>'
+		+'<span class="joe-image-field-size"></span>'
+		+'<img class="joe-image-field-image" src="'+(prop.value||'')+'"/>';
+
+		return html;
+	}
+	
+	this.updateImageFieldImage = function(dom){
+		var src = $(dom).val();
+		//var img = $(dom).next('.joe-image-field-image');
+		var img = $(dom).parent().find('.joe-image-field-image');
+		img.attr('src',src);
+		$(dom).next('.joe-image-field-size').html(img.width() + 'w x '+img.height()+'h');
+		
+	}
+		
+/*----------------------------->
+	J | Multisorter
 <-----------------------------*/
 	this.renderMultisorterField = function(prop){
 		
@@ -1261,6 +1289,7 @@ this.renderSorterField = function(prop){
 		//init datepicker
 		self.overlay.find('.joe-date-field').Zebra_DatePicker();
 		self.overlay.find('.joe-multisorter-bin').sortable({connectWith:'.joe-multisorter-bin'});
+		self.overlay.find('input.joe-image-field').each(function(){_joe.updateImageFieldImage(this);})
 	}
 
 /*-------------------------------------------------------------------->

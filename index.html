@@ -128,7 +128,7 @@ function logValue(dom){
 var animalschema = 
 	{
 		_title:'Animal',
-		fields:['id','name','legs','species','weight','color','gender','animalLink','birthday'],
+		fields:['id','name','legs','species','weight','color','gender','animalLink','birthday','pict'],
 		_listID:'id',
 		_listTitle:'${name} ${species}',
 		/*callback:function(obj){
@@ -172,6 +172,7 @@ var citySchema =
 			city_demos:{label:'City Demographics', type:'select', multiple:true,values:['Business','Residential','Metropolis','Agricultural']},
 			city_css:{type:'text',autocomplete:true,values:['happy','sad','frivilous','distinguished']},
 			isChecked:{type:'boolean'},
+			pict:{type:'image'},
 			//id:{label:'ID',type:'text', locked:true},
 			id:{label:'ID',type:'guid'},
 		//rendering

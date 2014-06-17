@@ -389,6 +389,16 @@ div.joe-filter-field-holder input {
 .joe-multisorter-bin li:hover{
 	background:rgba(0,0,0,.1);
 }
+/* Image */
+	.joe-image-field-image {
+		margin: 10px;
+		display: block;
+		/* box-shadow: 0 0 3px; */
+	}
+	.joe-image-field-size {
+		padding: 0 10px;
+		opacity: .5;
+	}
 
 /*-------------------------------------------------------------------->
 	4 | Footer
