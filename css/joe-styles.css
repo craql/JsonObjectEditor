@@ -364,6 +364,13 @@ textarea.joe-rendering-field{
 }
 
 /* MultiSorter */
+div.joe-filter-field-holder {
+    padding: 5px 1%;
+}
+div.joe-filter-field-holder input {
+    max-width: 46% !important;
+}
+
 .joe-multisorter-bin {
 	width: 48%;
 	background: #EEE;
@@ -382,6 +389,7 @@ textarea.joe-rendering-field{
 .joe-multisorter-bin li:hover{
 	background:rgba(0,0,0,.1);
 }
+
 /*-------------------------------------------------------------------->
 	4 | Footer
 <--------------------------------------------------------------------*/	

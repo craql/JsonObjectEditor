@@ -10,6 +10,7 @@
 
 function JsonObjectEditor(specs){
 	var self = this;
+	var listMode = false;
 	window._joes = window._joes || [];
 	this.joe_index = window._joes.length;
 	if(!window._joes.length){window._joe = this;} 
@@ -137,7 +138,9 @@ function JsonObjectEditor(specs){
 -------------------------*/			
 	
 	//when array passed in	
+		listMode = false;
 		if($.type(data) == 'array' || datatype =='array'){
+			listMode = true;
 			specs.list = data;
 			specs.menu = specs.listMenu || specs.schema.listMenu || __defaultButtons;//__defaultMultiButtons; 
 			specs.mode="list";
@@ -365,7 +368,11 @@ function JsonObjectEditor(specs){
 <-----------------------------*/	
 	this.renderEditorFooter = function(specs){
 		specs = specs || this.specs || {};
-		var menu = specs.menu || (specs.multiedit && __defaultMultiButtons) || __defaultObjectButtons;
+		var menu = (listMode && (specs.schema && specs.schema.listmenu)||specs.listmenu) ||//list mode
+		specs.menu ||  (specs.multiedit && __defaultMultiButtons) || __defaultObjectButtons;
+		if(typeof menu =='function'){
+			menu = menu();
+		}
 		
 		var title = specs.title || 'untitled';
 		var display,action;
@@ -883,12 +890,19 @@ this.renderSorterField = function(prop){
 		var html=
 		'<div class="joe-multisorter-field joe-field" name="'+prop.name+'" data-ftype="multisorter">'+
 			'<p style="text-align:center;"> click item to switch columns.</p>'+
+			'<div class="joe-filter-field-holder"><input type="text"class="" onkeyup="_joe.filterSorterOptions(this);"/></div>'+
 			'<ul class="joe-multisorter-bin options-bin">'+optionsHtml+'</ul>'+
 			'<ul class="joe-multisorter-bin selections-bin">'+selectionsHtml+'</ul>'+
 			__clearDiv__
 	
 		+'</div>';
 		return html;
+	}
+	this.filterSorterOptions = function(dom){
+		var query = $(dom).val().toLowerCase();
+		$(dom).parent().next('.joe-multisorter-bin').find('li').each(function(){$(this).toggle($(this).html().toLowerCase().indexOf(query) != -1 );})
+		logit(query);
+		
 	}
 	this.toggleMultisorterBin = function(dom){
 		var id = $(dom).data('id');
@@ -1246,7 +1260,7 @@ this.renderSorterField = function(prop){
 	this.onPanelShow = function(){
 		//init datepicker
 		self.overlay.find('.joe-date-field').Zebra_DatePicker();
-		//self.overlay.find('.joe-multisorter-bin').sortable({});
+		self.overlay.find('.joe-multisorter-bin').sortable({connectWith:'.joe-multisorter-bin'});
 	}
 
 /*-------------------------------------------------------------------->
