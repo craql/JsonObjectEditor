@@ -359,7 +359,7 @@ function JsonObjectEditor(specs){
 			})//end map
 			
 		}
-		var html = '<div class="joe-object-content">'+fields+'</div>';
+		var html = '<div class="joe-object-content">'+fields+'<div class="clear"></div></div>';
 		return html;
 	}
 
@@ -411,6 +411,7 @@ function JsonObjectEditor(specs){
 /*-------------------------------------------------------------------->
 	3 | OBJECT FORM
 <--------------------------------------------------------------------*/
+	var preProp;
 	this.renderObjectField = function(prop){
 		//requires {name,type}
 		
@@ -421,7 +422,20 @@ function JsonObjectEditor(specs){
 		}
 		
 		var hidden = (prop.hidden)?'hidden':'';
-		var html = 
+		
+		var html ='' 
+		
+		
+		if(preProp){
+			if(preProp.width && !prop.width){
+				html+='<div class="clear"></div>';
+			}
+		}
+		if(prop.width){
+			html+='<div class="joe-field-container" style="width:'+prop.width+';">';
+		}
+
+		html+=	
 			'<div class="joe-object-field '+hidden+' '+prop.type+'-field " data-type="'+prop.type+'" data-name="'+prop.name+'">'+
 			'<label class="joe-field-label">'+(prop.display||prop.label||prop.name)+'</label>';
 	
@@ -481,6 +495,12 @@ function JsonObjectEditor(specs){
 			break;
 		}
 		html+='</div>';
+		if(prop.width){
+			html+='</div>';
+		}
+		
+		preProp = prop;
+		
 		return html;
 	}
 /*----------------------------->
@@ -661,10 +681,14 @@ function JsonObjectEditor(specs){
 		
 		var selected;
 		var multiple =(prop.multiple)?' multiple ':'';
+		var selectSize = prop.size || ((valObjs.length*.5) > 10)? 10 : valObjs.length/2;
+		
+		if(!prop.size & !prop.multiple){
+			selectSize = 1;
+		}
 		var html=/*
 		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
-		
-		'<select class="joe-select-field joe-field" name="'+prop.name+'" value="'+(prop.value || '')+'" '+
+		'<select class="joe-select-field joe-field" name="'+prop.name+'" value="'+(prop.value || '')+'" size="'+selectSize+'"'+
 			self.renderFieldAttributes(prop)+
 			multiple+
 		' >';
@@ -872,8 +896,8 @@ this.renderSorterField = function(prop){
 		'<input class="joe-image-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'" '
 		+	self.renderFieldAttributes(prop)
 		+' onkeyup="_joe.updateImageFieldImage(this);"/>'
-		+'<span class="joe-image-field-size"></span>'
-		+'<img class="joe-image-field-image" src="'+(prop.value||'')+'"/>';
+		+'<img class="joe-image-field-image" src="'+(prop.value||'')+'"/>'
+		+'<span class="joe-image-field-size"></span>';
 
 		return html;
 	}
@@ -1078,7 +1102,9 @@ this.renderSorterField = function(prop){
 	List Subsets
 <-----------------------------*/		
 	this.renderSubsetselector = function(specs){
-		
+		if(!listMode){
+			return '';
+		}
 		var html=
 		'<div class="joe-subset-selector" >'
 			+self.renderSubsetSelectorOptions(specs)

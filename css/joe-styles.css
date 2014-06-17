@@ -39,19 +39,37 @@
 .joe-button {
     padding: 8px 16px;
     margin: 5px;
-    background-color: rgba(255,255,255,.5);
-    box-shadow: 0 1px 2px 0px rgba(0,0,0,.3);
+    background-color:#fcfcfc;
+	box-shadow: 0 1px 2px 0px rgba(0,0,0,.3);
 	cursor: pointer;
 	transition: .2s;
 }
 .joe-button:hover{
-	background-color: #f7f7f8;
+	background-color: #f0f0f0;
 }
 
 .joe-button.center{text-align:center;}
 .joe-button.right{text-align:right;}
-.joe-confirm-button{background:#6BB476;}
-.joe-confirm-button:hover{background:#5BD16D;}
+
+.joe-confirm-button,.joe-green-button{background:#6BB476;}
+.joe-confirm-button:hover, .joe-green-button:hover{background:#5BD16D;}
+
+.joe-orange-button{background-color:#ff8804;}
+.joe-orange-button:hover{background-color:#F93}
+
+.joe-blue-button{background-color:#336699}
+.joe-blue-button:hover{background-color:#447799;}
+
+.joe-right-button,
+.joe-footer-button {
+    float: right; 
+}
+
+.joe-left-button,
+.joe-delete-button {
+	float: left;
+}
+
 /*-------------------------
 	UI Overlays
 -------------------------*/	
@@ -390,15 +408,25 @@ div.joe-filter-field-holder input {
 	background:rgba(0,0,0,.1);
 }
 /* Image */
-	.joe-image-field-image {
-		margin: 10px;
-		display: block;
-		/* box-shadow: 0 0 3px; */
-	}
-	.joe-image-field-size {
-		padding: 0 10px;
-		opacity: .5;
-	}
+input.joe-image-field{
+	width: 90% !important;
+}
+.joe-image-field-image {
+	margin: 15px 0 10px 0;
+	display: block;
+}
+.joe-image-field-size {
+	margin: 10px 0;
+	opacity: .5;
+	display: block;
+}
+/*----------------------------->
+	Field Container
+<-----------------------------*/
+.joe-field-container{
+	float:left;
+	min-width:320px;
+}
 
 /*-------------------------------------------------------------------->
 	4 | Footer
@@ -408,15 +436,6 @@ div.joe-filter-field-holder input {
     bottom: 0;
     left: 0;
     right: 0;
-}
-.joe-right-button,
-.joe-footer-button {
-    float: right; 
-}
-
-.joe-left-button,
-.joe-delete-button {
-	float: left;
 }
 
 .joe-multi-only{

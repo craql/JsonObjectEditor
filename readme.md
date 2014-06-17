@@ -3,12 +3,20 @@
 
 Visually Edit Objects Using this GUI tool, what you do from there is up to you.
 
-*v1.3*
+
+
 ##What's new
+*v1.4*
+
++ Added Image field
++ Added  MultiSort field
+
+*v1.3*
+
 + List subset Selector
 + Multi-Select in Object List
 + Multi Update
-+Autocomplete textfield
++ Autocomplete textfield
 
 ##required includes
 
@@ -58,25 +66,35 @@ Properties for all Fields
 - `label`: what the field should display as 
 - `value`: default value if not one in object
 - `type`: what type of field should JOE show
+- `default`: default value for field
+- `width`: used for layout control.
+	- can use pixels or percentages (as string)
+
+**field types:**
+
 - `rendering`: for css html and js
-	- `text`: default single line text.
-		- autocomplete: boolean
-			- values:array of possibilities
-	- `int`: integer field
-	- `number`: number (float) field
-	- `select`: select list. 
-		- multiple(bool)
-		- values(array of objects, [{value:"",name/display:""])
-	- `geo`: shows a map
-		- *takes a string array "[lat,lon]"*
-		- center:[lat,lon], center of map
-		- zoom: zoom level (higher zooms in more)
-		- returns "[lat,lon]"
+- `text`: default single line text.
+	- autocomplete: boolean
+		- values:array of possibilities
+- `int`: integer field
+- `number`: number (float) field
+- `select`: select list. 
+	- multiple(bool)
+	- values(array of objects, [{value:"",name/display:""]), can be a function
+- `geo`: shows a map
+	- *takes a string array "[lat,lon]"*
+	- center:[lat,lon], center of map
+	- zoom: zoom level (higher zooms in more)
+	- returns "[lat,lon]"
+-`image` : shows an image and HxW as th image url is typed in.
+- `multisorter` : allows arrays of objects to be selected and sorted in right bin.
+	- values(array of objects, [{value:"",name/display:""]), can be a function
 
 ###defaultProfile
 overwrites the default profile
 
-###schemas 
+##schemas 
+
 a list of schema objects that can configure the editor fields, these can be given properties that are delegated to all the corresponding fields.
 
 	var animalschema = 
@@ -85,6 +103,9 @@ a list of schema objects that can configure the editor fields, these can be give
 		fields:['id','name','legs','species','weight','color','gender','animalLink'], *list of visible fields*
 		_listID:'id', *the id for finding the object*
 		_listTitle:'${name} ${species}', *how to display items in the list*
+		menu:[array of menu buttons],
+		listMenuTitle: (string) template forjoe window title in list view,
+		listmenu:[array of menu buttons] (multi-edit and select all always show),
 		/*callback:function(obj){
 			alert(obj.name);
 		},*/
