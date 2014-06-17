@@ -28,6 +28,8 @@ scripts_dir = web_dir+"js/",
 scripts = [];
 if (typeof jQuery == 'undefined') {  
    scripts.push("jquery-1.11.0.min.js");
+}
+if (typeof jQuery.ui == 'undefined') {  
    scripts.push("jquery-ui-1.10.4.custom.min.js");
 }
 if (typeof Craydent == 'undefined') {  
