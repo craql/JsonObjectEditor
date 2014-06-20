@@ -389,7 +389,7 @@ div.joe-filter-field-holder input {
     max-width: 46% !important;
 }
 
-.joe-multisorter-bin {
+.joe-multisorter-bin{
 	width: 48%;
 	background: #EEE;
 	min-height: 100px;
@@ -399,15 +399,43 @@ div.joe-filter-field-holder input {
 	max-height: 500px;
 	overflow: auto;
 }
-.joe-multisorter-bin li {
-	line-height: 30px;
+.joe-multisorter-bin li,
+.joe-buckets-bin li {
+	/*line-height: 30px;*/
+	height: 30px;
 	padding: 5px;
 	cursor: move;
 }
-.joe-multisorter-bin li:hover{
+.joe-multisorter-bin li:hover,
+.joe-buckets-bin li:hover{
 	background:rgba(0,0,0,.1);
 }
-/* Image */
+
+
+/*-------------------------
+	k | Buckets
+-------------------------*/	
+.joe-buckets-field-holder{
+float:left;
+}
+.joe-buckets-bin{
+	background: #EEE;
+	min-height: 100px;
+	margin: 0 1%;
+	list-style: none;
+	max-height: 500px;
+	overflow: auto;
+}
+
+.joe-buckets-bin.selections-bin{
+	float: left;
+	width: 31%;
+	margin-bottom: 10px;
+}
+
+/*-------------------------
+	i | Image
+-------------------------*/
 input.joe-image-field{
 	width: 90% !important;
 }

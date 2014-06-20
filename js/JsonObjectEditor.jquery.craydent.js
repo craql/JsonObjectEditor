@@ -292,7 +292,7 @@ function JsonObjectEditor(specs){
 		var schema = specs.schema;
 		var list = specs.list || [];
 		var html = '';
-		if(!self.current.subset || self.current.subsets.indexOf(self.current.subset) == -1){
+		if(!self.current.subset || !self.current.subsets || (self.current.subsets && self.current.subsets.indexOf(self.current.subset) == -1 )){
 			list.map(function(li){
 				html += self.renderListItem(li);
 			})
@@ -488,6 +488,10 @@ function JsonObjectEditor(specs){
 			case 'image':
 			case 'img':
 				html+= self.renderImageField(prop);
+			break;
+			
+			case 'buckets':
+				html+= self.renderBucketsField(prop);
 			break;
 			
 			default:
@@ -969,6 +973,109 @@ this.renderSorterField = function(prop){
 		
 	}
 /*----------------------------->
+	K | Buckets
+<-----------------------------*/
+	this.renderBucketsField = function(prop){
+		
+		var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];
+		var valObjs = [];
+		
+	
+
+	//sort values into selected or option	
+		var val;
+		var bucketCount = (typeof prop.bucketCount =="function")?prop.bucketCount():prop.bucketCount || 3;
+		var optionsHtml ='';
+		var bucketsHtml =[];
+		var value = prop.value || [[],[],[]];
+	
+	//add arrays to values
+		for(var i = 0; i < bucketCount; i++){
+			bucketsHtml.push('');
+			if(!value[i]){
+				value.push([]);
+			}
+		}
+		
+		var idprop = prop[idprop] ||'id'||'_id';
+		var template = prop.template || '${name} <br/><small>(${'+idprop+'})</small>'; 
+		
+		
+		var lihtml;
+		var selected;
+		
+		//populate selected buckets
+		var foundItem;
+		var bucketItem;
+		var selectedIDs=[];
+			for(var i = 0; i < bucketCount; i++){
+				for(var li = 0; li < value[i].length; li++){
+					bucketItem = value[i][li];
+					//find object in values
+					foundItem = values.filter(function(v){
+						return v[idprop] == bucketItem;
+					})[0]||false;
+					if(!foundItem){
+						foundItem = {};
+						foundItem[idprop] = li;
+					}
+					selectedIDs.push(bucketItem);
+					lihtml = '<li data-id="'+foundItem[idprop]+'" >'+fillTemplate(template,foundItem)+'</li>';
+					bucketsHtml[i] += lihtml;
+				}
+			}
+
+			values.map(function(v){
+				lihtml = '<li data-id="'+v[idprop]+'" >'+fillTemplate(template,v)+'</li>';
+				selected = false;
+			//loop over buckets	
+				/*if(!prop.allowMultiple){
+					for(var i = 0; i < bucketCount; i++){
+						if(value[i].indexOf(v[idprop]) != -1){//currently selected
+							bucketsHtml[i] += lihtml;
+						}
+					}
+				}*/
+				if(selectedIDs.indexOf(v) ==-1 || prop.allowMultiple){
+					optionsHtml += lihtml;
+				}
+			});
+		
+		function renderBucket(id){
+			return '<ul class="joe-buckets-bin selections-bin">'+bucketsHtml[id]+'</ul>';
+		}
+	//renderHTML
+		var html=
+		'<div class="joe-buckets-field joe-field" name="'+prop.name+'" data-ftype="buckets">'
+			+'<div class="joe-filter-field-holder"><input type="text"class="" onkeyup="_joe.filterBucketOptions(this);"/></div>'
+			+'<div class="joe-buckets-field-holder" style="width:25%;">'
+				+'<ul class="joe-buckets-bin options-bin '+(prop.allowMultiple && 'allow-multiple' || '')+'">'+optionsHtml+'</ul>'
+			+'</div>'
+			+'<div class="joe-buckets-field-holder" style="width:75%;">';
+				bucketsHtml.map(function(b,i){
+					html+=renderBucket(i);
+				})
+				//+'<ul class="joe-buckets-bin selections-bin">'+bucketsHtml+'</ul>'
+				
+			
+		html+=	__clearDiv__
+			+'</div>'//end buckets field holder
+			+__clearDiv__
+		+'</div>';
+		
+
+		return html;
+	}
+	this.filterBucketOptions = function(dom){
+		var query = $(dom).val().toLowerCase();
+		$(dom).parents('.joe-buckets-field').find('.options-bin').find('li').each(function(){$(this).toggle($(this).html().toLowerCase().indexOf(query) != -1 );})
+		logit(query);
+		
+	}
+
+
+
+/*----------------------------->
 	R | Rendering Field
 <-----------------------------*/
 	this.renderRenderingField = function(prop){
@@ -1311,10 +1418,26 @@ this.renderSorterField = function(prop){
 		}
 	});
 
+	var sortable_index;
 	this.onPanelShow = function(){
 		//init datepicker
 		self.overlay.find('.joe-date-field').Zebra_DatePicker();
 		self.overlay.find('.joe-multisorter-bin').sortable({connectWith:'.joe-multisorter-bin'});
+		self.overlay.find('.joe-buckets-bin').sortable({
+			connectWith:'.joe-buckets-bin',
+			start:function(event, ui){
+				sortable_index = ui.item.index();
+				ui.item.parents();
+			},
+			update:function(event, ui){
+				if(ui.sender && ui.sender.hasClass('options-bin') && ui.sender.hasClass('allow-multiple')){
+					//add the element back into the list.
+					ui.sender.find('li').eq(sortable_index).before(ui.item.clone())
+					//ui.item.parents('.joe-buckets-bin');
+				}
+				
+			}
+		});
 		self.overlay.find('input.joe-image-field').each(function(){_joe.updateImageFieldImage(this);})
 	}
 
@@ -1404,6 +1527,19 @@ this.renderSorterField = function(prop){
 							$(this).find('.selections-bin').find('li').each(function(){
 								vals.push($(this).data('id'));
 							});
+							object[prop] = vals;
+						break;
+						case 'buckets':
+							var vals = [];
+							$(this).find('.selections-bin').each(function(){
+								vals.push([]);
+								$(this).find('li').each(function(){
+									vals[vals.length-1].push($(this).data('id'));
+								});
+							})/*
+							$(this).find('.selections-bin').find('li').each(function(){
+								vals.push($(this).data('id'));
+							});*/
 							object[prop] = vals;
 						break;
 						default:
