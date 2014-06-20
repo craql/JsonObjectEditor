@@ -30,6 +30,11 @@
 	display:none;
 	position: fixed;
 }
+
+.joe-icon{
+	background-position:center center;
+	background-repeat:no-repeat;
+}
 /*-------------------------
 	JOE Button
 -------------------------*/
@@ -381,13 +386,11 @@ textarea.joe-rendering-field{
     background: #ccc;
 }
 
-/* MultiSorter */
-div.joe-filter-field-holder {
-    padding: 5px 1%;
-}
-div.joe-filter-field-holder input {
-    max-width: 46% !important;
-}
+/*-------------------------
+	J | MultiSorter
+-------------------------*/	
+
+
 
 .joe-multisorter-bin{
 	width: 48%;
@@ -405,6 +408,7 @@ div.joe-filter-field-holder input {
 	height: 30px;
 	padding: 5px;
 	cursor: move;
+	position:relative;
 }
 .joe-multisorter-bin li:hover,
 .joe-buckets-bin li:hover{
@@ -418,6 +422,7 @@ div.joe-filter-field-holder input {
 .joe-buckets-field-holder{
 float:left;
 }
+
 .joe-buckets-bin{
 	background: #EEE;
 	min-height: 100px;
@@ -431,6 +436,23 @@ float:left;
 	float: left;
 	width: 31%;
 	margin-bottom: 10px;
+}
+
+.joe-bucket-delete {
+	left:auto;
+	width: 30px;
+
+	background-image: url(../img/close-x.png);
+	display:none;
+	margin: 5px;
+	cursor: pointer;
+}
+.joe-bucket-delete:hover{
+	background-color: #DDD;
+	background-color: rgba(0,0,0,.1);
+}
+.joe-buckets-bin.selections-bin .joe-bucket-delete{
+	display:block;
 }
 
 /*-------------------------
@@ -455,6 +477,26 @@ input.joe-image-field{
 	float:left;
 	min-width:320px;
 }
+
+/*-------------------------
+	 Filter Field
+-------------------------*/	
+.joe-filter-field-holder {
+    padding: 5px 1%;
+}
+.joe-filter-field-holder input {
+    max-width: 46% !important;
+	padding-left: 30px !important;
+	background:url(../img/search.png) center left no-repeat;
+}
+/*buckets*/
+.joe-buckets-field .joe-filter-field-holder {
+padding: 5px 3px;
+}
+.joe-buckets-field .joe-filter-field-holder input {
+max-width: 24% !important;
+}
+
 
 /*-------------------------------------------------------------------->
 	4 | Footer

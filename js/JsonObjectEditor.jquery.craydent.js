@@ -843,7 +843,7 @@ function JsonObjectEditor(specs){
 	H | Sorter
 <-----------------------------*/
 this.renderSorterField = function(prop){
-		
+	/*	
 		var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values || [prop.value];
 		var valObjs = [];
 		if($.type(values[0]) != 'object'){
@@ -864,10 +864,7 @@ this.renderSorterField = function(prop){
 				if($.type(prop.value) == 'array'){
 					selected = '';
 					selected = (prop.value.indexOf(val) != -1)?'selected':'';
-					
-					/*prop.value.map(function(pval){
-						if(pval.indexOf)
-					});*/
+
 				}else{
 					selected = (prop.value == val)?'selected':'';
 				}
@@ -883,14 +880,12 @@ this.renderSorterField = function(prop){
 		'<ul class="joe-multisorter-field joe-field" name="'+prop.name+'" '+
 			//self.renderFieldAttributes(prop)+
 		' >';
-		/*'<select class="joe-multisorter-field joe-field" name="'+prop.name+'" value="'+(prop.value || '')+'" '+
-			//self.renderFieldAttributes(prop)+
-		' >';*/
+
 		
 		
 			
 		html+='</div>';
-		return html;
+		return html;*/
 	}
 /*----------------------------->
 	I | Image
@@ -929,19 +924,39 @@ this.renderSorterField = function(prop){
 		var optionsHtml ='';
 		var selectionsHtml ='';
 		
+		
 		var idprop = prop[idprop] ||'id'||'_id';
 		var template = prop.template || '${name} (${'+idprop+'})'; 
 		var value = prop.value || [];
+		var selectionsArray = value;
 		var li;
-			values.map(function(v){
-				li = '<li data-id="'+v[idprop]+'" onclick="_joe.toggleMultisorterBin(this);">'+fillTemplate(template,v)+'</li>';
-				if(value.indexOf(v[idprop]) != -1){//currently selected
-					selectionsHtml += li;
-				}else{
-					optionsHtml += li;
-				}
-			});
-		var selected;
+		
+		
+		function renderMultisorterOption(v){
+			var html = '<li data-id="'+v[idprop]+'" onclick="_joe.toggleMultisorterBin(this);">'+fillTemplate(template,v)+'</li>';
+			return html;
+		}
+		
+	//render selected list
+	/*	values.map(function(v){
+		//li = renderMultisorterOption(v);//'<li data-id="'+v[idprop]+'" onclick="_joe.toggleMultisorterBin(this);">'+fillTemplate(template,v)+'</li>';
+		selectionsHtml += renderMultisorterOption(v);
+		});*/
+		
+		var val_index;
+	//render options list
+		values.map(function(v){
+			li = renderMultisorterOption(v);//'<li data-id="'+v[idprop]+'" onclick="_joe.toggleMultisorterBin(this);">'+fillTemplate(template,v)+'</li>';
+			val_index = value.indexOf(v[idprop]);
+			if(val_index != -1){//currently selected
+				//selectionsHtml += li;
+				selectionsArray[val_index] = li;
+			}else{
+				optionsHtml += li;
+			}
+		});
+		
+		var selectionsHtml = selectionsArray.join('');
 		
 		var html=
 		'<div class="joe-multisorter-field joe-field" name="'+prop.name+'" data-ftype="multisorter">'+
@@ -1020,13 +1035,13 @@ this.renderSorterField = function(prop){
 						foundItem[idprop] = li;
 					}
 					selectedIDs.push(bucketItem);
-					lihtml = '<li data-id="'+foundItem[idprop]+'" >'+fillTemplate(template,foundItem)+'</li>';
+					lihtml = '<li data-id="'+foundItem[idprop]+'" >'+fillTemplate(template,foundItem)+'<div class="joe-bucket-delete cui-block joe-icon" onclick="$(this).parent().remove()"></div></li>';
 					bucketsHtml[i] += lihtml;
 				}
 			}
 
 			values.map(function(v){
-				lihtml = '<li data-id="'+v[idprop]+'" >'+fillTemplate(template,v)+'</li>';
+				lihtml = '<li data-id="'+v[idprop]+'" >'+fillTemplate(template,v)+'<div class="joe-bucket-delete cui-block joe-icon" onclick="$(this).parent().remove()"></div></li>';
 				selected = false;
 			//loop over buckets	
 				/*if(!prop.allowMultiple){
