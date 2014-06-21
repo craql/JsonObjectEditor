@@ -17,6 +17,7 @@ function JsonObjectEditor(specs){
 	 
 	window._joes.push(this);	
 	
+	this.history = [];
 /*-------------------------------------------------------------------->
 	0 | CONFIG
 <--------------------------------------------------------------------*/
@@ -94,6 +95,15 @@ function JsonObjectEditor(specs){
 		self.current.data = data;
 	//clean copy for later;
 		self.current.userSpecs = $.extend({},setts);
+	
+	//update history 1/2	
+		if(!self.current.specs.noHistory){
+			self.history.push({
+	/*			_joeHistoryTitle:self.overlay.find('.joe-panel-title').html(),
+	*/			specs:self.current.userSpecs,
+				data:self.current.data
+			});
+		}
 		
 		var schema = setts.schema || '';
 		var profile = setts.profile || null;
@@ -205,7 +215,11 @@ function JsonObjectEditor(specs){
 			self.renderEditorFooter(specs);
 		self.overlay.find('.joe-overlay-panel').html(html);
 		//$('.joe-overlay-panel').html(html);
-		
+	
+	//update history 2/2	
+		if(!self.current.specs.noHistory && self.history.length){
+			$.extend({_joeHistoryTitle:self.overlay.find('.joe-panel-title').html(),},self.history[self.history.length-1]);
+		}
 		return html;
 	}
 /*----------------------------->
@@ -218,10 +232,20 @@ function JsonObjectEditor(specs){
 			titleObj = $.extend({},self.current.object,{_listCount:specs.list.length});
 		}
 		var title = fillTemplate(specs.title || 'Json Object Editor',titleObj);
-		action = specs.action||'onclick="getJoe('+self.joe_index+').toggleOverlay(this)"';
+		action = specs.action||'onclick="getJoe('+self.joe_index+').closeButtonAction()"';
+		
+		function renderHeaderBackButton(){
+			var html = '';
+			if(self.history.length > 1){
+				html+= '<div class="joe-header-back-btn" onclick="getJoe('+self.joe_index+').goBack();"> < </div>';
+			}
+			return html;
+		}
+		
 		var html = 
 		'<div class="joe-panel-header">'+
 			((specs.schema && specs.schema.subsets && self.renderSubsetselector(specs.schema)) || (specs.subsets && self.renderSubsetselector(specs)) || '')+
+			renderHeaderBackButton()+
 			'<div class="joe-panel-title">'+
 				(title || 'Json Object Editor')+
 			'</div>'+
@@ -230,6 +254,21 @@ function JsonObjectEditor(specs){
 		'</div>';
 		return html;
 	}
+	this.closeButtonAction = function(){
+		self.history = [];
+		self.overlay.toggleClass('active');
+	}
+	this.goBack = function(){
+		self.history.pop();
+		var joespecs = self.history.pop();
+		if(!joespecs){
+			self.hide();
+			return;
+		}
+		//[self.history.length];
+		self.show(joespecs.data,joespecs.specs);
+	}
+
 
 /*----------------------------->
 	B | Content
@@ -1376,8 +1415,9 @@ this.renderSorterField = function(prop){
 		//var obj = $.extend(self.current.object,newObj);
 		self.show(
 			$.extend(self.current.object,newObj),
-			merge(self.current.userSpecs,{schema:self.setSchema(schemaName) || self.current.schema})
+			merge(self.current.userSpecs,{noHistory:true,schema:self.setSchema(schemaName) || self.current.schema})
 		)
+		
 	}
 
 /*-------------------------------------------------------------------->
@@ -1465,7 +1505,8 @@ this.renderSorterField = function(prop){
 		newObj.joeUpdated = new Date();
 		var obj = $.extend(self.current.object,newObj);
 		logit('object updated');
-		self.hide();
+		//self.hide();
+		self.goBack();
 		callback(obj);
 	}
 	
@@ -1475,7 +1516,7 @@ this.renderSorterField = function(prop){
 		if(!self.current.list || !obj || self.current.list.indexOf(obj) == -1){
 		//no list or no item
 			alert('object or list not found');
-			self.hide();
+			self.goBack();
 			callback(obj);	
 			return;
 		}
@@ -1483,7 +1524,7 @@ this.renderSorterField = function(prop){
 		
 		self.current.list.removeAt(index);
 		logit('object deleted');
-		self.hide();
+		self.goBack();
 		callback(obj);
 	}
 	
@@ -1498,7 +1539,7 @@ this.renderSorterField = function(prop){
 			delete itemobj[d];
 		})
 		
-		self.hide();
+		self.goBack();
 		goJoe(itemobj,self.current.userSpecs);
 	}
 	this.constructObjectFromFields = function(index){

@@ -170,6 +170,21 @@
 	line-height:30px;
 }
 
+.joe-header-back-btn{
+	float: left;
+	width: 40px;
+	cursor: pointer;
+	text-align: center;
+	line-height: 30px;
+	border-right: 1px solid #bbb;
+	margin: 5px 0;
+	padding-right: 5px;
+	margin-right: 10px;
+	color: #888;
+}
+.joe-header-back-btn:hover{
+	background:#bbb;
+}
 /*-------------------------
 Subset Selector
 -------------------------*/	
@@ -405,7 +420,7 @@ textarea.joe-rendering-field{
 .joe-multisorter-bin li,
 .joe-buckets-bin li {
 	/*line-height: 30px;*/
-	height: 30px;
+	min-height: 30px;
 	padding: 5px;
 	cursor: move;
 	position:relative;
