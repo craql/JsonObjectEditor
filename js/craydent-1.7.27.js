@@ -1,5 +1,5 @@
 /*/---------------------------------------------------------/*/
-/*/ Craydent LLC v1.7.21                                    /*/
+/*/ Craydent LLC v1.7.27                                    /*/
 /*/	Copyright 2011 (http://craydent.com/about)          /*/
 /*/ Dual licensed under the MIT or GPL Version 2 licenses.  /*/
 /*/	(http://craydent.com/license)                       /*/
@@ -8,16 +8,16 @@
 /*----------------------------------------------------------------------------------------------------------------
 /-	Global CONTANTS and variables
 /---------------------------------------------------------------------------------------------------------------*/
-var __version = "1.7.21",
+var __version = "1.7.27",
 __thisIsNewer = true,
 $w = window,
 $d = document,
 $l = $w.location;
 
-if (window.__cradyentLoaded) {
-    var __current = window.__craydentVersion.split("."),
+if ($w.__craydentLoaded || typeof($c) != "undefined") {
+    var __current = ($w.__craydentVersion||$c.VERSION||"").split("."),
     __thisVersion = __version.split(".");
-    if(__thisIsNewer = __isNewer(current,thisVersion)) {
+    if(__thisIsNewer = __isNewer(__current,__thisVersion)) {
         $c.VERSION = __version;
     }
 }
@@ -37,6 +37,7 @@ function __cleanUp() {
         delete $w.__current;
         delete $w.__thisVersion;
         delete $w.__thisIsNewer;
+        delete $w.__isNewer;
         delete $w.__version;
         delete $w._ie;
         delete $w._droid;
@@ -52,7 +53,7 @@ function __cleanUp() {
 //    delete $w.;
 //    delete $w.;
 }
-window.__craydentVersion = __version;
+$w.__craydentVersion = __version;
 
 if (__thisIsNewer) {
 
@@ -61,11 +62,27 @@ if (__thisIsNewer) {
     /*----------------------------------------------------------------------------------------------------------------
     /-	define functions preventing overwriting other framework functions
     /---------------------------------------------------------------------------------------------------------------*/
-    function _getFuncName (func) {
-        return _trim(func.toString().replace(/\/\/.*?[\r\n]/gi,'').replace(/[\t\r\n]*/gi, '').replace(/\/\*.*?\*\//gi, '').replace(/function\s*?(.*?)\s*?\(.*/,'$1'));
-    }
-    function _getFuncArgs (func) {
-        return _trim(func.toString()).replace(/\s*/gi, '').replace(/.*?\((.*?)\).*/, '$1').split(',');
+    /*----------------------------------------------------------------------------------------------------------------
+    /-	private methods
+    /---------------------------------------------------------------------------------------------------------------*/
+    function __convert_regex_safe(reg_str) {
+        return reg_str.replace(/\\/gi,"\\\\")
+            .replace(/\$/gi, "\\$")
+            .replace(/\//gi, "\\/")
+            .replace(/\^/gi, "\\^")
+            .replace(/\./gi, "\\.")
+            .replace(/\|/gi, "\\|")
+            .replace(/\*/gi, "\\*")
+            .replace(/\+/gi, "\\+")
+            .replace(/\?/gi, "\\?")
+            .replace(/\!/gi, "\\!")
+            .replace(/\{/gi, "\\{")
+            .replace(/\}/gi, "\\}")
+            .replace(/\[/gi, "\\[")
+            .replace(/\]/gi, "\\]")
+            .replace(/\(/gi, "\\(")
+            .replace(/\)/gi, "\\)")
+            .replace('\n','\\n');
     }
     function __dup (old) {
         try {
@@ -76,13 +93,79 @@ if (__thisIsNewer) {
             error('dup', e);
         }
     }
+    function __or (){
+        for(var a = 0, len = arguments.length; a<len; a++){
+            if(arguments[a]){
+                return arguments[a];
+            }
+        }
+        return "";
+    }
+    function __run_replace (reg, template, use_run, obj) {
+        try {
+            var pre = "", post = "", split_param = "|";
+    //                    use_run && (pre="RUN\\[",post="\\]", split_param=/;(?!\\)/);
+            use_run && (pre="RUN[",post="]", split_param=/;(?!\\)/)
+
+            while (reg.test(template)) {
+                var match = reg.exec(template),
+                funcValue = Array(),
+                func = "";
+                if (match[1]) {
+                    //funcValue = match[1].split(';');
+                    //funcValue = match[1].replace(/\\\[/g,'[').replace(/\\\]/g,']').split(split_param);
+                    funcValue = match[1].replace_all('\\[','[').replace_all('\\]',']').split(split_param);
+                    func = funcValue.splice(0,1);
+                    funcValue = funcValue.map(function(val){
+                        try {
+                            if (/\$\{.+?\}/.test(val)) {
+    //                                        match[1] = match[1].replace(val, val = fillTemplate(val, obj));
+                                return fillTemplate(val, obj);
+                            }
+                            return eval("("+val.replace_all(';\\', ';')+")");
+                        } catch(e) {
+                            //error('fillTemplate._run_replace.map',e);
+                        }
+                        return val;
+                    });
+                    template = template.replace(match[1], (match[1] = match[1].replace_all('\\[', '[').replace_all('\\]', ']')));
+    //                            template = template.replace_all("${" + pre + __convert_regex_safe(match[1]) + post +"}", $w[func] ? $w[func].apply(objs, funcValue) : "");
+                    template = template.replace_all("${" + pre + match[1] + post +"}", $w[func] ? $w[func].apply(obj, funcValue) : "");
+                }
+            }
+            return template;
+        } catch (e) {
+            error('fillTemplate._run_replace', e);
+        }
+    }
+    function _ajaxServerResponse(response) {
+        try {
+            if (response.readyState == 4 && response.status==200) {
+
+                var objResponse = {};
+                try {
+                    objResponse = eval(response.responseText.trim());
+                } catch (e) {
+                    objResponse = eval("(" + response.responseText.trim() + ")");
+                }
+                if (!objResponse || objResponse.hasErrors) {
+                    return false;
+                }
+                return objResponse;
+            }
+            return false;
+        } catch (e) {
+            error("_ajaxServerResponse", e);
+            return false;
+        }  
+    }
     function _craydentSelector (by, overwrite, object, single) {
         try {
             if (!object || object === true) {
                 return undefined;
             }
 
-            var elem = document[by](object);
+            var elem = $d[by](object);
             if (single) {
                 return ((elem && ((elem.length && elem[0]) || elem)) || $w[overwrite](object)[0]);
             }
@@ -91,6 +174,33 @@ if (__thisIsNewer) {
             error('selector', e);
         }
     }
+    function _defineFunction (name, func, override) {
+        try {
+    //      if (($w.hasOwnProperty && $w.hasOwnProperty(name) || !$w.hasOwnProperty && $w[name]) && !override) {
+    //          return;
+    //      }
+            var args = _getFuncArgs(func),
+            fstr = func.toString().replace(/this/g,'obj'),
+            exec = "",
+
+            // extra code to account for when this == window
+            extra_code = "if(obj === undefined && this == $w){return;}",
+            fnew = args.length === 0 || (args.length === 1 && !args[0].trim()) ? 
+            //    fstr.toString().replace(/(\(\s*?\)\s*?\{)/, ' ' + name + '(obj){'+extra_code) :
+            fstr.toString().replace(/(\(\s*?\)\s*?\{)/, ' (obj){'+extra_code) :
+            "(" + fstr.toString().replace(/\((.*?)\)\s*?\{/, '(obj,$1){'+extra_code) + ")";
+    
+            if (!override && eval("typeof("+name+")") !== "undefined") {
+                eval("$c."+name+" = "+fnew);
+                return;
+            }
+            eval("$w."+name+"= $c."+name+" = "+fnew);
+            eval(fnew.replace("function","function "+name));
+        } catch (ex) {
+            error("_defineFunction", ex);
+        }
+    }
+    _df = _defineFunction;
     function _displayHelper(object, func){
         try {
             return (($d.getElementById(object) && $(object)[func]()) 
@@ -100,10 +210,167 @@ if (__thisIsNewer) {
             error(func, e);
         }
     }
+    function _ext (cls, property, func, override) {
+        cls['prototype'][property] = cls['prototype'][property] || func;
+        _df(property, func, override);
+    }
+    function _even (num) {
+            if (isNaN(num)) {
+                return false;
+            }
+            return !(num&1);
+    }
+    function _getBrowserVersion(browser){
+        try {
+            var info = navigator.userAgent;
+            if (browser == "safari") {
+                info = navigator.vendor;
+            } else if (browser == "Opera") {
+                info = $w.opera;
+            }
+            var index = navigator.userAgent.indexOf(browser);
+            if (index == -1 && $w["is"+browser]()) return -1;
+            return parseFloat(navigator.userAgent.substring(index+browser.length+1));
+        } catch(e){
+            error('_getBrowserVersion', e);
+        }
+    }
+    function _getDimension(isBody, dimension) {
+        try {
+            if (!isBody && this.tagName.toLowerCase() == 'body') {
+                var dim, currentStyle = $d.body.style[dimension];
+                $d.body.style[dimension] = "100%";
+                dim = $d.body[dimension](true);
+                $d.body.style[dimension] = currentStyle;
+            }
+            return (this.getClientRects && this.getClientRects()[0][dimension]) || this["offset" + dimension.capitalize()] || this["scroll" + dimension.capitalize()];
+        } catch (e) {
+            if (!this.parentNode && this != $d) {
+                var temp = this.cloneNode(1),
+                rtn;
+                temp.style.visible = 'hidden';
+                temp.style.position = 'absolute';
+                temp["get" + dimension.capitalize()] = $d.body[dimension];
+                $d.body.appendChild(temp);
+                rtn = temp["get" + dimension.capitalize()]();
+                temp.remove();
+                return rtn;
+            }
+            error("_getDimension", e);
+            return false;
+        }
+    }
+    function _getFuncName (func) {
+        return _trim(func.toString().replace(/\/\/.*?[\r\n]/gi,'').replace(/[\t\r\n]*/gi, '').replace(/\/\*.*?\*\//gi, '').replace(/function\s*?(.*?)\s*?\(.*/,'$1'));
+    }
+    function _getFuncArgs (func) {
+        return _trim(func.toString()).replace(/\s*/gi, '').replace(/\/\*.*?\*\//g,'').replace(/.*?\((.*?)\).*/, '$1').split(',');
+    }
     function _getGMTOffset () {
         return this.getHours() - 24 - this.getUTCHours()
     }
+    function _invokeHashChange() {
+        var hc = $COMMIT.onhashchange || $c.onhashchange;
+        hc && $c.isFunction(hc) && hc();    
+    }
+    function _replace_all(replace, subject, flag) {
+        try {
+            if (this.indexOf(replace) == -1) {
+                return this;
+            }
+            return this.replace(RegExp(__convert_regex_safe(replace), flag), subject);
+        } catch (e) {
+            error("", e);
+        }
+    } 
+    function _set (variable, value, defer, options, loc){
+        try {
+            value = encodeURI(value);
+            var ignoreCase = options.ignoreCase || options == "ignoreCase" ? "i" : "",
+            regex = new RegExp('(.*)?(' + variable +'=)(.*?)(([&]|[@])(.*)|$)', ignoreCase),
+            attr = "search",
+            symbol = "&",
+            queryStr = "";
+            attr = variable.indexOf('@') == 0 ? (symbol='', "hash") : attr;
 
+            $COMMIT[attr] = $COMMIT[attr] || "";
+
+            if (defer) {
+                $COMMIT[attr] = ($COMMIT[attr] || $l[attr]);
+                queryStr = regex.test($COMMIT[attr]) ? 
+                $COMMIT[attr].replace(regex, '$1$2' + value + '$4') : 
+                $COMMIT[attr] + symbol + variable + '=' + value;
+                if (symbol == "&" && queryStr.indexOf('&') == 0) {
+                    queryStr = "?" + queryStr.substring(1);
+                }
+                $COMMIT[attr] = queryStr;
+                $COMMIT.update = true;
+            } else {
+                queryStr = regex.test(loc[attr]) ? 
+                loc[attr].replace(regex, '$1$2' + value + '$4') : 
+                loc[attr] + symbol + variable + '=' + value;
+                if (symbol == "&" && queryStr.indexOf('&') == 0) {
+                    queryStr = "?" + queryStr.substring(1);
+                }
+                loc[attr] = queryStr;
+                if (attr == 'hash') {
+                    $COOKIE("CRAYDENTHASH", loc.hash[0] == '#' ? loc.hash.substring(1) : loc.hash);
+                    _invokeHashChange();
+                }
+            }
+            return loc;
+        } catch (e) {
+            error("_set", e);
+        }
+    }
+    function _setDOMElementProperties(_elem) {
+        try {
+            if (!_elem) {
+                return;
+            }
+            for (var prop in $w.HTMLElement.prototype) {
+                if ($w.HTMLElement.prototype.hasOwnProperty(prop)) {
+                    try {
+                        if (prop == "dataset" || prop == "firstElementChild" || prop == "nextElementSibling") {
+                            _elem[prop] = $w.HTMLElement.prototype['_' + prop]();
+                            //return;
+                        }
+                        _elem[prop] = $w.HTMLElement.prototype[prop];
+                    } catch(e) {
+
+                    }
+                }
+            }
+        } catch (e) {
+            error("_setDOMElementProperties", e);
+        }
+    }
+    function _trim(str, side, character) {
+        try {
+            var temp = str,
+            trimChars = character ? eval('{"'+character+'":1}') : {
+                " ":1,
+                "\t":1,
+                "\n":1
+            };
+            if (!side || side == 'l') {
+                while (temp.charAt(0) in trimChars) {
+                    temp = temp.substring(1);
+                }
+            }
+            if (!side || side == 'r') {
+                while (temp.charAt(temp.length - 1) in trimChars) {
+                    temp = temp.substring(0, temp.length - 1);
+                }
+            }
+            return temp.toString();
+        } catch (e) {
+            error("_trim", e);
+        }
+    }
+    
+
+    
     /*----------------------------------------------------------------------------------------------------------------
     /-	Class prototypes
     /---------------------------------------------------------------------------------------------------------------*/
@@ -142,85 +409,26 @@ if (__thisIsNewer) {
         _df(name, func, override);
     }
     _ao = addObjectPrototype;
-    function _defineFunction (name, func, override) {
-        try {
-    //      if (($w.hasOwnProperty && $w.hasOwnProperty(name) || !$w.hasOwnProperty && $w[name]) && !override) {
-    //          return;
-    //      }
-            if (!override && eval("typeof("+name+")") !== "undefined") {
-                return;
-            }
-            var args = _getFuncArgs(func),
-            fstr = func.toString().replace(/this/g,'obj'),
-
-            // extra code to account for when this == window
-            extra_code = "if(!obj && this == $w){return;}",
-            fnew = args.length === 0 || (args.length === 1 && !args[0].trim()) ? 
-            //    fstr.toString().replace(/(\(\s*?\)\s*?\{)/, ' ' + name + '(obj){'+extra_code) :
-            fstr.toString().replace(/(\(\s*?\)\s*?\{)/, ' (obj){'+extra_code) :
-            "(" + fstr.toString().replace(/\((.*?)\)\s*?\{/, '(obj,$1){'+extra_code) + ")";
-            eval("$w."+name+"= $c."+name+" = "+fnew);
-            eval(fnew.replace("function","function "+name));
-        } catch (ex) {
-            error("_defineFunction", ex);
-        }
-    }
-    _df = _defineFunction;
-    function _extend (cls, property, func, override) {
-        cls['prototype'][property] = cls['prototype'][property] || func;
-        _df(property, func, override);
+    
+    
+    /*----------------------------------------------------------------------------------------------------------------
+    /-	Benchmark testing Class
+    /---------------------------------------------------------------------------------------------------------------*/
+    function Benchmarker() {
+        this.start = new Date();
+        this.end = "";
+        this.executionTime = 0;
+        this.stop = function (func) {
+            this.end = new Date();
+            this.executionTime = (this.end - this.start)/1000;
+            return this.executionTime;
+        };
     }
 
-
+    
     /*----------------------------------------------------------------------------------------------------------------
     /-	Ajax operations
     /---------------------------------------------------------------------------------------------------------------*/
-    function Request() {
-        try {
-            var ajaxHttpCaller;
-            try {
-                //request object for mozilla
-                ajaxHttpCaller = new XMLHttpRequest();
-            } catch (ex) {
-                //request object for IE
-                try {
-                    ajaxHttpCaller = new ActiveXObject("Msxml2.XMLHTTP");
-                } catch (ex) {
-                    try {
-                        ajaxHttpCaller = new ActiveXObject("Microsoft.XMLHTTP");
-                    } catch (ex) {       
-                        return null;
-                    }
-                }
-            }
-            return ajaxHttpCaller;
-        } catch (e) {
-            error("GetAJAXHttpObject", e);
-        }
-    }
-
-    function _ajaxServerResponse(response) {
-        try {
-            if (response.readyState == 4 && response.status==200) {
-
-                var objResponse = {};
-                try {
-                    objResponse = eval(response.responseText.trim());
-                } catch (e) {
-                    objResponse = eval("(" + response.responseText.trim() + ")");
-                }
-                if (!objResponse || objResponse.hasErrors) {
-                    return false;
-                }
-                return objResponse;
-            }
-            return false;
-        } catch (e) {
-            error("_ajaxServerResponse", e);
-            return false;
-        }  
-    }
-
     function ajax(params){
         try {
             var need_to_shard = false, browser_url_limit = 1500, query;
@@ -398,11 +606,85 @@ if (__thisIsNewer) {
             error("ajax", e);
         }
     }
-
-
+    function Request() {
+        try {
+            var ajaxHttpCaller;
+            try {
+                //request object for mozilla
+                ajaxHttpCaller = new XMLHttpRequest();
+            } catch (ex) {
+                //request object for IE
+                try {
+                    ajaxHttpCaller = new ActiveXObject("Msxml2.XMLHTTP");
+                } catch (ex) {
+                    try {
+                        ajaxHttpCaller = new ActiveXObject("Microsoft.XMLHTTP");
+                    } catch (ex) {       
+                        return null;
+                    }
+                }
+            }
+            return ajaxHttpCaller;
+        } catch (e) {
+            error("GetAJAXHttpObject", e);
+        }
+    }   
+    
     /*----------------------------------------------------------------------------------------------------------------
     /-	helper operations
     /---------------------------------------------------------------------------------------------------------------*/
+    /*  $COOKIE
+     *  options can have the properties:
+     *      expiration : int
+     *      path : string
+     **/
+    function $COOKIE(key, value, options) {
+        var c = $d.cookie;
+        if (!c) {
+            return;
+        }
+        if($c.isObject(key)) {
+            for (prop in key) {
+                value = key[prop];
+                key = prop;
+                options = value;
+                break;
+            }
+        }
+        var cookies = {},    
+        arr = c.split(/[,;]/);
+        if (value) {
+            var expires = "", path = "";
+            options = options || {};
+            if ($c.isInt(options.expiration)) {
+                var dt = new Date();
+                dt.setDate(dt.getDate() + options.expiration);
+                expires = "; expires=" + dt.toUTCString();
+            }
+            if ($c.isString(options.path)) {
+                path = "; path=/" + options.path;
+            }
+            key = encodeURIComponent(key);
+            value = encodeURIComponent(value);
+            $d.cookie = key + "=" + value + expires + path;
+            return;
+        }
+        for (var i = 0, len = arr.length; i < len; i++) {
+            var cookie = arr[i],            
+            parts = cookie.split(/=/, 2),
+            name = decodeURIComponent($c.ltrim(parts[0])),
+            value = parts.length > 1 ? decodeURIComponent($c.rtrim(parts[1])) : null;
+            cookies[name] = value;
+            if (key && key == name) {
+                return value;
+            }
+        }
+
+        if (key) {
+            return false;
+        }
+        return cookies;
+    }
     function $GET(variable, options) {//used to retrieve variables in the url
         try {
             if (!variable) {
@@ -486,7 +768,7 @@ if (__thisIsNewer) {
             } else if (!options) {
                 options = {};
             }
-            var defer = options.defer || options == "defer" ? true : false;
+            var defer = options.defer || options == "defer" ? true : false,
             loc = {
                 'search' : $l.search, 
                 'hash' : $l.hash
@@ -506,6 +788,17 @@ if (__thisIsNewer) {
             }
 
             if (!defer) {
+                var noHistory = options.noHistory || options == "noHistory" || options == "h";
+                if (noHistory) {
+                    if(loc.hash[0] != "#") {
+                        loc.hash = "#" + loc.hash;
+                    }
+                    if (loc.search[0] != "?") {
+                        loc.search = "?" + loc.search;
+                    }
+                    $w.location.replace(loc.search + loc.hash);
+                    return;
+                }
                 $l.hash = loc.hash;
                 if ($l.search.trim() != loc.search.trim()) {
                     $l.search = loc.search;
@@ -513,46 +806,6 @@ if (__thisIsNewer) {
             }
         } catch (e) {
             error("$SET", e);
-        }
-    }
-    function _set (variable, value, defer, options, loc){
-        try {
-            value = encodeURI(value);
-            var ignoreCase = options.ignoreCase || options == "ignoreCase" ? "i" : "",
-            regex = new RegExp('(.*)?(' + variable +'=)(.*?)(([&]|[@])(.*)|$)', ignoreCase),
-            attr = "search",
-            symbol = "&",
-            queryStr = "";
-            attr = variable.indexOf('@') == 0 ? (symbol='', "hash") : attr;
-
-            $COMMIT[attr] = $COMMIT[attr] || "";
-
-            if (defer) {
-                $COMMIT[attr] = ($COMMIT[attr] || $l[attr]);
-                queryStr = regex.test($COMMIT[attr]) ? 
-                $COMMIT[attr].replace(regex, '$1$2' + value + '$4') : 
-                $COMMIT[attr] + symbol + variable + '=' + value;
-                if (symbol == "&" && queryStr.indexOf('&') == 0) {
-                    queryStr = "?" + queryStr.substring(1);
-                }
-                $COMMIT[attr] = queryStr;
-                $COMMIT.update = true;
-            } else {
-                queryStr = regex.test(loc[attr]) ? 
-                loc[attr].replace(regex, '$1$2' + value + '$4') : 
-                loc[attr] + symbol + variable + '=' + value;
-                if (symbol == "&" && queryStr.indexOf('&') == 0) {
-                    queryStr = "?" + queryStr.substring(1);
-                }
-                loc[attr] = queryStr;
-                if (attr == 'hash') {
-                    $COOKIE("CRAYDENTHASH", loc.hash[0] == '#' ? loc.hash.substring(1) : loc.hash);
-                    _invokeHashChange();
-                }
-            }
-            return loc;
-        } catch (e) {
-            error("_set", e);
         }
     }
     function $DEL(variables, options){
@@ -594,12 +847,23 @@ if (__thisIsNewer) {
             error("$DEL", e);
         }
     }
-    function $COMMIT() {
+    function $COMMIT(options) {
+        options = options || {};
+        var noHistory = options.noHistory || options == "noHistory" || options == "h";
         if ($COMMIT.update) {
             if ($COMMIT.search) {
-                $l.href = $COMMIT.search + ($COMMIT.hash || "");
+                if (noHistory) {
+                    $l.replace($COMMIT.search + ($COMMIT.hash || ""));
+                } else {
+                    $l.href = $COMMIT.search + ($COMMIT.hash || "");
+                }
             } else if ($COMMIT.hash) {
-                $l.hash = $COMMIT.hash;
+                if (noHistory) {
+                    var hash = $COMMIT.hash[0] == '#' ? $COMMIT.hash : "#" + $COMMIT.hash
+                    $l.replace($COMMIT.hash);
+                } else {
+                    $l.hash = $COMMIT.hash;
+                }
                 $COOKIE("CRAYDENTHASH", $l.hash[0] == '#' ? $l.hash.substring(1) : $l.hash);
                 _invokeHashChange();
             }
@@ -608,14 +872,45 @@ if (__thisIsNewer) {
     }
     function $ROLLBACK() {
         delete $COMMIT.update;
+        delete $COMMIT.noHistory;
         delete $COMMIT.search;
         delete $COMMIT.hash;
         delete $COMMIT.onhashchange;
     }
-    function _invokeHashChange() {
-        var hc = $COMMIT.onhashchange || $c.onhashchange;
-        hc && $c.isFunction(hc) && hc();    
+    
+    function ChromeVersion (){
+        try {
+            var browser = "Chrome"
+            return _getBrowserVersion(browser);   
+        } catch(e){
+            error('ChromeVersion', e);
+        }
     }
+    function FirefoxVersion (){
+        try {
+            var browser = "Firefox"
+            return _getBrowserVersion(browser);
+        } catch(e){
+            error('FirefoxVersion', e);
+        }
+    }
+    function OperaVersion (){
+        try {
+            var browser = "Opera"
+            return _getBrowserVersion(browser);   
+        } catch(e){
+            error('OperaVersion', e);
+        }
+    }
+    function SafariVersion (){
+        try {
+            var browser = "Safari"
+            return _getBrowserVersion(browser);
+        } catch(e){
+            error('SafariVersion', e);
+        }
+    }
+    
     
     function addHTMLPrototype (name,fn, override) {
         try {
@@ -629,191 +924,17 @@ if (__thisIsNewer) {
                 HTMLElement.prototype[name].overwritten = true;
             }
             if ($w.isFunction($w.HTMLElement)) {
-                (!$d.body[name] || override) && ($d.body[name] = fn);
+                $d.body && (!$d.body[name] || override) && ($d.body[name] = fn);
             }
             _df(name, fn, override);
         } catch (e) {
             error("addHTMLPrototype", e);
         }
-    }
-    function _setDOMElementProperties(_elem) {
-        try {
-            if (!_elem) {
-                return;
-            }
-            for (var prop in $w.HTMLElement.prototype) {
-                if ($w.HTMLElement.prototype.hasOwnProperty(prop)) {
-                    try {
-                        if (prop == "dataset" || prop == "firstElementChild" || prop == "nextElementSibling") {
-                            _elem[prop] = $w.HTMLElement.prototype['_' + prop]();
-                            //return;
-                        }
-                        _elem[prop] = $w.HTMLElement.prototype[prop];
-                    } catch(e) {
-
-                    }
-                }
-            }
-        } catch (e) {
-            error("_setDOMElementProperties", e);
-        }
-    }
-    function _even (num) {
-            if (isNaN(num)) {
-                return false;
-            }
-            return !(num&1);
-    }
-    function _trim(str, side, character) {
-        try {
-            var temp = str,
-            trimChars = character ? eval('{"'+character+'":1}') : {
-                " ":1,
-                "\t":1,
-                "\n":1
-            };
-            if (!side || side == 'l') {
-                while (temp.charAt(0) in trimChars) {
-                    temp = temp.substring(1);
-                }
-            }
-            if (!side || side == 'r') {
-                while (temp.charAt(temp.length - 1) in trimChars) {
-                    temp = temp.substring(0, temp.length - 1);
-                }
-            }
-            return temp.toString();
-        } catch (e) {
-            error("_trim", e);
-        }
-    }
-    function _getDimension(isBody, dimension) {
-        try {
-            if (!isBody && this.tagName.toLowerCase() == 'body') {
-                var dim, currentStyle = $d.body.style[dimension];
-                $d.body.style[dimension] = "100%";
-                dim = $d.body[dimension](true);
-                $d.body.style[dimension] = currentStyle;
-            }
-            return (this.getClientRects && this.getClientRects()[0][dimension]) || this["offset" + dimension.capitalize()] || this["scroll" + dimension.capitalize()];
-        } catch (e) {
-            if (!this.parentNode && this != document) {
-                var temp = this.cloneNode(1),
-                rtn;
-                temp.style.visible = 'hidden';
-                temp.style.position = 'absolute';
-                temp["get" + dimension.capitalize()] = $d.body[dimension];
-                $d.body.appendChild(temp);
-                rtn = temp["get" + dimension.capitalize()]();
-                temp.remove();
-                return rtn;
-            }
-            error("_getDimension", e);
-            return false;
-        }
-    }
-    
-    /*
-     *  options can have the properties:
-     *      expiration : int
-     *      path : string
-     **/
-    function $COOKIE(key, value, options) {
-        var c = $d.cookie;
-        if (!c) {
-            return;
-        }
-        if($c.isObject(key)) {
-            for (prop in key) {
-                value = key[prop];
-                key = prop;
-                options = value;
-                break;
-            }
-        }
-        var cookies = {},    
-        arr = c.split(/[,;]/);
-        if (value) {
-            var expires = "", path = "";
-            options = options || {};
-            if ($c.isInt(options.expiration)) {
-                var dt = new Date();
-                dt.setDate(dt.getDate() + options.expiration);
-                expires = "; expires=" + dt.toUTCString();
-            }
-            if ($c.isString(options.path)) {
-                path = "; path=/" + options.path;
-            }
-            key = encodeURIComponent(key);
-            value = encodeURIComponent(value);
-            $d.cookie = key + "=" + value + expires + path;
-            return;
-        }
-        for (var i = 0, len = arr.length; i < len; i++) {
-            var cookie = arr[i],            
-            parts = cookie.split(/=/, 2),
-            name = decodeURIComponent($c.ltrim(parts[0])),
-            value = parts.length > 1 ? decodeURIComponent($c.rtrim(parts[1])) : null;
-            cookies[name] = value;
-            if (key && key == name) {
-                return value;
-            }
-        }
-
-        return cookies;
-    }
-
-    function killPropagation(ev, bubble, returnValue) {//used to cancel any bubbling and propagation
-        try {
-            ev = ev || $w.event;
-            if (!ev) {return false;}
-            bubble = bubble || true;
-            returnValue = returnValue || false;
-            if (ev.stopPropagation) {
-                ev.stopPropagation();
-                ev.preventDefault();
-            } else {
-                ev.cancelBubble = bubble;
-                ev.returnValue = returnValue;
-            }
-            return true;
-        } catch (e) {
-            error("killPropagation", e);
-            return false;
-        }
-    }
-
-    function isNull(thiss, value) {//used to determine if thiss is undefined->if undefined, return value
-        try {
-            if (value == null || value == undefined) {
-                return (thiss == null || thiss == undefined || thiss.length == 0);
-            }
-            return ((thiss ? thiss.length == 0 : thiss) || value);
-        } catch (e) {
-            error("isNull", e);
-        }  
-    }
-    function getUniqueId(prefix) {
-        try {
-            var index = "";
-            prefix = prefix || "";
-            while (!isNull($(prefix + index))) {
-                index = index || 0;
-                index++;
-            }
-            return {
-                id : prefix + index, 
-                index: index
-            };
-        } catch (e) {
-            error('getUniqueId', e);
-        }
-    }
-    function error(fname, e) {
-        try {
-            $c.DEBUG_MODE && cout("Error in " + fname + "\n" + (e.description || e), e);
-        } catch (e) {
-            cout("Error in " + fname + "\n" + (e.description || e));
+    }   
+    function cacheImages(imgs) {
+        for (var i = 0, len = imgs.length; i < len; i++) {
+            var img = $d.createElement('img');
+            img.src = imgs[i];	
         }
     }
     function cout(){
@@ -827,274 +948,6 @@ if (__thisIsNewer) {
             error('cout', e);
         }
     }
-    function logit(){
-        cout.apply(this, arguments);
-    }
-    function rand(num1, num2, inclusive) {
-        if (inclusive) {
-            if (num1 < num2) {
-                num1 -= 0.1;
-                num2 += 0.1;
-            } else if (num1 > num2) {
-                num1 += 0.1;
-                num2 -= 0.1;            
-            }
-        }
-        return (num2 - num1)*Math.random() + num1;
-    }
-    function isIE6() {
-        try {
-            var rv = IEVersion();
-            return (rv != -1 && rv < 7.0);
-        } catch (e) {
-            error('isIE6', e);
-        }
-    }
-    function isIE() {
-        try {
-            return (IEVersion() != -1);
-        } catch (e) {
-            error('isIE', e);
-        }
-    }
-    function IEVersion () {
-        try {
-            var rv = -1;
-            if (navigator.appName == 'Microsoft Internet Explorer') {
-                var ua = navigator.userAgent,
-                re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
-                if (re.exec(ua) != null) {
-                    rv = parseFloat(RegExp.$1);
-                }
-            }
-            return rv;
-        } catch (e) {
-            error('IEVersion', e);
-        }
-    }
-    function isChrome(){
-        try {
-            return (navigator.userAgent.indexOf("Chrome") != -1);
-        } catch(e){
-            error('isChrome', e);
-        }
-    }
-    function isSafari(){
-        try {
-            return (navigator.userAgent.indexOf("Chrome") == -1) && (navigator.userAgent.indexOf("Apple") != -1);
-        } catch(e){
-            error('isSafari', e);
-        }
-    }
-    function isOpera(){
-        try {
-            return (navigator.userAgent.indexOf("Chrome") == -1) 
-            && (navigator.userAgent.indexOf("Apple") == -1) 
-            && (navigator.userAgent.indexOf("Opera") != -1);   
-        } catch(e){
-            error('isOpera', e);
-        }
-    }
-    function isFirefox(){
-        try {
-            return (navigator.userAgent.indexOf("Chrome") == -1) 
-            && (navigator.userAgent.indexOf("Apple") == -1) 
-            && (navigator.userAgent.indexOf("Opera") == -1) 
-            && (navigator.userAgent.indexOf("Firefox") != -1);   
-        } catch(e){
-            error('isFirefox', e);
-        }
-    }
-
-    function _getBrowserVersion(browser){
-        try {
-            var info = navigator.userAgent;
-            if (browser == "safari") {
-                info = navigator.vendor;
-            } else if (browser == "Opera") {
-                info = $w.opera;
-            }
-            var index = navigator.userAgent.indexOf(browser);
-            if (index == -1 && $w["is"+browser]()) return -1;
-            return parseFloat(navigator.userAgent.substring(index+browser.length+1));
-        } catch(e){
-            error('_getBrowserVersion', e);
-        }
-    }
-    function ChromeVersion (){
-        try {
-            var browser = "Chrome"
-            return _getBrowserVersion(browser);   
-        } catch(e){
-            error('ChromeVersion', e);
-        }
-    }
-    function SafariVersion (){
-        try {
-            var browser = "Safari"
-            return _getBrowserVersion(browser);
-        } catch(e){
-            error('SafariVersion', e);
-        }
-    }
-    function OperaVersion (){
-        try {
-            var browser = "Opera"
-            return _getBrowserVersion(browser);   
-        } catch(e){
-            error('OperaVersion', e);
-        }
-    }
-    function FirefoxVersion (){
-        try {
-            var browser = "Firefox"
-            return _getBrowserVersion(browser);
-        } catch(e){
-            error('FirefoxVersion', e);
-        }
-    }
-
-    function isIPhone(){
-        try{
-            return !isIPad() && navigator.userAgent.indexOf("iPhone") != -1;
-        } catch (e) {
-            error('isIPhone', e);
-        }
-    }
-    function isIPod() {
-        try {
-            var navUserAgent = navigator.userAgent;
-            return (/ipod/i.test(navUserAgent));
-        } catch (e) {
-            error('isIPod', e);
-        }
-    }
-    function isIPad() {
-        try {
-            var navUserAgent = navigator.userAgent;
-            return (/iPad|iPhone OS 3_[1|2]_2/i.test(navUserAgent));
-        } catch (e) {
-            error('isIPad', e);
-        }
-    }
-    function isAndroid(){
-        try {
-            var navUserAgent = navigator.userAgent;
-            return (/android/i.test(navUserAgent));
-        } catch (e) {
-            error('isAndroid', e);
-        }
-    }
-    function isWindowsMobile() {
-        try {
-            var navUserAgent = navigator.userAgent;
-            return (/windows ce/i.test(navUserAgent));
-        } catch (e) {
-            error('isWindowsMobile', e);
-        }
-    }
-    function isBlackBerry() {
-        try {
-            var navUserAgent = navigator.userAgent;
-            return (/blackberry/i.test(navUserAgent));
-        } catch (e) {
-            error('isBlackBerry', e);
-        }
-    }
-    function isPalmOS(){
-        try {
-            var navUserAgent = navigator.userAgent;
-            return (/palm/i.test(navUserAgent));
-        } catch (e) {
-            error('isIPad', e);
-        }
-    }
-    function isSymbian () {
-        try {
-            var navUserAgent = navigator.userAgent;
-            return (isWebkit() && (/series60/i.test(navUserAgent) || /symbian/i.test(navUserAgent)));
-        } catch (e) {
-            error('isIPad', e);
-        }
-    }
-    function isWebkit() {
-        try {
-            var navUserAgent = navigator.userAgent;
-            return (/webkit/i.test(navUserAgent));
-        } catch (e) {
-            error('isWebkit', e);
-        }
-    }
-    function isAmaya() {
-        try {
-            var navUserAgent = navigator.userAgent;
-            return (/amaya/i.test(navUserAgent));
-        } catch (e) {
-            error('isAmaya', e);
-        }
-    }
-    function isGecko() {
-        try {
-            var navUserAgent = navigator.userAgent;
-            return (/gecko/i.test(navUserAgent));
-        } catch (e) {
-            error('isGecko', e);
-        }
-    }
-    function isKHTML() {
-        try {
-            var navUserAgent = navigator.userAgent;
-            return (/khtml/i.test(navUserAgent));
-        } catch (e) {
-            error('isKHTML', e);
-        }
-    }
-    function isPresto() {
-        try {
-            var navUserAgent = navigator.userAgent;
-            return (/presto/i.test(navUserAgent));
-        } catch (e) {
-            error('isPresto', e);
-        }
-    }
-    function isPrince() {
-        try {
-            var navUserAgent = navigator.userAgent;
-            return (/prince/i.test(navUserAgent));
-        } catch (e) {
-            error('isPrince', e);
-        }
-    }
-    function isTrident() {
-        try {
-            var navUserAgent = navigator.userAgent;
-            return (/trident/i.test(navUserAgent));
-        } catch (e) {
-            error('isTrident', e);
-        }
-    }
-    function isWindows(){
-        try{
-            return navigator.platform.indexOf("Win") != -1;
-        } catch (e) {
-            error('isWindows', e);
-        }
-    }
-    function isMac(){
-        try{
-            return navigator.platform.indexOf("Mac") != -1;
-        } catch (e) {
-            error('isMac', e);
-        }
-    }
-    function isLinux(){
-        try{
-            return navigator.platform.indexOf("Linux") != -1;
-        } catch (e) {
-            error('isLinux', e);
-        }
-    }
-
     function cuid(){
         //thanks broofa
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -1121,33 +974,12 @@ if (__thisIsNewer) {
     }
     */
     }
-    function __or (){
-        for(var a = 0, len = arguments.length; a<len; a++){
-            if(arguments[a]){
-                return arguments[a];
-            }
+    function error(fname, e) {
+        try {
+            $c.DEBUG_MODE && cout("Error in " + fname + "\n" + (e.description || e), e);
+        } catch (e) {
+            cout("Error in " + fname + "\n" + (e.description || e));
         }
-        return "";
-    }
-
-    function __convert_regex_safe(reg_str) {
-        return reg_str.replace(/\\/gi,"\\\\")
-            .replace(/\$/gi, "\\$")
-            .replace(/\//gi, "\\/")
-            .replace(/\^/gi, "\\^")
-            .replace(/\./gi, "\\.")
-            .replace(/\|/gi, "\\|")
-            .replace(/\*/gi, "\\*")
-            .replace(/\+/gi, "\\+")
-            .replace(/\?/gi, "\\?")
-            .replace(/\!/gi, "\\!")
-            .replace(/\{/gi, "\\{")
-            .replace(/\}/gi, "\\}")
-            .replace(/\[/gi, "\\[")
-            .replace(/\]/gi, "\\]")
-            .replace(/\(/gi, "\\(")
-            .replace(/\)/gi, "\\)")
-            .replace('\n','\\n');
     }
     function fillTemplate (htmlTemplate, objs) {
         try {
@@ -1216,42 +1048,258 @@ if (__thisIsNewer) {
             error('fillTemplate', e);
         }
     }
-    function __run_replace (reg, template, use_run, obj) {
+    function getUniqueId(prefix) {
         try {
-            var pre = "", post = "", split_param = "|";
-    //                    use_run && (pre="RUN\\[",post="\\]", split_param=/;(?!\\)/);
-            use_run && (pre="RUN[",post="]", split_param=/;(?!\\)/)
-
-            while (reg.test(template)) {
-                var match = reg.exec(template),
-                funcValue = Array(),
-                func = "";
-                if (match[1]) {
-                    //funcValue = match[1].split(';');
-                    //funcValue = match[1].replace(/\\\[/g,'[').replace(/\\\]/g,']').split(split_param);
-                    funcValue = match[1].replace_all('\\[','[').replace_all('\\]',']').split(split_param);
-                    func = funcValue.splice(0,1);
-                    funcValue = funcValue.map(function(val){
-                        try {
-                            if (/\$\{.+?\}/.test(val)) {
-    //                                        match[1] = match[1].replace(val, val = fillTemplate(val, obj));
-                                return fillTemplate(val, obj);
-                            }
-                            return eval("("+val.replace_all(';\\', ';')+")");
-                        } catch(e) {
-                            //error('fillTemplate._run_replace.map',e);
-                        }
-                        return val;
-                    });
-                    template = template.replace(match[1], (match[1] = match[1].replace_all('\\[', '[').replace_all('\\]', ']')));
-    //                            template = template.replace_all("${" + pre + __convert_regex_safe(match[1]) + post +"}", $w[func] ? $w[func].apply(objs, funcValue) : "");
-                    template = template.replace_all("${" + pre + match[1] + post +"}", $w[func] ? $w[func].apply(obj, funcValue) : "");
+            var index = "";
+            prefix = prefix || "";
+            while (!isNull($(prefix + index))) {
+                index = index || 0;
+                index++;
+            }
+            return {
+                id : prefix + index, 
+                index: index
+            };
+        } catch (e) {
+            error('getUniqueId', e);
+        }
+    }
+    function IEVersion () {
+        try {
+            var rv = -1;
+            if (navigator.appName == 'Microsoft Internet Explorer') {
+                var ua = navigator.userAgent,
+                re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+                if (re.exec(ua) != null) {
+                    rv = parseFloat(RegExp.$1);
                 }
             }
-            return template;
+            return rv;
         } catch (e) {
-            error('fillTemplate._run_replace', e);
+            error('IEVersion', e);
         }
+    }
+    
+    function isAmaya() {
+        try {
+            var navUserAgent = navigator.userAgent;
+            return (/amaya/i.test(navUserAgent));
+        } catch (e) {
+            error('isAmaya', e);
+        }
+    }
+    function isAndroid(){
+        try {
+            var navUserAgent = navigator.userAgent;
+            return (/android/i.test(navUserAgent));
+        } catch (e) {
+            error('isAndroid', e);
+        }
+    }
+    function isBlackBerry() {
+        try {
+            var navUserAgent = navigator.userAgent;
+            return (/blackberry/i.test(navUserAgent));
+        } catch (e) {
+            error('isBlackBerry', e);
+        }
+    }
+    function isChrome(){
+        try {
+            return (navigator.userAgent.indexOf("Chrome") != -1);
+        } catch(e){
+            error('isChrome', e);
+        }
+    }
+    function isFirefox(){
+        try {
+            return (navigator.userAgent.indexOf("Chrome") == -1) 
+            && (navigator.userAgent.indexOf("Apple") == -1) 
+            && (navigator.userAgent.indexOf("Opera") == -1) 
+            && (navigator.userAgent.indexOf("Firefox") != -1);   
+        } catch(e){
+            error('isFirefox', e);
+        }
+    }
+    function isGecko() {
+        try {
+            var navUserAgent = navigator.userAgent;
+            return (/gecko/i.test(navUserAgent));
+        } catch (e) {
+            error('isGecko', e);
+        }
+    }
+    function isIE6() {
+        try {
+            var rv = IEVersion();
+            return (rv != -1 && rv < 7.0);
+        } catch (e) {
+            error('isIE6', e);
+        }
+    }
+    function isIE() {
+        try {
+            return (IEVersion() != -1);
+        } catch (e) {
+            error('isIE', e);
+        }
+    }
+    function isIPad() {
+        try {
+            var navUserAgent = navigator.userAgent;
+            return (/iPad|iPhone OS 3_[1|2]_2/i.test(navUserAgent));
+        } catch (e) {
+            error('isIPad', e);
+        }
+    }
+    function isIPhone(){
+        try{
+            return !isIPad() && navigator.userAgent.indexOf("iPhone") != -1;
+        } catch (e) {
+            error('isIPhone', e);
+        }
+    }
+    function isIPod() {
+        try {
+            var navUserAgent = navigator.userAgent;
+            return (/ipod/i.test(navUserAgent));
+        } catch (e) {
+            error('isIPod', e);
+        }
+    }
+    function isKHTML() {
+        try {
+            var navUserAgent = navigator.userAgent;
+            return (/khtml/i.test(navUserAgent));
+        } catch (e) {
+            error('isKHTML', e);
+        }
+    }
+    function isLinux(){
+        try{
+            return navigator.platform.indexOf("Linux") != -1;
+        } catch (e) {
+            error('isLinux', e);
+        }
+    }
+    function isMac(){
+        try{
+            return navigator.platform.indexOf("Mac") != -1;
+        } catch (e) {
+            error('isMac', e);
+        }
+    }
+    function isNull(thiss, value) {//used to determine if thiss is undefined->if undefined, return value
+        try {
+            if (value == null || value == undefined) {
+                return (thiss == null || thiss == undefined || thiss.length == 0);
+            }
+            return ((thiss ? thiss.length == 0 : thiss) || value);
+        } catch (e) {
+            error("isNull", e);
+        }  
+    }
+    function isOpera(){
+        try {
+            return (navigator.userAgent.indexOf("Chrome") == -1) 
+            && (navigator.userAgent.indexOf("Apple") == -1) 
+            && (navigator.userAgent.indexOf("Opera") != -1);   
+        } catch(e){
+            error('isOpera', e);
+        }
+    }
+    function isPalmOS(){
+        try {
+            var navUserAgent = navigator.userAgent;
+            return (/palm/i.test(navUserAgent));
+        } catch (e) {
+            error('isIPad', e);
+        }
+    }
+    function isPresto() {
+        try {
+            var navUserAgent = navigator.userAgent;
+            return (/presto/i.test(navUserAgent));
+        } catch (e) {
+            error('isPresto', e);
+        }
+    }
+    function isPrince() {
+        try {
+            var navUserAgent = navigator.userAgent;
+            return (/prince/i.test(navUserAgent));
+        } catch (e) {
+            error('isPrince', e);
+        }
+    }
+    function isSafari(){
+        try {
+            return (navigator.userAgent.indexOf("Chrome") == -1) && (navigator.userAgent.indexOf("Apple") != -1);
+        } catch(e){
+            error('isSafari', e);
+        }
+    }
+    function isSymbian () {
+        try {
+            var navUserAgent = navigator.userAgent;
+            return (isWebkit() && (/series60/i.test(navUserAgent) || /symbian/i.test(navUserAgent)));
+        } catch (e) {
+            error('isIPad', e);
+        }
+    }
+    function isTrident() {
+        try {
+            var navUserAgent = navigator.userAgent;
+            return (/trident/i.test(navUserAgent));
+        } catch (e) {
+            error('isTrident', e);
+        }
+    }
+    function isWebkit() {
+        try {
+            var navUserAgent = navigator.userAgent;
+            return (/webkit/i.test(navUserAgent));
+        } catch (e) {
+            error('isWebkit', e);
+        }
+    }
+    function isWindows(){
+        try{
+            return navigator.platform.indexOf("Win") != -1;
+        } catch (e) {
+            error('isWindows', e);
+        }
+    }
+    function isWindowsMobile() {
+        try {
+            var navUserAgent = navigator.userAgent;
+            return (/windows ce/i.test(navUserAgent));
+        } catch (e) {
+            error('isWindowsMobile', e);
+        }
+    }
+    
+    function killPropagation(ev, bubble, returnValue) {//used to cancel any bubbling and propagation
+        try {
+            ev = ev || $w.event;
+            if (!ev) {return false;}
+            bubble = bubble || true;
+            returnValue = returnValue || false;
+            if (ev.stopPropagation) {
+                ev.stopPropagation();
+                ev.preventDefault();
+            } else {
+                ev.cancelBubble = bubble;
+                ev.returnValue = returnValue;
+            }
+            return true;
+        } catch (e) {
+            error("killPropagation", e);
+            return false;
+        }
+    }
+    function logit(){
+        cout.apply(this, arguments);
     }
     function parseBoolean(obj) {
         try {
@@ -1265,24 +1313,48 @@ if (__thisIsNewer) {
             error('parseBoolean', e);
         }
     }
-    function cacheImages(imgs) {
-        for (var i = 0, len = imgs.length; i < len; i++) {
-            var img = $d.createElement('img');
-            img.src = imgs[i];	
+    function parseRaw(value, skipQuotes) {
+        if (value === null || value === undefined) {
+            return value + "";
+        } 
+        var raw = "";
+        if ($w.isString(value)) {
+            !skipQuotes && (raw = "\"" + value + "\"") || (raw = value);
+        }
+        else if ($w.isArray(value)) {
+            var tmp = [];
+            for (var i = 0, len = value.length; i < len; i++) {
+                tmp[i] = parseRaw(value[i]);
+            }
+            raw = "[" + tmp.join(',') + "]";
+        }
+        else if (value instanceof Object && !$c.isFunction(value)) {
+            raw = JSON.stringify(value);
+        }
+        else {
+            raw = value.toString();
+        }
+        return raw;
+    }
+    function rand(num1, num2, inclusive) {
+        if (inclusive) {
+            if (num1 < num2) {
+                num1 -= 0.1;
+                num2 += 0.1;
+            } else if (num1 > num2) {
+                num1 += 0.1;
+                num2 -= 0.1;            
+            }
+        }
+        return (num2 - num1)*Math.random() + num1;
+    }
+    function tryEval(expression) {
+        try {
+            return eval(expression);
+        } catch(e) {
+            return undefined;
         }
     }
-    /*Benchmark testing functions*/
-    function Benchmarker() {
-        this.start = new Date();
-        this.end = "";
-        this.executionTime = 0;
-        this.stop = function (func) {
-            this.end = new Date();
-            this.executionTime = (this.end - this.start)/1000;
-            return this.executionTime;
-        };
-    }
-
     /*timing functions*/
     function wait() {
         var args = arguments.callee.caller.arguments,
@@ -1339,26 +1411,6 @@ if (__thisIsNewer) {
             }
             setTimeout(delayFunc, 1);
         }
-    }
-    function parseRaw(value, skipQuotes) {
-        var raw = "";
-        if ($w.isString(value)) {
-            !skipQuotes && (raw = "\"" + value + "\"") || (raw = value);
-        }
-        else if ($w.isArray(value)) {
-            var tmp = [];
-            for (var i = 0, len = value.length; i < len; i++) {
-                tmp[i] = parseRaw(value[i]);
-            }
-            raw = "[" + tmp.join(',') + "]";
-        }
-        else if (value instanceof Object) {
-            raw = JSON.stringify(value);
-        }
-        else {
-            raw = value.toString();
-        }
-        return raw;
     }
     // Changes XML to JSON
     function xmlToJson(xml, ignoreAttributes) {  
@@ -1561,9 +1613,9 @@ if (__thisIsNewer) {
             WEBKIT:isWebkit(),
             WINDOWS:isWindows(),
             WINDOWS_MOBILE:isWindowsMobile(),
-            noConflict:function () {
+            noConflict:function (setTo) {
                 var tmp = $;
-                $ = _$overwrite;
+                $ = setTo || _$overwrite;
                 return tmp;
             }
         },
@@ -1634,28 +1686,94 @@ if (__thisIsNewer) {
     /*----------------------------------------------------------------------------------------------------------------
     /-	String class Extensions
     /---------------------------------------------------------------------------------------------------------------*/
-    _extend(String, 'trim', function(character) {
+    _ext(String, 'capitalize', function (pos, everyWord) {
         try {
-            return _trim(this, undefined, character);
+            pos = pos || [0];
+            !$w.isArray(pos) && (pos = [pos]);
+            var wordArray = everyWord ? this.split(' ') : ([this]);
+            for (var i = 0; i < pos.length; i++) {
+                for (var j = 0; j < wordArray.length; j++) {
+                    wordArray[j] = wordArray[j].substring(0,pos[i]) + wordArray[j].charAt(pos[i]).toUpperCase() + wordArray[j].slice(pos[i] + 1);
+                }
+            }
+            return wordArray.join(' ');
         } catch (e) {
-            error("String.trim", e);
+            error("capitalize", e);
         }
     }, true);
-    _extend(String, 'ltrim', function (character) {
+    _ext(String, 'convertUTCDate', function (delimiter) {
+        var dateAsString = this;
+        if (dateAsString.substring(dateAsString.length - 2) == ".0") {
+            dateAsString = dateAsString.substring(0, dateAsString.length - 2);
+        }
+        var pattern = new RegExp( "(\\d{4})" + delimiter + "(\\d{2})" + delimiter + "(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2})" );
+        var parts = dateAsString.match( pattern );
+
+        return parts ? parts[2] + "/" + parts[3] + "/" + parts[1] + " " + parts[4] + ":" + parts[5] + ":" + parts [6] : dateAsString;
+    }, true);
+     _ext(String, 'endsWith', function (str) {
+         for (var i = 0, len = arguments.length; i < len; i++) {
+             if (arguments[i] == this.slice(-arguments[i].length)) {
+                 return arguments[i];
+             }
+         }
+         return false;
+     });
+    _ext(String, 'ireplace_all', function(replace, subject) {
+        try {
+            return _replace_all.call(this, replace, subject, "gi")
+        } catch (e) {
+            error("", e);
+        }
+    }, true);
+    _ext(String, 'isBlank', function () {
+        try {
+            return !this.length;
+        //return (this === "");
+        } catch (e) {
+            error("isBlank", e);
+        }
+    }, true);
+    _ext(String, 'isValidEmail', function () {
+        try {
+            if (!this.isBlank() && !isNull(this)) {
+                var reg = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+                return (reg.test(this));
+            }
+            return false;
+        } catch (e) {
+            error("isValidEmail", e);
+        }
+    }, true);
+    _ext(String, 'ltrim', function (character) {
         try {
             return _trim(this, 'l', character);
         } catch (e) {
             error("String.ltrim", e);
         }
     }, true);
-    _extend(String, 'rtrim', function (character) {
+    _ext(String, 'replace_all', function(replace, subject) {
+        try {
+            return _replace_all.call(this, replace, subject, "g")
+        } catch (e) {
+            error("", e);
+        }
+    }, true);
+    _ext(String, 'reverse', function () {
+        try {
+            return this.split('').reverse().join('');
+        } catch (e) {
+            error("", e);
+        }
+    }, true);
+    _ext(String, 'rtrim', function (character) {
         try {
             return _trim(this, 'r', character);
         } catch (e) {
             error("String.rtrim", e);
         }
     }, true);
-    _extend(String, 'sanitize', function () {
+    _ext(String, 'sanitize', function () {
         try {
             var thiss = this.replace(/&/gi, "&#38;").
             replace(/#/gi, "&#35;").
@@ -1675,106 +1793,23 @@ if (__thisIsNewer) {
             error("XSSCleaner", e);
         }
     }, true);
-    _extend(String, 'isValidEmail', function () {
-        try {
-            if (!this.isBlank() && !isNull(this)) {
-                var reg = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-                return (reg.test(this));
-            }
-            return false;
-        } catch (e) {
-            error("isValidEmail", e);
-        }
-    }, true);
-    _extend(String, 'isBlank', function () {
-        try {
-            return !this.length;
-        //return (this === "");
-        } catch (e) {
-            error("isBlank", e);
-        }
-    }, true);
-    _extend(String, 'capitalize', function (pos, everyWord) {
-        try {
-            pos = pos || [0];
-            !$w.isArray(pos) && (pos = [pos]);
-            var wordArray = everyWord ? this.split(' ') : ([this]);
-            for (var i = 0; i < pos.length; i++) {
-                for (var j = 0; j < wordArray.length; j++) {
-                    wordArray[j] = wordArray[j].substring(0,pos[i]) + wordArray[j].charAt(pos[i]).toUpperCase() + wordArray[j].slice(pos[i] + 1);
-                }
-            }
-            return wordArray.join(' ');
-        } catch (e) {
-            error("capitalize", e);
-        }
-    }, true);
-    _extend(String, 'toDomElement', function () {
-        try {
-            var div = $d.createElement('div'), children;
-            div.innerHTML = this;
-            children = div.childNodes;
-            if (children.length == 1) {
-                return children[0];
-            } else if (children.length == 0) {
-                return false;
-            }
-            return children;
-        } catch (e) {
-            error("toDomElement", e);
-        }
-    }, true);
-    _extend(String, 'convertUTCDate', function (delimiter) {
-        var dateAsString = this;
-        if (dateAsString.substring(dateAsString.length - 2) == ".0") {
-            dateAsString = dateAsString.substring(0, dateAsString.length - 2);
-        }
-        var pattern = new RegExp( "(\\d{4})" + delimiter + "(\\d{2})" + delimiter + "(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2})" );
-        var parts = dateAsString.match( pattern );
-
-        return parts ? parts[2] + "/" + parts[3] + "/" + parts[1] + " " + parts[4] + ":" + parts[5] + ":" + parts [6] : dateAsString;
-    }, true);
-    _extend(String, 'toCurrencyNotation', function (separator) {
+    _ext(String, 'startsWith', function (/*str, str1*/) {
+         for (var i = 0, len = arguments.length; i < len; i++) {
+             if (arguments[i] == this.slice(0, arguments[i].length)) {
+                 return arguments[i];
+             }
+         }
+         return false;
+     });
+    _ext(String, 'toCurrencyNotation', function (separator) {
         try {
             separator = separator || ",";
             return this.toString().replace(/\B(?=(\d{3})+(?!\d))/g, separator);
         } catch (e) {
             error("", e);
         }
-    }, true);
-    _extend(String, 'replace_all', function(replace, subject) {
-        try {
-            return _replace_all.call(this, replace, subject, "g")
-        } catch (e) {
-            error("", e);
-        }
-    }, true);
-    _extend(String, 'ireplace_all', function(replace, subject) {
-        try {
-            return _replace_all.call(this, replace, subject, "gi")
-        } catch (e) {
-            error("", e);
-        }
-    }, true);
-
-    function _replace_all(replace, subject, flag) {
-        try {
-            if (this.indexOf(replace) == -1) {
-                return this;
-            }
-            return this.replace(RegExp(__convert_regex_safe(replace), flag), subject);
-        } catch (e) {
-            error("", e);
-        }
-    }
-    _extend(String, 'reverse', function () {
-        try {
-            return this.split('').reverse().join('');
-        } catch (e) {
-            error("", e);
-        }
-    }, true);
-    _extend(String, 'toDateTime', function (options) {
+    }, true);   
+    _ext(String, 'toDateTime', function (options) {
         try {
         /*
         *  options properties:
@@ -1825,261 +1860,33 @@ if (__thisIsNewer) {
             error("", e);
         }
     }, true);
-
+    _ext(String, 'toDomElement', function () {
+        try {
+            var div = $d.createElement('div'), children;
+            div.innerHTML = this;
+            children = div.childNodes;
+            if (children.length == 1) {
+                return children[0];
+            } else if (children.length == 0) {
+                return false;
+            }
+            return children;
+        } catch (e) {
+            error("toDomElement", e);
+        }
+    }, true);
+    _ext(String, 'trim', function(character) {
+        try {
+            return _trim(this, undefined, character);
+        } catch (e) {
+            error("String.trim", e);
+        }
+    }, true);
 
     /*----------------------------------------------------------------------------------------------------------------
     /-	Array class Extensions
     /---------------------------------------------------------------------------------------------------------------*/
-    _extend(Array, 'filter', function(func /*, thiss*/) {
-        try {
-            if (!$w.isFunction(func)) {
-                throw new TypeError();
-            }
-            var filtered = new Array(),
-            thiss = arguments[1] || this;
-            for (var i = 0; i < this.length; i++) {
-                var val = this[i];
-                if (func.call(thiss, val, i, this)) {
-                    filtered.push(val);
-                }
-            }
-
-            return filtered;
-        } catch (e) {
-            return false;
-        }
-    }, true);
-
-    _extend(Array, 'isEmpty', function() {
-        try {
-            return (this.length == 0);
-        } catch (e) {
-            error("Array.isEmpty", e);
-            return false;
-        }  
-    }, true);
-
-    _extend(Array, 'indexOf', function(value) {
-        try {
-            var len = this.length,
-            i = 0;
-            while (i < len) {
-                if (this[i] === value) return i;
-                ++i;
-            }
-            return -1;
-        } catch (e) {
-            error("Array.indexOf", e);
-        }  
-    }, true);
-
-    _extend(Array, 'indexOfAlt', function(value, func) {
-        try {
-            var len = this.length,
-            i = 0;
-            while (i < len) {
-                if (value instanceof Object ? func(this[i], value) : func(this[i]) === value) return i;
-                ++i;
-            }
-            return -1;
-        } catch (e) {
-            error("Array.indexOf", e);
-        }  
-    }, true);
-
-    _extend(Array, 'replaceAt', function(index, value) {
-        try {
-            return this.splice(index, 1, value)[0];
-        } catch (e) {
-            error("Array.replaceAt", e);
-        }  
-    }, true);
-
-    _extend(Array, 'insertAfter', function(index, value) {
-        try {
-            this.splice(index + 1, 0, value);
-            return true;
-        } catch (e) {
-            error("Array.insertAfter", e);
-            return false;
-        }  
-    }, true);
-
-    _extend(Array, 'insertBefore', function(index, value) {
-        try {
-            this.splice(index, 0, value);
-            return true;
-        } catch (e) {
-            error("Array.insertBefore", e);
-            return false;
-        }  
-    }, true);
-
-    _extend(Array, 'trim', function(chars) {
-        try {
-            var arr = [],
-            alter = false;
-            if ($c.isBoolean(chars)) {
-                alter = true;
-            }
-
-            for (var i = 0, len = this.length; i < len; i++) {
-                this[i].isString && this[i].isString() && (arr[i] = this[i].toString().trim()) || (arr[i] = this[i]);
-                alter && (this[i] = arr[i]);
-            }
-            return arr;
-        } catch (e) {
-            error("Array.trim", e);
-            return false;
-        }  
-    }, true);
-
-    _extend(Array, 'condense', function (check_values, alter) {
-        try {
-            var skip = [], arr = [];
-            for (var i = 0, len = this.length; i < len; i++) {
-                if (check_values) {
-                    var index = 0;
-                    while ((index = this.indexOf(this[i],i+1)) != -1) {
-    //                    this.splice(index,1);
-                        skip.push(index);
-    //                    len--;
-                    }
-
-                }
-    //            if (!this[i]) {
-    //                this.splice(i,1);
-    //                len--,i--;
-    //            }
-                skip.indexOf(i) == -1 && this[i] && arr.push(this[i]);
-            }
-            return arr;
-        } catch (e) {
-            error("Array.condence", e);
-            return false;
-        }  
-    }, true);
-
-    _extend(Array, 'remove', function (value, indexOf) {
-        try {
-            indexOf = indexOf || this.indexOf;
-            var index = indexOf.call(this, value);
-            if(index == -1) {
-                return false;
-            }
-            return this.splice(index, 1)[0];
-        } catch (e) {
-            error("Array.remove", e);
-        }  
-    }, true);
-
-    _extend(Array, 'removeAll', function (value, indexOf) {
-        try {
-            indexOf = indexOf || this.indexOf;
-            var index = indexOf.call(this, value),
-            removed = [];
-            if(index == -1) {
-                return false;
-            }
-            while (index != -1) {
-                removed.push(this.remove(value, indexOf));
-                index = indexOf.call(this, value);
-            }
-            return removed;
-        } catch (e) {
-            error("Array.removeAll", e);
-        }  
-    }, true);
-
-    _extend(Array, 'removeAt', function (index) {
-        try {
-            if(!this[index]) {
-                return false;
-            }
-            return this.splice(index, 1)[0];
-        } catch (e) {
-            error("Array.removeAt", e);
-        }  
-    }, true);
-
-    _extend(Array, 'map', function(callback /*, thisObject*/) {
-        try {
-            var thisObject = arguments[1] || this,
-            other= new Array(this.length);
-            for (var i= 0, n= this.length; i<n; i++)
-                if (i in this)
-                    other[i]= callback.call(thisObject, this[i], i, this);
-            return other;
-        } catch (e) {
-            error("Array.map", e);
-        }  
-    }, true);
-
-    _extend(Array, 'every', function(callback /*, thisObject*/) {
-        try {
-            var thisObject = arguments[1] || this;
-            for (var i= 0, n= this.length; i<n; i++)
-                if (i in this && !callback.call(thisObject, this[i], i, this))
-                    return false;
-            return true;
-        } catch (e) {
-            error("Array.every", e);
-        }  
-    }, true);
-
-
-
-    //ARRAY SORTING
-    _extend(Array, 'sortBy', function(props, rev, primer, lookup){
-        if(props.isString()){props=[props];}
-        var key = function (x) {return primer ? primer(x[prop]) : x[prop]};
-            primer = primer || function(x){return x;}
-        var prop_sort = function (a,b,p) {
-            p = p||0,
-            prop = props[p];
-
-            if(!prop){return -1;}
-
-            var aVal = primer((lookup && lookup[a][prop]) || a[prop]),
-            bVal =primer( (lookup && lookup[b][prop]) || b[prop] );
-
-                    aVal = parseInt(aVal) || aVal;
-                    bVal = parseInt(bVal) || bVal;
-
-            if (aVal == bVal) {
-                return prop_sort(a,b,p+1);
-            }
-
-            if (aVal > bVal) {return 1;}
-            return -1;
-       };
-
-        return this.sort(prop_sort);
-    }, true);
-
-    _extend(Array, 'sortByLookup', function(prop,lookup,rev,primer){
-        //prop="TABLE_SORT";
-        function orderByTable(a, b) {
-            var aVal = a[prop],
-            bVal = b[prop];
-            if (lookup) {
-                aVal = lookup[a][prop];
-                bVal = lookup[b][prop];
-            }
-            aVal = parseFloat(aVal);
-            bVal = parseFloat(bVal);
-            if (aVal == bVal) {return 0;}
-            if (aVal > bVal) {return 1;}
-            return -1;
-        }
-        this.sort(orderByTable);
-        if(rev){
-            this.reverse();
-        }
-        return this;
-    }, true);
-
-    _extend(Array, 'complexSort', function(specs){
+    _ext(Array, 'complexSort', function(specs){
         specs = specs || {};
         var defunc = function(v){return v;},
         props = specs.props,
@@ -2121,11 +1928,276 @@ if (__thisIsNewer) {
 
         return this.sort(prop_sort);
     },true);
+    _ext(Array, 'condense', function (check_values, alter) {
+        try {
+            var skip = [], arr = [];
+            for (var i = 0, len = this.length; i < len; i++) {
+                if (check_values) {
+                    var index = i;
+                    if (skip.indexOf(i) != -1) {
+                        continue;
+                    }
+                    while ((index = this.indexOf(this[i],index+1)) != -1) {
+    //                    this.splice(index,1);
+                        skip.push(index);
+    //                    len--;
+                    }
+
+                }
+    //            if (!this[i]) {
+    //                this.splice(i,1);
+    //                len--,i--;
+    //            }
+                skip.indexOf(i) == -1 && this[i] && arr.push(this[i]);
+            }
+            return arr;
+        } catch (e) {
+            error("Array.condence", e);
+            return false;
+        }  
+    }, true);
+
+    _ext(Array, 'every', function(callback /*, thisObject*/) {
+        try {
+            var thisObject = arguments[1] || this;
+            for (var i= 0, n= this.length; i<n; i++)
+                if (i in this && !callback.call(thisObject, this[i], i, this))
+                    return false;
+            return true;
+        } catch (e) {
+            error("Array.every", e);
+        }  
+    }, true);
+    
+    _ext(Array, 'filter', function(func /*, thiss*/) {
+        try {
+            if (!$w.isFunction(func)) {
+                throw new TypeError();
+            }
+            var filtered = new Array(),
+            thiss = arguments[1] || this;
+            for (var i = 0; i < this.length; i++) {
+                var val = this[i];
+                if (func.call(thiss, val, i, this)) {
+                    filtered.push(val);
+                }
+            }
+
+            return filtered;
+        } catch (e) {
+            return false;
+        }
+    }, true);
+
+    _ext(Array, 'indexOf', function(value) {
+        try {
+            var len = this.length,
+            i = 0;
+            while (i < len) {
+                if (this[i] === value) return i;
+                ++i;
+            }
+            return -1;
+        } catch (e) {
+            error("Array.indexOf", e);
+        }  
+    }, true);
+
+    _ext(Array, 'indexOfAlt', function(value, func) {
+        try {
+            var len = this.length,
+            i = 0;
+            while (i < len) {
+                if (value instanceof Object ? func(this[i], value) : func(this[i]) === value) return i;
+                ++i;
+            }
+            return -1;
+        } catch (e) {
+            error("Array.indexOf", e);
+        }  
+    }, true);
+
+    _ext(Array, 'insertAfter', function(index, value) {
+        try {
+            this.splice(index + 1, 0, value);
+            return true;
+        } catch (e) {
+            error("Array.insertAfter", e);
+            return false;
+        }  
+    }, true);
+
+    _ext(Array, 'insertBefore', function(index, value) {
+        try {
+            this.splice(index, 0, value);
+            return true;
+        } catch (e) {
+            error("Array.insertBefore", e);
+            return false;
+        }  
+    }, true);
+
+    _ext(Array, 'isEmpty', function() {
+        try {
+            return (this.length == 0);
+        } catch (e) {
+            error("Array.isEmpty", e);
+            return false;
+        }  
+    }, true);
+
+    _ext(Array, 'map', function(callback /*, thisObject*/) {
+        try {
+            var thisObject = arguments[1] || this,
+            other= new Array(this.length);
+            for (var i= 0, n= this.length; i<n; i++)
+                if (i in this)
+                    other[i]= callback.call(thisObject, this[i], i, this);
+            return other;
+        } catch (e) {
+            error("Array.map", e);
+        }  
+    }, true);
+
+    _ext(Array, 'remove', function (value, indexOf) {
+        try {
+            indexOf = indexOf || this.indexOf;
+            var index = indexOf.call(this, value);
+            if(index == -1) {
+                return false;
+            }
+            return this.splice(index, 1)[0];
+        } catch (e) {
+            error("Array.remove", e);
+        }  
+    }, true);
+
+    _ext(Array, 'removeAll', function (value, indexOf) {
+        try {
+            indexOf = indexOf || this.indexOf;
+            var index = indexOf.call(this, value),
+            removed = [];
+            if(index == -1) {
+                return false;
+            }
+            while (index != -1) {
+                removed.push(this.remove(value, indexOf));
+                index = indexOf.call(this, value);
+            }
+            return removed;
+        } catch (e) {
+            error("Array.removeAll", e);
+        }  
+    }, true);
+
+    _ext(Array, 'removeAt', function (index) {
+        try {
+            if(!this[index]) {
+                return false;
+            }
+            return this.splice(index, 1)[0];
+        } catch (e) {
+            error("Array.removeAt", e);
+        }  
+    }, true);
+
+    _ext(Array, 'replaceAt', function(index, value) {
+        try {
+            return this.splice(index, 1, value)[0];
+        } catch (e) {
+            error("Array.replaceAt", e);
+        }  
+    }, true);
+    //ARRAY SORTING
+    _ext(Array, 'sortBy', function(props, rev, primer, lookup, options){
+        options = ($c.isString(options) && options in {"i":1,"ignoreCase":1}) ? {i:1} : {};
+        if(props.isString()){props=[props];}
+        var key = function (x) {return primer ? primer(x[prop]) : x[prop]};
+            primer = primer || function(x){return x;}
+        var prop_sort = function (a,b,p) {
+            p = p||0,
+            prop = props[p];
+
+            if(!prop){return -1;}
+
+            var aVal = primer((lookup && lookup[a][prop]) || a[prop]),
+            bVal =primer( (lookup && lookup[b][prop]) || b[prop] );
+
+            if (options.i && aVal && bVal) {
+                aVal = aVal.toLowerCase();
+                bVal = bVal.toLowerCase();
+            }
+
+                    aVal = parseInt(aVal) || aVal;
+                    bVal = parseInt(bVal) || bVal;
+
+            if (aVal == bVal) {
+                return prop_sort(a,b,p+1);
+            }
+
+            if (aVal > bVal) {return 1;}
+            return -1;
+       };
+       this.sort(prop_sort);
+       if (rev) {
+            this.reverse();
+       }
+
+        return this;
+    }, true);
+
+    _ext(Array, 'sortByLookup', function(prop,lookup,rev,primer,options){
+        options = ($c.isString(options) && options in {"i":1,"ignoreCase":1}) ? {i:1} : {};
+        //prop="TABLE_SORT";
+        function orderByTable(a, b) {
+            var aVal = a[prop],
+            bVal = b[prop];
+            if (lookup) {
+                aVal = lookup[a][prop];
+                bVal = lookup[b][prop];
+            }
+            if (options.i) {
+                aVal = aVal.toLowerCase();
+                bVal = bVal.toLowerCase();
+            }
+            aVal = parseFloat(aVal);
+            bVal = parseFloat(bVal);
+            if (aVal == bVal) {return 0;}
+            if (aVal > bVal) {return 1;}
+            return -1;
+        }
+        this.sort(orderByTable);
+        if(rev){
+            this.reverse();
+        }
+        return this;
+    }, true);
+    
+    _ext(Array, 'trim', function(chars) {
+        try {
+            var arr = [],
+            alter = false;
+            if ($c.isBoolean(chars)) {
+                alter = true;
+            }
+
+            for (var i = 0, len = this.length; i < len; i++) {
+                this[i].isString && this[i].isString() && (arr[i] = this[i].toString().trim()) || (arr[i] = this[i]);
+                alter && (this[i] = arr[i]);
+            }
+            return arr;
+        } catch (e) {
+            error("Array.trim", e);
+            return false;
+        }  
+    }, true);
+ 
 
     /*----------------------------------------------------------------------------------------------------------------
     /-	Date class Extensions
     /---------------------------------------------------------------------------------------------------------------*/
-    //_extend(Date, 'toGMT', function (offset, toString) {
+    
+    //_ext(Date, 'toGMT', function (offset, toString) {
     //    if (offset === true || offset === false) {
     //        toString = offset;
     //        offset = undefined;
@@ -2139,7 +2211,7 @@ if (__thisIsNewer) {
     //    }
     //    return new Date(dt.toUTCString());
     //});
-    _extend(Date, 'format', function (format, options) {
+    _ext(Date, 'format', function (format, options) {
         options = options || {offset:0};
         /*
          *  options properties:
@@ -2237,7 +2309,7 @@ if (__thisIsNewer) {
             'Hawaii-Aleutian Daylight Time':'HADT',
             'Hawaii-Aleutian Standard Time':'HAST',
             'Heard and McDonald Islands Time':'HMT',
-            'Heure AvancÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©e d\'Europe Centrale francised name for CEST':'HAEC',
+            'Heure AvancÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©e d\'Europe Centrale francised name for CEST':'HAEC',
             'Hong Kong Time':'HKT',
             'Indian Standard Time':'IST',
             'Indochina Time':'ICT',
@@ -2277,7 +2349,7 @@ if (__thisIsNewer) {
             'Pakistan Standard Time':'PKT',
             'Philippine Standard Time':'PST',
             'Phoenix Island Time':'PHOT',
-            'RÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©union Time':'RET',
+            'RÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©union Time':'RET',
             'Samara Time':'SAMT',
             'Samoa Standard Time':'SST',
             'Seychelles Time':'SCT',
@@ -2383,7 +2455,7 @@ if (__thisIsNewer) {
     /*----------------------------------------------------------------------------------------------------------------
     /-	Number class Extensions
     /---------------------------------------------------------------------------------------------------------------*/
-    _extend(Number, 'aboutEqualTo', function (compare, giveOrTake) {
+    _ext(Number, 'aboutEqualTo', function (compare, giveOrTake) {
         try {
             return $w.isBetween(this, compare - giveOrTake, compare + giveOrTake, true);
         } catch (e) {
@@ -2391,22 +2463,23 @@ if (__thisIsNewer) {
         }
     }, true);
 
-    _extend(Number, 'isOdd', function () {
-        try {
-            return !_even(this);
-        } catch (e) {
-            error("isOdd", e);
-        }
-    }, true);
-    _extend(Number, 'isEven', function () {
+    _ext(Number, 'isEven', function () {
         try {
             return _even(this);
         } catch (e) {
             error("isEven", e);
         }
     }, true);
+    
+    _ext(Number, 'isOdd', function () {
+        try {
+            return !_even(this);
+        } catch (e) {
+            error("isOdd", e);
+        }
+    }, true);
 
-    _extend(Number, 'toCurrencyNotation', function () {
+    _ext(Number, 'toCurrencyNotation', function () {
         try {
             return this.toString().replace(/\B(?=(\d{3})+(?!\d))/g,",");
         } catch (e) {
@@ -2418,77 +2491,27 @@ if (__thisIsNewer) {
     /*----------------------------------------------------------------------------------------------------------------
     /-	Object class Extensions
     /---------------------------------------------------------------------------------------------------------------*/
-    _ao("every", function(callback) {
-        try {
-            for (var prop in this) {
-                if (this.hasOwnProperty(prop)) {
-                    callback(this[prop]);
+    _ao("contains", function(val, func){
+        switch(true) {
+            case $c.isArray(this):
+                if (func) {
+                    return $c.indexOfAlt(this, func) != -1;
                 }
-            }
-        } catch (e) {
-            error('every', e)
+            case $c.isString(this):
+                return this.indexOf(val) != -1;
+            case $c.isObject(this):
+                for (var prop in this) {
+                    if ((func && func(this[prop])) || this[prop] == val) {
+                        return true;
+                    }
+                }
+                break;
+            case this.isNumber():
+                return this.toString().indexOf(val) != -1;
         }
+        return false;
     });
-    _ao("propertyValue", function(path, delimiter) {
-        try {
-            delimiter = delimiter || ".";
-            var props = path.split(delimiter);
-            var value = this;
-            for (var i = 0, len = props.length; i < len; i++) {
-                value = value[props[i]];
-                if (value === undefined || value === null) {
-                    return undefined;
-                }
-            }
-            return value;
-        } catch (e) {
-            error('get', e)
-        }
-    });
-    _ao("itemCount", function () {
-        try {
-            if ($w.isObject(this)) {
-                var count = 0;
-                for (prop in this){
-                    if (this.hasOwnProperty(prop)) {
-                        count++;	
-                    }
-                }
-                return count;
-            }
-            return undefined;
-        } catch (e) {
-            error('itemCount', e);
-        }
-    });
-    _ao("equals", function (compare){
-        try {
-            if (($w.isObject(this) && $w.isObject(compare)) || (this.isArray() && compare.isArray())) {
-                for (prop in compare){
-                    if (!compare.hasOwnProperty(prop)) {
-                        continue;
-                    }
-                    if (this[prop] !== compare[prop]) {
-                        return false;
-                    }
-                }
-                for (prop in this){
-                    if (!this.hasOwnProperty(prop)) {
-                        continue;
-                    }
-                    if (this[prop] !== compare[prop]) {
-                        return false;
-                    }
-                }
-                return true;
-            } else {
-                return (this.toString() == compare.toString() && this.constructor == compare.constructor);
-            }
-        } catch (e) {
-            error('equals', e);
-        }
-    });
-    _ao("copyObject", function () {
+     _ao("copyObject", function () {
         if (!this) {
             return undefined;
         }
@@ -2569,6 +2592,235 @@ if (__thisIsNewer) {
             error('duplicate', e);
         }
     });
+    _ao("equals", function (compare){
+        try {
+            if (($w.isObject(this) && $w.isObject(compare)) || (this.isArray() && compare.isArray())) {
+                for (prop in compare){
+                    if (!compare.hasOwnProperty(prop)) {
+                        continue;
+                    }
+                    if (this[prop] !== compare[prop]) {
+                        return false;
+                    }
+                }
+                for (prop in this){
+                    if (!this.hasOwnProperty(prop)) {
+                        continue;
+                    }
+                    if (this[prop] !== compare[prop]) {
+                        return false;
+                    }
+                }
+                return true;
+            } else {
+                return (this.toString() == compare.toString() && this.constructor == compare.constructor);
+            }
+        } catch (e) {
+            error('equals', e);
+        }
+    });
+    _ao("every", function(callback) {
+        try {
+            for (var prop in this) {
+                if (this.hasOwnProperty(prop)) {
+                    callback(this[prop]);
+                }
+            }
+        } catch (e) {
+            error('every', e)
+        }
+    });
+    
+    _ao("getClass", function() {
+        try {
+            return _getFuncName(this);
+        } catch (e) {
+            error('getClass', e)
+        }
+    });
+    _ao("innerJoin", function (right, options) {
+        try {
+            if (!$w.isObject(this) && !$w.isObject(right)) {
+                error('innerJoin', 'invalid type');
+                return false;
+            }
+            var rtn = {};
+            options = options || {equal:true};
+            for (prop in this){
+                if (!this.hasOwnProperty(prop)) {
+                    continue;
+                }
+                (options.equal || options.left) && (right[prop] == this[prop])
+                ? rtn[prop] = this[prop] : options.right && (rtn[prop] = right[prop]);	
+            }
+            return rtn;
+        } catch (e) {
+            error('innerJoin', e);
+        }
+    });
+    _ao("isArray", function () {
+        try {
+            if (this === undefined) {return false;}
+            return (this.constructor == Array);
+        } catch (e) {
+            error('isArray', e);
+        }
+    });
+    _ao("isBetween", function(lowerBound, upperBound, inclusive) {
+        try {
+            if (this === undefined) {return false;}
+            if (inclusive) {
+                return (this >= lowerBound && this <= upperBound);
+            } else {
+                return (this > lowerBound && this < upperBound);
+            }
+        } catch (e) {
+            error('isBetween', e);
+        }
+    });
+    _ao("isBoolean", function() {
+        try {
+            if (this === undefined) {return false;}
+            return (this.constructor == Boolean);
+        } catch (e) {
+            error('isBoolean', e);
+        }
+    });
+    _ao("isDomElement", function() {
+        try {
+            if (this === undefined) {return false;}
+            return (this.nodeType == 1);
+        } catch (e) {
+            error('isDomElement', e);
+        }
+    });
+    _ao("isFloat", function() {
+        try {
+            if (this === undefined) {return false;}
+            return ($w.isNumber(this) && (parseFloat(this) == this || parseFloat(this) === 0));
+        } catch (e) {
+            error('isFloat', e);
+        }
+    });
+    _ao("isFunction", function() {
+        try {
+            if (this === undefined) {return false;}
+            return (this.constructor == Function);
+        } catch (e) {
+            error('isFunction', e);
+        }
+    });
+    _ao("isGeolocation", function () {
+        try {
+            if (this === undefined) {return false;}
+            return (this.constructor.toString().indexOf('function Geolocation()') == 0);
+        } catch (e) {
+            error('isGeolocation', e);
+        }
+    });
+    _ao("isInt", function () {
+        try {
+            if (this === undefined || $w.isArray(this)) {return false;}
+            return (parseInt(this) == this || parseInt(this) === 0);
+        } catch (e) {
+            error('isInt', e);
+        }
+    });
+    _ao("isNumber", function() {
+        try {
+            if (this === undefined) {return false;}
+            return (this.constructor == Number);
+        } catch (e) {
+            error('isNumber', e);
+        }
+    });
+    _ao("isObject", function (check_instance) {
+        try {
+            if (this === undefined) {return false;}
+            return (this.constructor == Object || (!!check_instance && this instanceof Object));
+        } catch (e) {
+            error('isObject', e);
+        }
+    });
+    _ao("isString", function () {
+        try {
+            if (this === undefined) {return false;}
+            return (this.constructor == String);
+        } catch (e) {
+            error('isString', e);
+        }
+    });
+    _ao("isSubset", function (compare){
+        try {
+            if (($c.isObject(this) && $c.isObject(compare)) || (this.isArray() && compare.isArray())) {
+
+                for (prop in this){
+                    if (!this.hasOwnProperty(prop)) {
+                        continue;
+                    }
+                    if (!compare.hasOwnProperty(prop)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            } else {
+                return this.toString().contains(compare.toString()) && this.constructor == compare.constructor;
+            }
+        } catch (e) {
+            error('isSubset', e);
+        }
+    });
+    _ao("itemCount", function () {
+        try {
+            if ($w.isObject(this)) {
+                var count = 0;
+                for (prop in this){
+                    if (this.hasOwnProperty(prop)) {
+                        count++;	
+                    }
+                }
+                return count;
+            }
+            return undefined;
+        } catch (e) {
+            error('itemCount', e);
+        }
+    });
+    _ao("joinLeft", function (right, overwrite) {
+        try {
+            if (!$w.isObject(this) && !$w.isObject(right)) {
+                error('joinLeft', 'invalid type');
+                return false;
+            }
+            for (prop in right){
+                if (!this.hasOwnProperty(prop)) {
+                    continue;
+                }
+                (!this[prop] || overwrite) && (this[prop] = right[prop]);
+            }
+            return true;
+        } catch (e) {
+            error('joinLeft', e);
+        }
+    });
+    _ao("joinRight", function (right, overwrite) {
+        try {
+            if (!$w.isObject(this) && !$w.isObject(right)) {
+                error('joinRight', 'invalid type');
+                return false;
+            }
+            for (prop in this){
+                if (!this.hasOwnProperty(prop)) {
+                    continue;
+                }
+                (!right[prop] || overwrite) && (right[prop] = this[prop]);
+            }
+            return true;
+        } catch (e) {
+            error('joinRight', e);
+        }
+    });
     _ao("merge", function (secondary, condition) {//shareOnly) {
         try {
             var objtmp = $w.copyObject(this),
@@ -2617,60 +2869,23 @@ if (__thisIsNewer) {
             error('merge', e);
         }
     });
-    _ao("joinLeft", function (right, overwrite) {
+    _ao("propertyValue", function(path, delimiter) {
         try {
-            if (!$w.isObject(this) && !$w.isObject(right)) {
-                error('joinLeft', 'invalid type');
-                return false;
-            }
-            for (prop in right){
-                if (!this.hasOwnProperty(prop)) {
-                    continue;
+            delimiter = delimiter || ".";
+            var props = path.split(delimiter);
+            var value = this;
+            for (var i = 0, len = props.length; i < len; i++) {
+                value = value[props[i]];
+                if (value === undefined || value === null) {
+                    return undefined;
                 }
-                (!this[prop] || overwrite) && (this[prop] = right[prop]);
             }
-            return true;
+            return value;
         } catch (e) {
-            error('joinLeft', e);
+            error('get', e)
         }
     });
-    _ao("joinRight", function (right, overwrite) {
-        try {
-            if (!$w.isObject(this) && !$w.isObject(right)) {
-                error('joinRight', 'invalid type');
-                return false;
-            }
-            for (prop in this){
-                if (!this.hasOwnProperty(prop)) {
-                    continue;
-                }
-                (!right[prop] || overwrite) && (right[prop] = this[prop]);
-            }
-            return true;
-        } catch (e) {
-            error('joinRight', e);
-        }
-    });
-    _ao("innerJoin", function (right, options) {
-        try {
-            if (!$w.isObject(this) && !$w.isObject(right)) {
-                error('innerJoin', 'invalid type');
-                return false;
-            }
-            var rtn = {};
-            options = options || {equal:true};
-            for (prop in this){
-                if (!this.hasOwnProperty(prop)) {
-                    continue;
-                }
-                (options.equal || options.left) && (right[prop] == this[prop])
-                ? rtn[prop] = this[prop] : options.right && (rtn[prop] = right[prop]);	
-            }
-            return rtn;
-        } catch (e) {
-            error('innerJoin', e);
-        }
-    });
+    
     _ao("toStringAlt", function (delimiter, prefix, urlEncode) {
         try {
             delimiter = delimiter || '=';
@@ -2687,98 +2902,7 @@ if (__thisIsNewer) {
             error('toStringAlt', e);
         }
     }, true);
-    _ao("isObject", function (check_instance) {
-        try {
-            if (this === undefined) {return false;}
-            return (this.constructor == Object || (!!check_instance && this instanceof Object));
-        } catch (e) {
-            error('isObject', e);
-        }
-    });
-    _ao("isGeolocation", function () {
-        try {
-            if (this === undefined) {return false;}
-            return (this.constructor.toString().indexOf('function Geolocation()') == 0);
-        } catch (e) {
-            error('isGeolocation', e);
-        }
-    });
-    _ao("isString", function () {
-        try {
-            if (this === undefined) {return false;}
-            return (this.constructor == String);
-        } catch (e) {
-            error('isString', e);
-        }
-    });
-    _ao("isArray", function () {
-        try {
-            if (this === undefined) {return false;}
-            return (this.constructor == Array);
-        } catch (e) {
-            error('isArray', e);
-        }
-    });
-    _ao("isInt", function () {
-        try {
-            if (this === undefined || $w.isArray(this)) {return false;}
-            return (parseInt(this) == this || parseInt(this) === 0);
-        } catch (e) {
-            error('isInt', e);
-        }
-    });
-    _ao("isFloat", function() {
-        try {
-            if (this === undefined) {return false;}
-            return ($w.isNumber(this) && (parseFloat(this) == this || parseFloat(this) === 0));
-        } catch (e) {
-            error('isFloat', e);
-        }
-    });
-    _ao("isNumber", function() {
-        try {
-            if (this === undefined) {return false;}
-            return (this.constructor == Number);
-        } catch (e) {
-            error('isNumber', e);
-        }
-    });
-    _ao("isBoolean", function() {
-        try {
-            if (this === undefined) {return false;}
-            return (this.constructor == Boolean);
-        } catch (e) {
-            error('isBoolean', e);
-        }
-    });
-    _ao("isDomElement", function() {
-        try {
-            if (this === undefined) {return false;}
-            return (this.nodeType == 1);
-        } catch (e) {
-            error('isDomElement', e);
-        }
-    });
-    _ao("isFunction", function() {
-        try {
-            if (this === undefined) {return false;}
-            return (this.constructor == Function);
-        } catch (e) {
-            error('isFunction', e);
-        }
-    });
-    _ao("isBetween", function(lowerBound, upperBound, inclusive) {
-        try {
-            if (this === undefined) {return false;}
-            if (inclusive) {
-                return (this >= lowerBound && this <= upperBound);
-            } else {
-                return (this > lowerBound && this < upperBound);
-            }
-        } catch (e) {
-            error('isBetween', e);
-        }
-    });
+    
 
     /*IE prototype workaround*/
     if(!$w.HTMLElement) {
@@ -2872,112 +2996,6 @@ if (__thisIsNewer) {
     /*----------------------------------------------------------------------------------------------------------------
     /-	DOM class Extensions
     /---------------------------------------------------------------------------------------------------------------*/
-
-    _ah("moveDown", function (tagName) {
-        try {
-            var thiss = this;
-            while (!isNull(thiss.nextSibling) && (thiss.nextSibling.nodeType != 1 || (tagName && thiss.nextSibling.tagName.toLowerCase() != tagName))) {
-                thiss = thiss.nextSibling;
-            }
-            //if not last element
-            if (!isNull(thiss.nextSibling)) {
-                thiss.parentNode.insertBefore(this, thiss.nextSibling.nextSibling);
-                return true;
-            }
-            return false;
-        } catch (e) {
-            error("moveDown", e);
-            return false;
-        }
-    });
-    _ah("moveUp", function (tagName) {
-        try {
-            var thiss = this;
-            while (!isNull(thiss.previousSibling) && (thiss.previousSibling.nodeType != 1 || (tagName && thiss.previousSibling.tagName.toLowerCase() != tagName))) {
-                thiss = thiss.previousSibling;
-            }
-            //if not first element
-            if (!isNull(thiss.previousSibling)) {
-                thiss.parentNode.insertBefore(this, thiss.previousSibling);
-                return true;
-            }
-            return false;
-        } catch (e) {
-            error("moveUp", e);
-            return false;
-        }
-    });
-    _ah("insertAt", function (elem, pos){
-        try {
-            var children = this.children;
-            pos = pos || 0;
-            if (children.length > pos) {
-                this.insertBefore(elem, children[pos]);
-                return true;
-            } else if (children.length == pos) {
-                this.appendChild(elem);
-                return true;
-            }
-            return false;
-        } catch (e) {
-            error("insertAt", e);
-            return false;
-        } 
-    });
-    _ah("insertAfter", function (refElem){
-        try {
-            var next = $w.isFunction(refElem.nextElementSibling) ? refElem.nextElementSibling() : refElem.nextElementSibling;
-            next ? refElem.parentNode.insertBefore(this, next) : refElem.parentNode.appendChild(this);
-            return true;
-        } catch (e) {
-            error("insertAfter", e);
-            return false;
-        } 
-    });
-    _ah("insertAlphabetically", function (elem){
-        try {
-            var childNodes = this.children,
-            eid = elem.id.toLowerCase(),
-            arr = Array();
-
-            for (var i = 0; i < childNodes.length; i++) {
-                arr[i] = childNodes[i].id.toLowerCase();
-            }
-            arr[arr.length] = eid;
-            arr.sort();
-            if (arr.length > 1) {
-                this.insertBefore(elem, childNodes[arr.indexOf(eid)]);
-            } else {
-                this.appendChild(elem);
-            }
-            return true;
-        } catch (e) {
-            error("insertAlphabetically", e);
-            return false;
-        } 
-    });
-    _ah("remove", function () {
-        try {
-            return this.parentNode.removeChild(this);
-        } catch (e) {
-            error("remove", e);
-            return false;
-        }
-    });
-    _ah("getContainer", function (tagName) {
-        try {
-            var thiss = this.parentNode;
-            if (tagName) {
-                while (thiss && thiss.tagName.toLowerCase() != tagName) {
-                    thiss = thiss.parentNode;
-                }
-            }
-            return thiss;
-        } catch (e) {
-            error("getContainer", e);
-            return false;
-        }
-    });
     _ah("_firstElementChild", function() {
         try {
             var children = this.childNodes;
@@ -3002,6 +3020,86 @@ if (__thisIsNewer) {
             return next;
         } catch (e) {
             error("_nextElementSibling", e);
+            return false;
+        }
+    });
+    _ah("addClass", function(name) {
+        try {
+            var arr = this.className.split(' ');
+            arr.indexOf(name) != -1 || arr.push(name);
+            this.className = arr.join(' ').trim();
+            return true;
+        } catch (e) {
+            error("addClass", e);
+            return false;
+        }
+    });
+    _ah("getContainer", function (tagName) {
+        try {
+            var thiss = this.parentNode;
+            if (tagName) {
+                while (thiss && thiss.tagName.toLowerCase() != tagName) {
+                    thiss = thiss.parentNode;
+                }
+            }
+            return thiss;
+        } catch (e) {
+            error("getContainer", e);
+            return false;
+        }
+    });
+    _ah("getElementsByClassName", function(classnames, taghint) {
+        try {
+            var exps = classnames.split(/\s+/).map(function(name) {
+                name = name.replace(/([/\\^$*+?.()|[\]{}])/g, '\\$1');
+                return new RegExp('(^|\\s)'+name+'(\\s|$)');
+            }),
+            elems = this.getElementsByTagName(taghint || '*'),
+            matches = Array();
+            for (var i = 0, len = this.length; i < len; i++) {
+                var elem = elems[i];
+                (exps.every(function(exp) {
+                    return exp.test(elem.className);
+                })) && matches.push(el);
+            }
+            return matches;
+        } catch (e) {
+            error("getElementsByClassName", e);
+            return false;
+        }
+    });
+    _ah("hasClass", function(name) {
+        try {
+            var regex = new RegExp('((^)|(\\s+))' + name + '(\\s+|$)');
+            return regex.test(this.className);
+        } catch (e) {
+            error("addClass", e);
+            return false;
+        }
+    });
+    _ah("height", function(isBody) {
+        try {
+            return _getDimension.call(this, isBody, 'height');
+        } catch (e) {
+            error("height", e);
+            return false;
+        }
+    });
+    _ah("hide", function() {
+        try {
+            if (this.tagName.toLowerCase() == "object") {
+                this.style.visibility = "hidden";
+                !parseInt(this.height) || this.setAttribute('data-height', this.height);
+                !parseInt(this.width) || this.setAttribute('data-width', this.width);
+
+                this.height = 0;
+                this.width = 0;
+            } else {
+                this.style.display = "none";
+            }
+            return true;
+        } catch (e) {
+            error("hide", e);
             return false;
         }
     });
@@ -3046,32 +3144,118 @@ if (__thisIsNewer) {
             return false;
         }
     });
-    _ah("unhookEvent", function(type, fn) {
+    _ah("insertAfter", function (refElem){
         try {
-            var fnString, sIndex, eIndex, fname = "", pos = {};
-            if(fn) {
-                fnString = fn.toString();
-                sIndex = fnString.indexOf("function", 0) + 8;
-                eIndex = fnString.indexOf("(", sIndex);
-                fname = fnString.substring(sIndex, eIndex).trim();
-            }
-            if (EVENT_REGISTRY.Exists(this.id, type, fname, pos)) {
-                EVENT_REGISTRY[this.id].splice(pos.index, 1);
+            var next = $w.isFunction(refElem.nextElementSibling) ? refElem.nextElementSibling() : refElem.nextElementSibling;
+            next ? refElem.parentNode.insertBefore(this, next) : refElem.parentNode.appendChild(this);
+            return true;
+        } catch (e) {
+            error("insertAfter", e);
+            return false;
+        } 
+    });
+    _ah("insertAlphabetically", function (elem){
+        try {
+            var childNodes = this.children,
+            eid = elem.id.toLowerCase(),
+            arr = Array();
 
-                if (this.detachEvent) {
-                    this.detachEvent("on" + type, this[type + fn]);
-                    this[type + fn] = null;
-                } else {
-                    this.removeEventListener(type, fn, false);
-                }
-                if (EVENT_REGISTRY[this.id].length < 1) {
-                    delete EVENT_REGISTRY[this.id];
-                    EVENT_REGISTRY.length--;
-                }
+            for (var i = 0; i < childNodes.length; i++) {
+                arr[i] = childNodes[i].id.toLowerCase();
+            }
+            arr[arr.length] = eid;
+            arr.sort();
+            if (arr.length > 1) {
+                this.insertBefore(elem, childNodes[arr.indexOf(eid)]);
+            } else {
+                this.appendChild(elem);
             }
             return true;
         } catch (e) {
-            error("unhookEvent", e);
+            error("insertAlphabetically", e);
+            return false;
+        } 
+    });
+    _ah("insertAt", function (elem, pos){
+        try {
+            var children = this.children;
+            pos = pos || 0;
+            if (children.length > pos) {
+                this.insertBefore(elem, children[pos]);
+                return true;
+            } else if (children.length == pos) {
+                this.appendChild(elem);
+                return true;
+            }
+            return false;
+        } catch (e) {
+            error("insertAt", e);
+            return false;
+        } 
+    });
+    _ah("left", function() {
+        try {
+            return _getDimension.call(this, isBody, 'left');
+            //return this.getClientRects && this.getClientRects()[0].left <= this.offsetLeft ? this.getClientRects()[0].left : this.offsetLeft;
+        } catch (e) {
+            error("left", e);
+            return false;
+        }
+    });
+    _ah("moveDown", function (tagName) {
+        try {
+            var thiss = this;
+            while (!isNull(thiss.nextSibling) && (thiss.nextSibling.nodeType != 1 || (tagName && thiss.nextSibling.tagName.toLowerCase() != tagName))) {
+                thiss = thiss.nextSibling;
+            }
+            //if not last element
+            if (!isNull(thiss.nextSibling)) {
+                thiss.parentNode.insertBefore(this, thiss.nextSibling.nextSibling);
+                return true;
+            }
+            return false;
+        } catch (e) {
+            error("moveDown", e);
+            return false;
+        }
+    });
+    _ah("moveUp", function (tagName) {
+        try {
+            var thiss = this;
+            while (!isNull(thiss.previousSibling) && (thiss.previousSibling.nodeType != 1 || (tagName && thiss.previousSibling.tagName.toLowerCase() != tagName))) {
+                thiss = thiss.previousSibling;
+            }
+            //if not first element
+            if (!isNull(thiss.previousSibling)) {
+                thiss.parentNode.insertBefore(this, thiss.previousSibling);
+                return true;
+            }
+            return false;
+        } catch (e) {
+            error("moveUp", e);
+            return false;
+        }
+    });
+    
+    _ah("remove", function () {
+        try {
+            return this.parentNode.removeChild(this);
+        } catch (e) {
+            error("remove", e);
+            return false;
+        }
+    });
+    _ah("removeClass", function(name) {
+        try {
+            var arr = this.className.split(' '),
+            index = arr.indexOf(name);
+            if (index != -1) {
+                arr.splice(index,1);
+                this.className = arr.join(' ').trim();
+            }
+            return true;
+        } catch (e) {
+            error("removeClass", e);
             return false;
         }
     });
@@ -3089,24 +3273,6 @@ if (__thisIsNewer) {
             return true;
         } catch (e) {
             error("show", e);
-            return false;
-        }
-    });
-    _ah("hide", function() {
-        try {
-            if (this.tagName.toLowerCase() == "object") {
-                this.style.visibility = "hidden";
-                !parseInt(this.height) || this.setAttribute('data-height', this.height);
-                !parseInt(this.width) || this.setAttribute('data-width', this.width);
-
-                this.height = 0;
-                this.width = 0;
-            } else {
-                this.style.display = "none";
-            }
-            return true;
-        } catch (e) {
-            error("hide", e);
             return false;
         }
     });
@@ -3140,71 +3306,12 @@ if (__thisIsNewer) {
             return false;
         }
     });
-    _ah("removeClass", function(name) {
-        try {
-            var arr = this.className.split(' '),
-            index = arr.indexOf(name);
-            if (index != -1) {
-                arr.splice(index,1);
-                this.className = arr.join(' ').trim();
-            }
-            return true;
-        } catch (e) {
-            error("removeClass", e);
-            return false;
-        }
-    });
-    _ah("addClass", function(name) {
-        try {
-            var arr = this.className.split(' ');
-            arr.indexOf(name) != -1 || arr.push(name);
-            this.className = arr.join(' ').trim();
-            return true;
-        } catch (e) {
-            error("addClass", e);
-            return false;
-        }
-    });
-    _ah("hasClass", function(name) {
-        try {
-            var regex = new RegExp('((^)|(\\s+))' + name + '(\\s+|$)');
-            return regex.test(this.className);
-        } catch (e) {
-            error("addClass", e);
-            return false;
-        }
-    });
-    _ah("width", function(isBody) {
-        try {
-            return _getDimension.call(this, isBody, 'width');
-        } catch (e) {
-            error("width", e);
-            return false;
-        }
-    });
-    _ah("height", function(isBody) {
-        try {
-            return _getDimension.call(this, isBody, 'height');
-        } catch (e) {
-            error("height", e);
-            return false;
-        }
-    });
     _ah("top", function() {
         try {
             return _getDimension.call(this, isBody, 'top');
             //return this.getClientRects && this.getClientRects()[0].top <= this.offsetTop ? this.getClientRects()[0].top : this.offsetTop;
         } catch (e) {
             error("top", e);
-            return false;
-        }
-    });
-    _ah("left", function() {
-        try {
-            return _getDimension.call(this, isBody, 'left');
-            //return this.getClientRects && this.getClientRects()[0].left <= this.offsetLeft ? this.getClientRects()[0].left : this.offsetLeft;
-        } catch (e) {
-            error("left", e);
             return false;
         }
     });
@@ -3218,26 +3325,44 @@ if (__thisIsNewer) {
             return false;
         }
     }, true);
-    _ah("getElementsByClassName", function(classnames, taghint) {
+    _ah("unhookEvent", function(type, fn) {
         try {
-            var exps = classnames.split(/\s+/).map(function(name) {
-                name = name.replace(/([/\\^$*+?.()|[\]{}])/g, '\\$1');
-                return new RegExp('(^|\\s)'+name+'(\\s|$)');
-            }),
-            elems = this.getElementsByTagName(taghint || '*'),
-            matches = Array();
-            for (var i = 0, len = this.length; i < len; i++) {
-                var elem = elems[i];
-                (exps.every(function(exp) {
-                    return exp.test(elem.className);
-                })) && matches.push(el);
+            var fnString, sIndex, eIndex, fname = "", pos = {};
+            if(fn) {
+                fnString = fn.toString();
+                sIndex = fnString.indexOf("function", 0) + 8;
+                eIndex = fnString.indexOf("(", sIndex);
+                fname = fnString.substring(sIndex, eIndex).trim();
             }
-            return matches;
+            if (EVENT_REGISTRY.Exists(this.id, type, fname, pos)) {
+                EVENT_REGISTRY[this.id].splice(pos.index, 1);
+
+                if (this.detachEvent) {
+                    this.detachEvent("on" + type, this[type + fn]);
+                    this[type + fn] = null;
+                } else {
+                    this.removeEventListener(type, fn, false);
+                }
+                if (EVENT_REGISTRY[this.id].length < 1) {
+                    delete EVENT_REGISTRY[this.id];
+                    EVENT_REGISTRY.length--;
+                }
+            }
+            return true;
         } catch (e) {
-            error("getElementsByClassName", e);
+            error("unhookEvent", e);
             return false;
         }
     });
+    _ah("width", function(isBody) {
+        try {
+            return _getDimension.call(this, isBody, 'width');
+        } catch (e) {
+            error("width", e);
+            return false;
+        }
+    });
+
     /*dataset workaround*/
     if (!$w.DOMStringMap) {
         _ah("_dataset", function(){
@@ -4213,4 +4338,4 @@ if (__thisIsNewer) {
     }());
 }
 __cleanUp();
-window.__craydentLoaded = true;
+$w.__craydentLoaded = true;
