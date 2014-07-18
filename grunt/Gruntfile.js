@@ -22,8 +22,10 @@ module.exports = function(grunt) {
       options: {
         args: ["--verbose"],
         exclude: [".git*","*.scss","node_modules","grunt"],
+        syncDestIgnoreExcl: true,
         recursive: true,
-        syncDestIgnoreExcl: true
+        preservePermissions: true,
+        compareMode: "checksum"
       },
     
       // IconLicensing Project
