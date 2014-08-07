@@ -506,9 +506,11 @@ function JsonObjectEditor(specs){
 			case 'int':
 				html+= self.renderIntegerField(prop);
 			break;
-			
+
+/*            case 'textarea':
+                prop.type = 'rendering';*/
 			case 'rendering':
-				html+= self.renderRenderingField(prop);
+					html+= self.renderRenderingField(prop);
 			break;
 			
 			case 'date':

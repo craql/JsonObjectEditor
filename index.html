@@ -150,7 +150,7 @@ var thingschema =
 var citySchema = 
 	{
 		_title:'City',
-		fields:['id','name','city_css','geo','city_demos','isChecked'],
+		fields:['id','name','city_buckets','city_css','geo','city_demos','isChecked'],
 		_listID:'id',
 		_listTitle:'${name} <br/>${geo}'
 		
@@ -173,6 +173,9 @@ var citySchema =
 			city_css:{type:'text',autocomplete:true,values:['happy','sad','frivilous','distinguished']},
 			isChecked:{type:'boolean'},
 			pict:{type:'image'},
+            city_buckets:{label:'Bucket Items - MultiSort',type:'multisorter',default:[], width:'50%', values:function(){return bucketItems},idprop:'id',
+                template:'${name} <br/><small>${id}</small>'
+            },
 			//id:{label:'ID',type:'text', locked:true},
 			id:{label:'ID',type:'guid'},
 		//rendering
@@ -189,6 +192,15 @@ var citySchema =
 		},
 		compact:false
 	}
+
+    var bucketItems = [];
+    for(var i = 0; i<1000;i++) {
+        bucketItems.push({
+            name:'Bucket Item '+i,
+            id:cuid()
+        })
+    }
+
 	var JOE = new JsonObjectEditor(specs);
 	JOE.init();
 	
