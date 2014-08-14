@@ -162,7 +162,13 @@ function JsonObjectEditor(specs){
 			if(typeof self.current.subsets == 'function'){
 				self.current.subsets = self.current.subsets(); 
 			}
-			//self.current.object = null;
+
+            //setup sorting
+            //TODO:add subset sorter
+            self.current.sorter = setts.sorter || (specs.schema && specs.schema.sorter)|| 'name';
+            if($.type(self.current.sorter) == 'string'){self.current.sorter = [self.current.sorter];}
+
+            //self.current.object = null;
 
 		}
 	
@@ -338,6 +344,7 @@ function JsonObjectEditor(specs){
 		var schema = specs.schema;
 		var list = specs.list || [];
 		var html = '';
+        list = list.sortBy(self.current.sorter);
 		if(!self.current.subset || !self.current.subsets || (self.current.subsets && self.current.subsets.indexOf(self.current.subset) == -1 )){
 			list.map(function(li){
 				html += self.renderListItem(li);

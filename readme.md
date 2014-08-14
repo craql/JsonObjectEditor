@@ -154,6 +154,7 @@ an array of menu buttons
 
 **properties**
 
+- _listWindowTitle: the title of the window (can be passed in with the schema);
 - _listCount: added to the current object and can be used in the title.
 _listTitle:'${name} ${species}', *how to display items in the list*
 - subsets: name:string, filter:object 
