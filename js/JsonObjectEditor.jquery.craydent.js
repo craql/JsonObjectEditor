@@ -198,9 +198,16 @@ function JsonObjectEditor(specs){
 		
 	//setup window title	
 		//specs.title = title || (specs.schema)? specs.schema._title : "Viewing "+specs.mode.capitalize();	
-		specs.title =(
+		specs.listWindowTitle = (
+            specs.list
+            && (
+                specs._listMenuTitle || specs._listWindowTitle
+                || (specs.schema && (specs.schema._listMenuTitle || specs.schema._listWindowTitle))
+            )
+            );
+        specs.title =(
 			title 
-			|| (specs.list && (specs._listMenuTitle || (specs.schema && specs.schema._listMenuTitle))) 
+			|| specs.listWindowTitle
 			|| (specs.schema && specs.schema._title)  || "Viewing "+specs.mode.capitalize());		
 	//setup profile
 		specs.profile = (profile)? 
@@ -966,7 +973,7 @@ this.renderSorterField = function(prop){
 		var selectionsHtml ='';
 		
 		
-		var idprop = prop[idprop] ||'id'||'_id';
+		var idprop = prop['idprop'] ||'id'||'_id';
 		var template = prop.template || '${name} (${'+idprop+'})'; 
 		var value = prop.value || [];
 		var selectionsArray = value;
