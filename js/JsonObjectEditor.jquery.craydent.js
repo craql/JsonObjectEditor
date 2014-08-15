@@ -231,10 +231,10 @@ function JsonObjectEditor(specs){
 	
 	//update history 2/2	
 		if(!self.current.specs.noHistory && self.history.length){
-			$.extend({_joeHistoryTitle:self.overlay.find('.joe-panel-title').html(),},self.history[self.history.length-1]);
+			$.extend({_joeHistoryTitle:self.overlay.find('.joe-panel-title').html()},self.history[self.history.length-1]);
 		}
 		return html;
-	}
+	};
 /*----------------------------->
 	A | Header
 <-----------------------------*/	
@@ -270,12 +270,14 @@ function JsonObjectEditor(specs){
 	this.closeButtonAction = function(){
 		self.history = [];
 		self.overlay.toggleClass('active');
+        self.current.list = null;
 	}
 	this.goBack = function(){
 		self.history.pop();
 		var joespecs = self.history.pop();
 		if(!joespecs){
 			self.hide();
+            self.current.list = null;
 			return;
 		}
 		//[self.history.length];
@@ -754,7 +756,7 @@ function JsonObjectEditor(specs){
 		
 		var val;
 			valObjs.map(function(v){
-				val = v.value||v.name||'';
+				val = (prop.idprop && v[prop.idprop])||v.value||v.name||'';
 				if($.type(prop.value) == 'array'){
 					selected = '';
 					selected = (prop.value.indexOf(val) != -1)?'selected':'';
@@ -852,7 +854,7 @@ function JsonObjectEditor(specs){
 		specs = specs || {};
 		var myIcon = L.icon({
 			iconUrl: specs.icon||'/JsonObjectEditor/img/mapstar.png',
-			iconSize: [30, 30],
+			iconSize: [30, 30]
 			//iconAnchor: [22, 94],
 			//popupAnchor: [-3, -76],
 			//shadowUrl: 'my-icon-shadow.png',
@@ -983,7 +985,7 @@ this.renderSorterField = function(prop){
 		var idprop = prop['idprop'] ||'id'||'_id';
 		var template = prop.template || '${name} (${'+idprop+'})'; 
 		var value = prop.value || [];
-		var selectionsArray = value;
+		var selectionsArray = Array(value.length);
 		var li;
 		
 		
@@ -1006,6 +1008,7 @@ this.renderSorterField = function(prop){
 			if(val_index != -1){//currently selected
 				//selectionsHtml += li;
 				selectionsArray[val_index] = li;
+
 			}else{
 				optionsHtml += li;
 			}
@@ -1014,7 +1017,7 @@ this.renderSorterField = function(prop){
 		var selectionsHtml = selectionsArray.join('');
 		
 		var html=
-		'<div class="joe-multisorter-field joe-field" name="'+prop.name+'" data-ftype="multisorter">'+
+		'<div class="joe-multisorter-field joe-field" name="'+prop.name+'" data-ftype="multisorter" data-multiple="'+(prop.allowMultiple||'false')+'">'+
 			'<p style="text-align:center;"> click item to switch columns.</p>'+
 			'<div class="joe-filter-field-holder"><input type="text"class="" onkeyup="_joe.filterSorterOptions(this);"/></div>'+
 			'<ul class="joe-multisorter-bin options-bin">'+optionsHtml+'</ul>'+
@@ -1030,11 +1033,21 @@ this.renderSorterField = function(prop){
 		logit(query);
 		
 	}
-	this.toggleMultisorterBin = function(dom){
-		var id = $(dom).data('id');
-		var target = $(dom).parents('.joe-multisorter-bin').siblings('.joe-multisorter-bin');
-		var newDom = $(dom).parents('.joe-multisorter-bin').find('li[data-id='+id+']').detach();
+	this.toggleMultisorterBin = function(dom) {
+        var id = $(dom).data('id');
+        var parent = $(dom).parents('.joe-multisorter-bin');
+        var multisorter = parent.parents('.joe-multisorter-field');
+        var target = parent.siblings('.joe-multisorter-bin');
+
+        var newDom = parent.find('li[data-id=' + id + ']').detach();
+
+    //detach if no multiples allowed.
+       /* if (!multisorter.data('multiple')) {
+            newDom
+        }*/
+
 		target.prepend(newDom);
+
 /*	//reset divs
 	var opts = $.unique($('.joe-multisorter-bin.options-bin').find('li'))	
 	$('.joe-multisorter-bin.options-bin').empty();
@@ -1161,7 +1174,8 @@ this.renderSorterField = function(prop){
 	this.renderListItem = function(listItem){
 		var listSchema  = $.extend(
 			{
-				_listID:'id'	
+				_listID:'id',
+                stripeColor:null
 			},
 			self.current.schema,
 			self.current.specs
@@ -1171,9 +1185,19 @@ this.renderSorterField = function(prop){
 		var id = listItem[idprop] || null;
 		//var action = 'onclick="_joe.editObjectFromList(\''+id+'\');"';
 		var action = 'onclick="getJoe('+self.joe_index+').listItemClickHandler({dom:this,id:\''+id+'\'});"';
+
+
+        var stripeColor = ($.type(listSchema.stripeColor)=='function')?listSchema.stripeColor(listItem):listSchema.stripeColor;
+        var stripeHTML ='';
+        if(stripeColor){
+            stripeHTML = 'style="background-color:'+stripeColor+';"';
+        }
 		if(!listSchema._listTemplate){
 			var title = listSchema._listTitle || listItem.name || id || 'untitled';
-			var html = '<div class="joe-panel-content-option joe-no-select" '+action+' data-id="'+id+'">'+fillTemplate(title,listItem)+'</div>';
+			var html = '<div class="joe-panel-content-option joe-no-select '+((stripeColor && 'striped')||'')+'" '+action+' data-id="'+id+'">'
+                +'<div class="joe-panel-content-option-stripe" '+stripeHTML+'></div>'
+                +fillTemplate(title,listItem)
+                +'</div>';
 		}
 		//if there is a list template
 		else{
@@ -1482,7 +1506,8 @@ this.renderSorterField = function(prop){
 		return (window._joes[index] || false)
 	}
 	$(document).keyup(function(e) {
-		if (e.keyCode == 27) { self.hide(); }   // esc
+		if (e.keyCode == 27) { self.closeButtonAction(); }   // esc
+        //TODO:if the joe is also current main joe.
 	//ctrl + enter
 		else if(e.ctrlKey && e.keyCode == 13 && self.specs.useControlEnter){
 			self.overlay.find('.joe-confirm-button').click();
@@ -1522,8 +1547,9 @@ this.renderSorterField = function(prop){
 		var obj = $.extend(self.current.object,newObj);
 		logit('object updated');
 		//self.hide();
+
+        callback(obj);
 		self.goBack();
-		callback(obj);
 	}
 	
 	this.deleteObject = function(callback){
@@ -1532,16 +1558,18 @@ this.renderSorterField = function(prop){
 		if(!self.current.list || !obj || self.current.list.indexOf(obj) == -1){
 		//no list or no item
 			alert('object or list not found');
+
+            callback(obj);
 			self.goBack();
-			callback(obj);	
 			return;
 		}
 		var index = self.current.list.indexOf(obj);
 		
 		self.current.list.removeAt(index);
 		logit('object deleted');
+
+        callback(obj);
 		self.goBack();
-		callback(obj);
 	}
 	
 	this.duplicateObject = function(specs){

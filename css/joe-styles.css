@@ -246,18 +246,29 @@ Subset Selector
 .joe-panel-content-option {
     /* height: 40px; */
     /* line-height: 40px; */
-    padding: 10px 10px;
+    padding: 10px 10px 10px 10px;
     position: relative;
     /* min-height: 30px; */
     cursor: pointer;
     font-size: 14px;
 	clear:both;
 }
+.joe-panel-content-option.striped{
+    padding-left:10px;
+}
 .joe-panel-content-option:hover {
     background-color: rgba(0,0,0,.1);
 }
 .joe-panel-content-option.selected{
 	 background-color: rgba(0,100,200,.1);
+}
+.joe-panel-content-option-stripe {
+    position: absolute;
+    left: 1px;
+    width: 5px;
+    top: 3px;
+    bottom: 3px;
+    opacity: .8;
 }
 /*-------------------------
 	UI Panel Content Types

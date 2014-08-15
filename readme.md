@@ -81,6 +81,7 @@ Properties for all Fields
 - `select`: select list. 
 	- multiple(bool)
 	- values(array of objects, [{value:"",name/display:""]), can be a function
+	- idprop: string of prop name
 - `geo`: shows a map
 	- *takes a string array "[lat,lon]"*
 	- center:[lat,lon], center of map
@@ -156,7 +157,8 @@ an array of menu buttons
 
 - _listWindowTitle: the title of the window (can be passed in with the schema);
 - _listCount: added to the current object and can be used in the title.
-_listTitle:'${name} ${species}', *how to display items in the list*
+- _listTitle:'${name} ${species}', *how to display items in the list*
+- stripeColor:string or function that returns valid css color descriptor.
 - subsets: name:string, filter:object 
 - _listTemplate: html template that uses ${var} to write out the item properties for the list item.
 	- standard css class `joe-panel-content-option`
