@@ -91,6 +91,13 @@ Properties for all Fields
 - `multisorter` : allows arrays of objects to be selected and sorted in right bin.
 	- values(array of objects, [{value:"",name/display:""]), can be a function
 
+**labels:**
+
+- pass an object instead of a string to the fields array.
+
+
+    {label:'Name of the following properties section'}
+
 ###defaultProfile
 overwrites the default profile
 

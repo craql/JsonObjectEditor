@@ -389,26 +389,33 @@ function JsonObjectEditor(specs){
 			(specs.schema.fields||[]).map(function(prop){
 				
 				//if(object.hasOwnProperty(prop)){
-					
-				//merge all the items	
-					propObj = $.extend(
-						{
-							name:prop,
-							type:'text'
-						},
-						{
-							onblur:specs.schema.onblur,
-							onchange:specs.schema.onchange,
-							onkeypress:specs.schema.onkeypress,
-							onkeyup:specs.schema.onkeypress
-						
-						},
-						self.fields[prop],
-						//overwrite with value
-						{value:object[prop]}
-					);
-					
-					fields += self.renderObjectField(propObj);
+				if($.type(prop) == "string") {
+                    //merge all the items
+                    propObj = $.extend(
+                        {
+                            name: prop,
+                            type: 'text'
+                        },
+                        {
+                            onblur: specs.schema.onblur,
+                            onchange: specs.schema.onchange,
+                            onkeypress: specs.schema.onkeypress,
+                            onkeyup: specs.schema.onkeypress
+
+                        },
+                        self.fields[prop],
+                        //overwrite with value
+                        {value: object[prop]}
+                    );
+                    fields += self.renderObjectField(propObj);
+                }
+
+                if($.type(prop) == "object"){
+                    if(prop.label){
+                        fields += self.renderContentLabel(prop);
+                    }
+                }
+
 				//}
 			
 			})//end map
@@ -417,6 +424,15 @@ function JsonObjectEditor(specs){
 		var html = '<div class="joe-object-content">'+fields+'<div class="clear"></div></div>';
 		return html;
 	}
+
+//PROP LABELS
+    self.renderContentLabel = function(specs){
+        var html="<div class='joe-content-label'>"+fillTemplate(specs.label,self.current.object)+"</div>";
+        return html;
+    }
+
+
+
 
 /*----------------------------->
 	C | Footer
@@ -1262,7 +1278,7 @@ this.renderSorterField = function(prop){
 			if(needles.indexOf(i[idprop]) == -1){//not selected
 				return;
 			}else{
-				protoItem = merge(protoItem,i);
+				protoItem = $c.merge(protoItem,i);
 				items.push(i);
 			}
 		});
@@ -1343,7 +1359,7 @@ this.renderSorterField = function(prop){
 		//e.cancelBubble = true;
 		//if (e.stopPropagation) e.stopPropagation();
 		self.hide();
-		goJoe(self.current.list,merge(self.current.userSpecs,{subset:subset}));
+		goJoe(self.current.list,$c.merge(self.current.userSpecs,{subset:subset}));
 	}
 	
 /*-------------------------------------------------------------------->
@@ -1455,7 +1471,7 @@ this.renderSorterField = function(prop){
 		//var obj = $.extend(self.current.object,newObj);
 		self.show(
 			$.extend(self.current.object,newObj),
-			merge(self.current.userSpecs,{noHistory:true,schema:self.setSchema(schemaName) || self.current.schema})
+			$c.merge(self.current.userSpecs,{noHistory:true,schema:self.setSchema(schemaName) || self.current.schema})
 		)
 		
 	}
@@ -1545,10 +1561,19 @@ this.renderSorterField = function(prop){
 		var newObj = self.constructObjectFromFields(self.joe_index);
 		newObj.joeUpdated = new Date();
 		var obj = $.extend(self.current.object,newObj);
-		logit('object updated');
-		//self.hide();
 
+
+    //update object list
+        var index = (self.current.list && self.current.list.indexOf(obj))||-1;
+        if(index == -1){
+          //  object not in current list
+            self.current.list.push(obj);
+        }
+
+    //run callback
         callback(obj);
+		logit('object updated');
+
 		self.goBack();
 	}
 	
