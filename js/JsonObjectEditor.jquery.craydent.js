@@ -1278,7 +1278,7 @@ this.renderSorterField = function(prop){
 			if(needles.indexOf(i[idprop]) == -1){//not selected
 				return;
 			}else{
-				protoItem = $c.merge(protoItem,i);
+				$.extend(protoItem,i);
 				items.push(i);
 			}
 		});
@@ -1564,8 +1564,8 @@ this.renderSorterField = function(prop){
 
 
     //update object list
-        var index = (self.current.list && self.current.list.indexOf(obj))||-1;
-        if(index == -1){
+        var index = (self.current.list && self.current.list.indexOf(obj));
+        if(index == -1 || index == undefined){
           //  object not in current list
             self.current.list.push(obj);
         }
