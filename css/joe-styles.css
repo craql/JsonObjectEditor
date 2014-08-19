@@ -222,9 +222,9 @@ Subset Selector
 
 
 
-/*-------------------------
+/*------------------------------------------------------------------
 	UI Panel Content
--------------------------*/	
+------------------------------------------------------------------*/
 .joe-panel-content {
 	min-height:50px;
 	position: absolute;
@@ -241,12 +241,12 @@ Subset Selector
 }
 
 /*-------------------------
-	UI Panel Content List Options
+	List Options
 -------------------------*/	
 .joe-panel-content-option {
     /* height: 40px; */
     /* line-height: 40px; */
-    padding: 10px 10px 10px 10px;
+    /*padding: 10px 10px 10px 10px;*/
     position: relative;
     /* min-height: 30px; */
     cursor: pointer;
@@ -254,11 +254,11 @@ Subset Selector
 	clear:both;
 }
 .joe-panel-content-option.striped{
-    padding-left:10px;
+    /*padding-left:10px;*/
 }
-.joe-panel-content-option:hover {
+/*.joe-panel-content-option:hover {
     background-color: rgba(0,0,0,.1);
-}
+}*/
 .joe-panel-content-option.selected{
 	 background-color: rgba(0,100,200,.1);
 }
@@ -270,6 +270,30 @@ Subset Selector
     bottom: 3px;
     opacity: .8;
 }
+/*-------------------------
+	List Option content
+-------------------------*/
+.joe-panel-content-option-content {
+    padding: 10px 10px 10px 10px;
+}
+.joe-panel-content-option-content:hover {
+    background-color: rgba(0,0,0,.1);
+}
+
+/*-------------------------
+	List Option Buttons
+-------------------------*/
+.joe-panel-content-option-button {
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    line-height: 50px;
+}
+.joe-panel-content-option-button:hover{
+    background-color: rgba(0,0,0,.1);
+}
+
+
 /*-------------------------
 	UI Panel Content Types
 -------------------------*/

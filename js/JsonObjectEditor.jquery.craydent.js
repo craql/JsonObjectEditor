@@ -566,6 +566,10 @@ function JsonObjectEditor(specs){
 			case 'buckets':
 				html+= self.renderBucketsField(prop);
 			break;
+
+            case 'content':
+                html+= self.renderContentField(prop);
+            break;
 			
 			default:
 				html+= self.renderTextField(prop);
@@ -1173,6 +1177,19 @@ this.renderSorterField = function(prop){
 	}
 
 
+/*----------------------------->
+ L | Content
+ <-----------------------------*/
+    this.renderContentField = function(prop){
+        var html = '';
+        if(prop.run){
+            html+= prop.run(self.current.object,prop);
+        }else if(prop.template){
+            html += fillTemplate(prop.template,self.current.object);
+        }
+        return html;
+
+    };
 
 /*----------------------------->
 	R | Rendering Field
@@ -1210,14 +1227,20 @@ this.renderSorterField = function(prop){
         }
 		if(!listSchema._listTemplate){
 			var title = listSchema._listTitle || listItem.name || id || 'untitled';
-			var html = '<div class="joe-panel-content-option joe-no-select '+((stripeColor && 'striped')||'')+'" '+action+' data-id="'+id+'">'
+            var listItemButtons = '';//<div class="joe-panel-content-option-button fleft">#</div><div class="joe-panel-content-option-button fright">#</div>';
+            //list item content
+            title="<div class='joe-panel-content-option-content' "+action+">"+title+"</div>";
+			var html = '<div class="joe-panel-content-option joe-no-select '+((stripeColor && 'striped')||'')+'"  data-id="'+id+'">'
+
+
                 +'<div class="joe-panel-content-option-stripe" '+stripeHTML+'></div>'
+                +listItemButtons
                 +fillTemplate(title,listItem)
                 +'</div>';
 		}
 		//if there is a list template
 		else{
-			html = fillTemplate(listSchema._listTemplate,listItem);
+			html = fillTemplate(listSchema._listTemplate,$c.merge(listItem,{action:action}));
 		}
 		
 		return html;
@@ -1228,8 +1251,13 @@ this.renderSorterField = function(prop){
 		if(!window.event.shiftKey && !window.event.ctrlKey){
 			self.editObjectFromList(specs);
 		}else if(window.event.ctrlKey){
-			
-			$(specs.dom).toggleClass('selected');
+
+            if($(specs.dom).hasClass('joe-panel-content-option')){
+                $(specs.dom).toggleClass('selected');
+            }else{
+                $(specs.dom).parents('.joe-panel-content-option').toggleClass('selected');
+            }
+
 			$('.joe-panel-content-option.selected').map(function(i,listitem){
 				self.current.selectedListItems.push($(listitem).data('id'));
 			})

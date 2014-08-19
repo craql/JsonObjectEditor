@@ -90,7 +90,10 @@ Properties for all Fields
 -`image` : shows an image and HxW as th image url is typed in.
 - `multisorter` : allows arrays of objects to be selected and sorted in right bin.
 	- values(array of objects, [{value:"",name/display:""]), can be a function
-
+- `content` : show content on in the editor
+    - run: function to be run(current_object,field_properties)
+    - template: html template for fillTmeplate(template,current_object);
+    
 **labels:**
 
 - pass an object instead of a string to the fields array.
