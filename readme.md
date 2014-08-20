@@ -3,9 +3,11 @@
 
 Visually Edit Objects Using this GUI tool, what you do from there is up to you.
 
-
+todo:
+	-conditional fields
 
 ##What's new
+
 *v1.4*
 
 + Added Image field

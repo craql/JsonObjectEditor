@@ -1,6 +1,6 @@
 //Dev'd By Corey Hadden
 /*TODO:
-	-conditional fields
+
 	-merge specs (profile,schema,object,call?)
 	-required fields
 	
@@ -773,9 +773,13 @@ function JsonObjectEditor(specs){
 			self.renderFieldAttributes(prop)+
 			multiple+
 		' >';
-		
+
+
+        var template = prop.template || '';
 		var val;
+        var optionVal;
 			valObjs.map(function(v){
+                optionVal = (template)?fillTemplate(template,v):(v.display||v.label||v.name);
 				val = (prop.idprop && v[prop.idprop])||v.value||v.name||'';
 				if($.type(prop.value) == 'array'){
 					selected = '';
@@ -787,7 +791,7 @@ function JsonObjectEditor(specs){
 				}else{
 					selected = (prop.value == val)?'selected':'';
 				}
-				html += '<option value="'+val+'" '+selected+'>'+(v.display||v.label||v.name)+'</option>'	
+				html += '<option value="'+val+'" '+selected+'>'+optionVal+'</option>'
 			})
 			
 		html+='</select>';
