@@ -42,9 +42,9 @@ function JsonObjectEditor(specs){
 		compact:false,
 		useControlEnter:true,
 		autoInit:false
-	}
+	};
 	
-	this.specs = $.extend({},defaults,specs||{})
+	this.specs = $.extend({},defaults,specs||{});
 	
 	this.current = {};
 	//TODO: check for class/id selector
@@ -67,7 +67,7 @@ function JsonObjectEditor(specs){
 		self.container.append(html);
 		self.overlay = $('.joe-overlay[data-joeindex='+self.joe_index+']');
 		
-	}
+	};
 
 
 
@@ -85,7 +85,7 @@ function JsonObjectEditor(specs){
 			'</div>'+
 		'</div>';
 		return html;
-	}
+	};
 	
 	
 	this.populateFramework = function(data,setts){
@@ -127,7 +127,7 @@ function JsonObjectEditor(specs){
 	specs.preformat = 
 		specs.schema.preformat ||
 		specs.preformat ||
-		function(d){return d;}
+		function(d){return d;};
 	
 	data = specs.preformat(data);	
 /*-------------------------
@@ -239,8 +239,8 @@ function JsonObjectEditor(specs){
 	A | Header
 <-----------------------------*/	
 	this.renderEditorHeader = function(specs){
-		specs = specs || {}
-		var titleObj = self.current.object
+		specs = specs || {};
+		var titleObj = self.current.object;
 		if(specs.list){
 			titleObj = $.extend({},self.current.object,{_listCount:specs.list.length});
 		}
@@ -266,12 +266,12 @@ function JsonObjectEditor(specs){
 			'<div class="clear"></div>'+
 		'</div>';
 		return html;
-	}
+	};
 	this.closeButtonAction = function(){
 		self.history = [];
 		self.overlay.toggleClass('active');
         self.current.list = null;
-	}
+	};
 	this.goBack = function(){
 		self.history.pop();
 		var joespecs = self.history.pop();
@@ -282,7 +282,7 @@ function JsonObjectEditor(specs){
 		}
 		//[self.history.length];
 		self.show(joespecs.data,joespecs.specs);
-	}
+	};
 
 
 /*----------------------------->
@@ -311,7 +311,7 @@ function JsonObjectEditor(specs){
 				content = self.renderListContent(specs);
 			break;
 			case 'object':
-				content = self.renderObjectContent(specs)
+				content = self.renderObjectContent(specs);
 			break;
 	
 			
@@ -321,7 +321,7 @@ function JsonObjectEditor(specs){
 			content+
 		'</div>';
 		return html;
-	}
+	};
 
 	this.renderTextContent = function(specs){
 		specs = specs || {};
@@ -329,14 +329,14 @@ function JsonObjectEditor(specs){
 		var html = '<div class="joe-text-content">'+text+'</div>';
 		return html;
 		
-	}
+	};
 	
 	this.renderHTMLContent = function(specs){
 		specs = specs || {};
 		var html = '<textarea class="joe-rendering-field">'+(specs.rendering || '')+'</textarea>';
 		return html;
 		
-	}
+	};
 //LIST
 	this.renderListContent = function(specs){
 		self.current.selectedListItems=[];
@@ -359,7 +359,7 @@ function JsonObjectEditor(specs){
 		}
 		return html;
 		
-	}
+	};
 	
 //OBJECT
 	this.renderObjectContent = function(specs){
@@ -420,16 +420,16 @@ function JsonObjectEditor(specs){
 			
 			})//end map
 			
-		}
+		};
 		var html = '<div class="joe-object-content">'+fields+'<div class="clear"></div></div>';
 		return html;
-	}
+	};
 
 //PROP LABELS
     self.renderContentLabel = function(specs){
         var html="<div class='joe-content-label'>"+fillTemplate(specs.label,self.current.object)+"</div>";
         return html;
-    }
+    };
 
 
 
@@ -470,7 +470,7 @@ function JsonObjectEditor(specs){
 			'</div>'+
 		'</div>';
 		return html;
-	}
+	};
 	
 	this.renderFooterMenuItem=function(m){//takes a menuitem
 		var display,action,html='';
@@ -478,7 +478,7 @@ function JsonObjectEditor(specs){
 		action = m.action || 'alert(\''+display+'\')';
 		html+= '<div class="joe-button joe-footer-button '+(m.css ||'')+'" onclick="'+action+'" data-btnid="'+m.name+'" >'+display+'</div>';
 		return html;
-	}
+	};
 /*-------------------------------------------------------------------->
 	3 | OBJECT FORM
 <--------------------------------------------------------------------*/
@@ -494,9 +494,9 @@ function JsonObjectEditor(specs){
 		
 		var hidden = (prop.hidden)?'hidden':'';
 		
-		var html ='' 
+		var html ='';
 		
-		
+	//add clear div if the previous fields are floated.
 		if(preProp){
 			if(preProp.width && !prop.width){
 				html+='<div class="clear"></div>';
@@ -508,7 +508,9 @@ function JsonObjectEditor(specs){
 
 		html+=	
 			'<div class="joe-object-field '+hidden+' '+prop.type+'-field " data-type="'+prop.type+'" data-name="'+prop.name+'">'+
-			'<label class="joe-field-label">'+(prop.display||prop.label||prop.name)+'</label>';
+			'<label class="joe-field-label">'
+                +fillTemplate((prop.display||prop.label||prop.name),prop)
+            +'</label>';
 	
 	//add multi-edit checkbox	
 		if(self.current.userSpecs.multiedit){
@@ -583,14 +585,14 @@ function JsonObjectEditor(specs){
 		preProp = prop;
 		
 		return html;
-	}
+	};
 /*----------------------------->
 	0 | Event Handlers
 <-----------------------------*/
 	this.getActionString = function(evt,prop){
 		var str = (prop[evt])? ' '+self.functionName(prop[evt])+'(this); ' : '' ;
 		return str;
-	}
+	};
 	
 	
 	this.renderFieldAttributes = function(prop, evts){
@@ -621,7 +623,7 @@ function JsonObjectEditor(specs){
 		}
 		return ' '+keyupaction+' '+keypressaction+' '+bluraction+' '+changeaction+' '+disabled+' ';
 	
-	}
+	};
 	
 /*----------------------------->
 	A | Text Input
@@ -661,7 +663,7 @@ function JsonObjectEditor(specs){
 		//add onblur: hide panel
 
 		return html;
-	} 
+	};
 	
 	this.showTextFieldAutoComplete = function(dom){
 		var autocomplete = dom.next('.joe-text-autocomplete');
@@ -669,17 +671,17 @@ function JsonObjectEditor(specs){
 			self.checkAutocompleteValue(dom.val(),obj.innerHTML,obj);
 		});
 		autocomplete.addClass('active');
-	}
+	};
 	this.hideTextFieldAutoComplete = function(dom){
 		var autocomplete = dom.next('.joe-text-autocomplete');
 		autocomplete.removeClass('active');
-	}
+	};
 	
 	this.autocompleteTextFieldOptionClick = function(dom){
 		$(dom).parent().prev('.joe-text-field').val($(dom).html());
 		$(dom).parent().removeClass('active');
 		//$(dom).previous('.joe-text-field').val($(dom).html());
-	}
+	};
 	
 	this.checkAutocompleteValue = function(needle,haystack,dom){
 		var d = $(dom);
@@ -688,7 +690,7 @@ function JsonObjectEditor(specs){
 		}else{
 			d.removeClass('visible');	
 		}
-	}
+	};
 	
 
 /*----------------------------->
@@ -709,12 +711,12 @@ function JsonObjectEditor(specs){
 			self.renderFieldAttributes(prop,{onblur:'getJoe('+self.joe_index+').returnNumber(this);'})+
 		' />';
 		return html;
-	}
+	};
 
 	this.returnNumber = function(dom){
 		if(!$(dom).val()){return;}
 		$(dom).val(parseFloat($(dom).val()));
-	}
+	};
 		
 	this.renderIntegerField = function(prop){
 		
@@ -730,13 +732,13 @@ function JsonObjectEditor(specs){
 			self.renderFieldAttributes(prop,{onblur:'getJoe('+self.joe_index+').returnInt(this);'})+
 		' />';
 		return html;
-	}
+	};
 	
 	this.returnInt = function(dom){
 		if(!$(dom).val()){return;}
 		$(dom).val(parseInt($(dom).val()));
 	
-	}
+	};
 
 /*----------------------------->
 	C | Select
@@ -792,11 +794,11 @@ function JsonObjectEditor(specs){
 					selected = (prop.value == val)?'selected':'';
 				}
 				html += '<option value="'+val+'" '+selected+'>'+optionVal+'</option>'
-			})
+			});
 			
 		html+='</select>';
 		return html;
-	}
+	};
 
 /*----------------------------->
 	D | Date Field
@@ -808,7 +810,7 @@ function JsonObjectEditor(specs){
 		' />';
 		
 		return html;
-	}
+	};
 /*----------------------------->
 	E | Geo Field
 <-----------------------------*/
@@ -830,7 +832,7 @@ function JsonObjectEditor(specs){
 		;
 		
 		return html;
-	}	
+	};
 	
 	this.initGeoMap = function(id){
 
@@ -855,13 +857,13 @@ function JsonObjectEditor(specs){
 			//var ll = eval(mapspecs.value);
 			self.addMapIcon(map,mapspecs.value);
 		}
-	}
+	};
 	
 	this.onMapClick = function(e){
 		var map = (e.type=="click")?e.target : this.map;
 		
 		//map.setView(e.latlng);
-		var ll = (e && e.latlng) || this.getLatLng()
+		var ll = (e && e.latlng) || this.getLatLng();
 		map.setView(ll);
 		
 		if(e.type=="dragend"){
@@ -872,7 +874,7 @@ function JsonObjectEditor(specs){
 			self.addMapIcon(map,ll);
 		}
 		$('input[name='+map.prop+']').val('['+ll.lat+','+ll.lng+']');
-	}
+	};
 	
 	this.addMapIcon = function(map,latlng,specs){
 		specs = specs || {};
@@ -892,7 +894,7 @@ function JsonObjectEditor(specs){
 		}).addTo(map);
 		map.marker.map = map;
 		map.marker.on('dragend', self.onMapClick);
-	}
+	};
 /*----------------------------->
 	F | Boolean
 <-----------------------------*/
@@ -905,7 +907,7 @@ function JsonObjectEditor(specs){
 			+(prop.value == true&&'checked' || '')
 		+' />';
 		return html;
-	}
+	};
 
 
 /*----------------------------->
@@ -918,7 +920,7 @@ function JsonObjectEditor(specs){
 		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
 		'<input class="joe-guid-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || cuid())+'"  disabled />';
 		return html;
-	}
+	};
 	
 /*----------------------------->
 	H | Sorter
@@ -967,7 +969,7 @@ this.renderSorterField = function(prop){
 			
 		html+='</div>';
 		return html;*/
-	}
+	};
 /*----------------------------->
 	I | Image
 <-----------------------------*/
@@ -980,7 +982,7 @@ this.renderSorterField = function(prop){
 		+'<span class="joe-image-field-size"></span>';
 
 		return html;
-	}
+	};
 	
 	this.updateImageFieldImage = function(dom){
 		var src = $(dom).val();
@@ -989,7 +991,7 @@ this.renderSorterField = function(prop){
 		img.attr('src',src);
 		$(dom).next('.joe-image-field-size').html(img.width() + 'w x '+img.height()+'h');
 		
-	}
+	};
 		
 /*----------------------------->
 	J | Multisorter
@@ -1050,13 +1052,13 @@ this.renderSorterField = function(prop){
 	
 		+'</div>';
 		return html;
-	}
+	};
 	this.filterSorterOptions = function(dom){
 		var query = $(dom).val().toLowerCase();
-		$(dom).parent().next('.joe-multisorter-bin').find('li').each(function(){$(this).toggle($(this).html().toLowerCase().indexOf(query) != -1 );})
+		$(dom).parent().next('.joe-multisorter-bin').find('li').each(function(){$(this).toggle($(this).html().toLowerCase().indexOf(query) != -1 );});
 		logit(query);
 		
-	}
+	};
 	this.toggleMultisorterBin = function(dom) {
         var id = $(dom).data('id');
         var parent = $(dom).parents('.joe-multisorter-bin');
@@ -1078,7 +1080,7 @@ this.renderSorterField = function(prop){
 	$('.joe-multisorter-bin.options-bin').html(opts);*/
 	
 		
-	}
+	};
 /*----------------------------->
 	K | Buckets
 <-----------------------------*/
@@ -1161,7 +1163,7 @@ this.renderSorterField = function(prop){
 			+'<div class="joe-buckets-field-holder" style="width:75%;">';
 				bucketsHtml.map(function(b,i){
 					html+=renderBucket(i);
-				})
+				});
 				//+'<ul class="joe-buckets-bin selections-bin">'+bucketsHtml+'</ul>'
 				
 			
@@ -1172,13 +1174,13 @@ this.renderSorterField = function(prop){
 		
 
 		return html;
-	}
+	};
 	this.filterBucketOptions = function(dom){
 		var query = $(dom).val().toLowerCase();
-		$(dom).parents('.joe-buckets-field').find('.options-bin').find('li').each(function(){$(this).toggle($(this).html().toLowerCase().indexOf(query) != -1 );})
+		$(dom).parents('.joe-buckets-field').find('.options-bin').find('li').each(function(){$(this).toggle($(this).html().toLowerCase().indexOf(query) != -1 );});
 		logit(query);
 		
-	}
+	};
 
 
 /*----------------------------->
@@ -1204,7 +1206,7 @@ this.renderSorterField = function(prop){
 		var html=
 			'<textarea class="joe-rendering-field joe-field" name="'+prop.name+'" >'+(prop.value || "")+'</textarea>';
 		return html;
-	}
+	};
 /*-------------------------------------------------------------------->
 	4 | OBJECT LISTS
 <--------------------------------------------------------------------*/
@@ -1248,7 +1250,7 @@ this.renderSorterField = function(prop){
 		}
 		
 		return html;
-	}
+	};
 	
 	this.listItemClickHandler=function(specs){
 		self.current.selectedListItems = [];
@@ -1272,7 +1274,7 @@ this.renderSorterField = function(prop){
 		}else{
 			$(specs.dom).parents('.joe-overlay-panel').removeClass('multi-edit');
 		}
-	}
+	};
 	
 	this.editObjectFromList = function(specs){
 		specs = specs || {};
@@ -1293,7 +1295,7 @@ this.renderSorterField = function(prop){
 		/*self.populateFramework(object,setts);
 		self.overlay.addClass('active');*/
 		goJoe(object,setts);
-	}
+	};
 /*----------------------------->
 	List Multi Select
 <-----------------------------*/	
@@ -1315,13 +1317,13 @@ this.renderSorterField = function(prop){
 			}
 		});
 		
-		goJoe(protoItem,{title:'Multi-Edit '+(self.current.schema._title||'')+': '+items.length+' items',schema:(self.current.schema||null),multiedit:true})
+		goJoe(protoItem,{title:'Multi-Edit '+(self.current.schema._title||'')+': '+items.length+' items',schema:(self.current.schema||null),multiedit:true});
 		//buttons
 			//delete multiple
 			//save multiple
 		
 		//combine object on save	
-	}
+	};
 /*----------------------------->
 	List Filtering
 <-----------------------------*/	
@@ -1346,7 +1348,7 @@ this.renderSorterField = function(prop){
 			return false;
 		}
 		
-	}
+	};
 /*----------------------------->
 	List Subsets
 <-----------------------------*/		
@@ -1359,7 +1361,7 @@ this.renderSorterField = function(prop){
 			+self.renderSubsetSelectorOptions(specs)
 		+'</div>';
 		return html;
-	}
+	};
 	
 	this.renderSubsetSelectorOptions = function(specs){
 		var subsets = self.current.subsets;
@@ -1381,10 +1383,10 @@ this.renderSorterField = function(prop){
 		'<div class="selector-label selector-option" onclick="$(this).parent().toggleClass(\'active\')">'+subsetlabel+'</div>'
 		+'<div class="selector-options">'
 			+renderOption({name:'All',filter:{}});
-			subsets.map(function(s){html += renderOption(s);})
+			subsets.map(function(s){html += renderOption(s);});
 		html+='</div>';
 		return html;
-	}
+	};
 	
 	this.selectSubset=function(subset){
 		//if (!e) var e = window.event;
@@ -1392,7 +1394,7 @@ this.renderSorterField = function(prop){
 		//if (e.stopPropagation) e.stopPropagation();
 		self.hide();
 		goJoe(self.current.list,$c.merge(self.current.userSpecs,{subset:subset}));
-	}
+	};
 	
 /*-------------------------------------------------------------------->
 	5 | HTML Renderings
@@ -1402,7 +1404,7 @@ this.renderSorterField = function(prop){
 		//var data = {rendering:html};
 		var specs = {datatype:'rendering', compact:false,dom:dom};
 		self.show(rendering,specs);
-	}
+	};
 	
 	this.updateRendering = function(dom, callback){
 		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || logit;
@@ -1414,7 +1416,7 @@ this.renderSorterField = function(prop){
 		logit('dom updated');
 		self.hide();
 		callback(newVal);
-	}
+	};
 /*-------------------------------------------------------------------->
 	MENUS
 <--------------------------------------------------------------------*/
@@ -1426,11 +1428,11 @@ this.renderSorterField = function(prop){
 		self.current.mutant = prop;
 		
 		
-	}
+	};
 	
 	this.addPropertyToEditor = function(prop){
 		
-	}
+	};
 
 	this.minis = {};
 /*-------------------------------------------------------------------->
@@ -1458,11 +1460,11 @@ this.renderSorterField = function(prop){
 		$('.joe-mini-panel').addClass('active').html(html);
 		
 		self.minis[mini.id] = mini;
-	}
+	};
 	
 	this.hideMini = function(){
 		$('.joe-mini-panel').removeClass('active')
-	}
+	};
 	
 	this.constructObjectFromMiniFields = function(){
 		var object = {};
@@ -1487,7 +1489,7 @@ this.renderSorterField = function(prop){
 			}
 		});
 		return object;
-	}
+	};
 /*-------------------------------------------------------------------->
 	SCHEMAS
 <--------------------------------------------------------------------*/
@@ -1497,7 +1499,7 @@ this.renderSorterField = function(prop){
 		var schema = ($.type(schemaName) == 'object')? schemaName : self.schemas[schemaName] || null;
 		self.current.schema = schema;
 		return schema;
-	}
+	};
 	this.resetSchema = function(schemaName){
 		var newObj = self.constructObjectFromFields(self.joe_index);
 		//var obj = $.extend(self.current.object,newObj);
@@ -1506,14 +1508,14 @@ this.renderSorterField = function(prop){
 			$c.merge(self.current.userSpecs,{noHistory:true,schema:self.setSchema(schemaName) || self.current.schema})
 		)
 		
-	}
+	};
 
 /*-------------------------------------------------------------------->
 	I | INTERACTIONS
 <--------------------------------------------------------------------*/
 	this.toggleOverlay = function(dom){
 		$(dom).parents('.joe-overlay').toggleClass('active');
-	}
+	};
 	
 	//this.show = function(data,schema,profile,callback){
 	this.show = function(data,specs){
@@ -1529,21 +1531,21 @@ this.renderSorterField = function(prop){
 		
 		self.overlay.addClass('active');
 		setTimeout(self.onPanelShow(),0);
-	}
+	};
 	this.hide = function(data){
 		self.overlay.removeClass('active');
-	}
+	};
 	
 	this.compactMode = function(compact){
 		if(compact === true){self.overlay.addClass('compact');}
 		if(compact === false){self.overlay.removeClass('compact');}
 	
 	
-	}
+	};
 	
 	this.printObject = function(obj){
 		goJoe('<pre>'+JSON.stringify(obj,'  ','    ')+'</pre>');
-	}
+	};
 	
 	if(self.joe_index == 0){
 		window.joeMini = this.showMiniJoe;
@@ -1552,7 +1554,7 @@ this.renderSorterField = function(prop){
 	}
 	window.getJoe = function(index){
 		return (window._joes[index] || false)
-	}
+	};
 	$(document).keyup(function(e) {
 		if (e.keyCode == 27) { self.closeButtonAction(); }   // esc
         //TODO:if the joe is also current main joe.
@@ -1576,14 +1578,14 @@ this.renderSorterField = function(prop){
 			update:function(event, ui){
 				if(ui.sender && ui.sender.hasClass('options-bin') && ui.sender.hasClass('allow-multiple')){
 					//add the element back into the list.
-					ui.sender.find('li').eq(sortable_index).before(ui.item.clone())
+					ui.sender.find('li').eq(sortable_index).before(ui.item.clone());
 					//ui.item.parents('.joe-buckets-bin');
 				}
 				
 			}
 		});
 		self.overlay.find('input.joe-image-field').each(function(){_joe.updateImageFieldImage(this);})
-	}
+	};
 
 /*-------------------------------------------------------------------->
 	D | DATA
@@ -1607,7 +1609,7 @@ this.renderSorterField = function(prop){
 		logit('object updated');
 
 		self.goBack();
-	}
+	};
 	
 	this.deleteObject = function(callback){
 		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || logit;
@@ -1627,7 +1629,7 @@ this.renderSorterField = function(prop){
 
         callback(obj);
 		self.goBack();
-	}
+	};
 	
 	this.duplicateObject = function(specs){
 		//takes fields to be deleted
@@ -1638,11 +1640,11 @@ this.renderSorterField = function(prop){
 		itemobj.name = itemobj.name +' copy';
 		deletes.map(function(d){
 			delete itemobj[d];
-		})
+		});
 		
 		self.goBack();
 		goJoe(itemobj,self.current.userSpecs);
-	}
+	};
 	this.constructObjectFromFields = function(index){
 		var object = {joeUpdated:new Date()};
 		var prop;
@@ -1702,21 +1704,21 @@ this.renderSorterField = function(prop){
 						default:
 						object[prop] = $(this).val();
 						break;
-					}
+					};
 				break;
 			}
 		});
 		return object;
-	}
+	};
 	
 	this.exportJSON = function(object,specs){
 		var minify =specs.minify || null;
 		var objvar = specs.objvar || '';
 		var obobj = (minify)?JSON.stringify(object):JSON.stringify(object,'','    ');
 		
-		goJoe('<b>'+((objvar && 'var '+objvar +' = ')|| 'JSON Object')+'</b><br/><pre>'+obobj+'</pre>')
+		goJoe('<b>'+((objvar && 'var '+objvar +' = ')|| 'JSON Object')+'</b><br/><pre>'+obobj+'</pre>');
 		console.log(obobj);
-	}
+	};
 	
 /*-------------------------
 	Multi Functions
@@ -1753,7 +1755,7 @@ this.renderSorterField = function(prop){
 			
 		
 		self.hide();
-	}
+	};
 	
 	this.deleteMultipleObjects = function(callback){
 		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || logit;
@@ -1771,7 +1773,7 @@ this.renderSorterField = function(prop){
 		logit('object deleted');
 		self.hide();
 		callback(obj);
-	}
+	};
 	
 	this.selectAllItems = function(){
 		self.overlay.find('.joe-panel-content-option').addClass('selected');
@@ -1779,7 +1781,7 @@ this.renderSorterField = function(prop){
 		self.overlay.find('.joe-panel-content-option.selected').map(function(i,listitem){
 			self.current.selectedListItems.push($(listitem).data('id'));
 		})
-	}
+	};
 /*-------------------------------------------------------------------->
 	H | HELPERS
 <--------------------------------------------------------------------*/
@@ -1787,12 +1789,12 @@ this.renderSorterField = function(prop){
 		var name=func.toString();
 		var reg=/function ([^\(]*)/;
 		return reg.exec(name)[1];
-	}
+	};
 	
 	this.getIDProp = function(){
 		var prop = (self.current.schema && self.current.schema._listID) || 'id' || '_id';
 		return prop;
-	}
+	};
 /*<------------------------------------------------------------->*/
 
 	if(self.specs.autoInit){

@@ -13,7 +13,12 @@ if(location && location.hostname){//fix for devices
 		case 'webapps-cdn.esri.com':
 			web_dir = "http://webapps-cdn.esri.com/tools/JOE/";
 		break;
-		
+
+        //NODE DEV
+        case 'ec2-23-23-199-244.compute-1.amazonaws.com':
+            web_dir = "//ec2-23-23-199-244.compute-1.amazonaws.com/"+"/"+projectName+'/';
+        break;
+
 		case 'localhost':
 		case 'localhost:81':
 			web_dir ='http://'+location.hostname+':'+location.port+"/"+projectName+'/';

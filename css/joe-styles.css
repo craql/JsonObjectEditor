@@ -234,6 +234,7 @@ Subset Selector
 	left: 5px;
 	right: 5px;
 	overflow: auto;
+    -webkit-overflow-scrolling: touch;
 }
 .joe-panel-content.joe-inset{
 	background:#fff;
