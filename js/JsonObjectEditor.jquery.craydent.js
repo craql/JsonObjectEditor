@@ -156,12 +156,17 @@ function JsonObjectEditor(specs){
 			specs.mode="list";
 			//TODO: filter list items here.
 			self.current.list = data;
-			
+
+/*-------------------------
+ Subsets
+ -------------------------*/
 			//setup subsets
-			self.current.subsets = setts.subsets ||(specs.schema && specs.schema.subsets)||null;
+			self.current.subsets = setts.subsets || (specs.schema && specs.schema.subsets)||null;
 			if(typeof self.current.subsets == 'function'){
 				self.current.subsets = self.current.subsets(); 
 			}
+
+
 
             //setup sorting
             //TODO:add subset sorter
@@ -270,20 +275,26 @@ function JsonObjectEditor(specs){
 	this.closeButtonAction = function(){
 		self.history = [];
 		self.overlay.toggleClass('active');
-        self.current.list = null;
+        self.clearAuxiliaryData();
 	};
 	this.goBack = function(){
 		self.history.pop();
 		var joespecs = self.history.pop();
 		if(!joespecs){
 			self.hide();
-            self.current.list = null;
+            self.clearAuxiliaryData();
 			return;
 		}
 		//[self.history.length];
 		self.show(joespecs.data,joespecs.specs);
 	};
 
+    this.clearAuxiliaryData = function(){
+
+        self.current.list = null;
+        self.current.subsets = null;
+        self.current.subset = null;
+    }
 
 /*----------------------------->
 	B | Content
@@ -347,7 +358,7 @@ function JsonObjectEditor(specs){
 		var list = specs.list || [];
 		var html = '';
         list = list.sortBy(self.current.sorter);
-		if(!self.current.subset || !self.current.subsets || (self.current.subsets && self.current.subsets.indexOf(self.current.subset) == -1 )){
+		if(!self.current.userSpecs.subset || !self.current.subset || !self.current.subsets || (self.current.subsets && self.current.subsets.indexOf(self.current.subset) == -1 )){
 			list.map(function(li){
 				html += self.renderListItem(li);
 			})
@@ -509,7 +520,7 @@ function JsonObjectEditor(specs){
 		html+=	
 			'<div class="joe-object-field '+hidden+' '+prop.type+'-field " data-type="'+prop.type+'" data-name="'+prop.name+'">'+
 			'<label class="joe-field-label">'
-                +fillTemplate((prop.display||prop.label||prop.name),prop)
+                +fillTemplate((prop.display||prop.label||prop.name),self.current.object)
             +'</label>';
 	
 	//add multi-edit checkbox	
@@ -1369,7 +1380,7 @@ this.renderSorterField = function(prop){
 			subsets = subsets();
 		}
 		function renderOption(opt){
-			var html='<div class="selector-option" onclick="getJoe('+self.joe_index+').selectSubset(\''+opt.id+'\');">'+opt.name+'</div>';
+			var html='<div class="selector-option" onclick="getJoe('+self.joe_index+').selectSubset(\''+(opt.id||opt.name||'')+'\');">'+opt.name+'</div>';
 			return html;
 		}
 		if(self.current.specs.subset){
