@@ -357,6 +357,7 @@ function JsonObjectEditor(specs){
 		var schema = specs.schema;
 		var list = specs.list || [];
 		var html = '';
+        var filteredList;
         list = list.sortBy(self.current.sorter);
 		if(!self.current.userSpecs.subset || !self.current.subset || !self.current.subsets || (self.current.subsets && self.current.subsets.indexOf(self.current.subset) == -1 )){
 			list.map(function(li){
@@ -364,9 +365,11 @@ function JsonObjectEditor(specs){
 			})
 		}
 		else{
-			(self.filterList(list,self.current.subset.filter)||[]).map(function(li){
+            filteredList = list.where(self.current.subset.filter);
+                //(self.filterList(list,self.current.subset.filter)||[])
+            filteredList.map(function(li){
 				html += self.renderListItem(li);
-			})
+			});
 		}
 		return html;
 		
@@ -583,7 +586,11 @@ function JsonObjectEditor(specs){
             case 'content':
                 html+= self.renderContentField(prop);
             break;
-			
+
+            case 'url':
+                html+= self.renderURLField(prop);
+                break;
+
 			default:
 				html+= self.renderTextField(prop);
 			break;
@@ -1207,7 +1214,22 @@ this.renderSorterField = function(prop){
         return html;
 
     };
-
+    /*----------------------------->
+     M | URL
+     <-----------------------------*/
+    this.renderURLField = function(prop){
+        var profile = self.current.profile;
+            var disabled = (prop.locked &&'disabled')||'';
+        var html=
+            '<div class="joe-button" onclick="_joe.gotoFieldURL(this);">view</div>'
+            +'<input class="joe-url-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+disabled+' />'
+       + __clearDiv__
+        return html;
+    };
+    this.gotoFieldURL = function(dom){
+        var url = $(dom).siblings('.joe-url-field').val();
+        window.open(url);
+    }
 /*----------------------------->
 	R | Rendering Field
 <-----------------------------*/
@@ -1578,7 +1600,7 @@ this.renderSorterField = function(prop){
 	var sortable_index;
 	this.onPanelShow = function(){
 		//init datepicker
-		self.overlay.find('.joe-date-field').Zebra_DatePicker();
+		self.overlay.find('.joe-date-field').Zebra_DatePicker({offset:[5,20]});
 		self.overlay.find('.joe-multisorter-bin').sortable({connectWith:'.joe-multisorter-bin'});
 		self.overlay.find('.joe-buckets-bin').sortable({
 			connectWith:'.joe-buckets-bin',
