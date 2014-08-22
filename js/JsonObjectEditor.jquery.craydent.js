@@ -57,16 +57,32 @@ function JsonObjectEditor(specs){
 /*-------------------------------------------------------------------->
 	1 | INIT
 <--------------------------------------------------------------------*/
-	this.init = function(){
-		self.current = {};
-		var html = self.renderFramework(
-			self.renderEditorHeader()+
-			self.renderEditorContent()+
-			self.renderEditorFooter()		
-		);
-		self.container.append(html);
-		self.overlay = $('.joe-overlay[data-joeindex='+self.joe_index+']');
-		
+	this.init = function() {
+        self.current = {};
+        var html = self.renderFramework(
+                self.renderEditorHeader() +
+                self.renderEditorContent() +
+                self.renderEditorFooter()
+        );
+        self.container.append(html);
+        self.overlay = $('.joe-overlay[data-joeindex=' + self.joe_index + ']');
+
+        if (self.specs.useBackButton) {
+            window.onkeydown = function (e) {
+                var nonBackElements = ['input','select','textarea'];
+                if (e.keyCode == 8 && self.history.length) {
+                    //if in editor fields, don't go back
+                    if(nonBackElements.indexOf(e.target.tagName.toLowerCase()) != -1) {
+                        //logit('t');
+                        //return false;
+                    }else {
+                        //otherwise, go back.
+                        self.goBack();
+                        return false;
+                    }
+                }
+            }
+        }
 	};
 
 
@@ -144,7 +160,7 @@ function JsonObjectEditor(specs){
 		}
 		
 /*-------------------------
-	Arrays 
+	Lists (Arrays)
 -------------------------*/			
 	
 	//when array passed in	
@@ -165,12 +181,20 @@ function JsonObjectEditor(specs){
 			if(typeof self.current.subsets == 'function'){
 				self.current.subsets = self.current.subsets(); 
 			}
+        //a current subset selected
+            if(self.current.specs.subset && self.current.subsets.where({name:specs.subset}).length){
+                    self.current.subset = self.current.subsets.where({name:specs.subset})[0]||false;
+            }else{
+                self.current.subset = null;
+            }
 
 
 
+/*-------------------------
+ Sorting
+ -------------------------*/
             //setup sorting
-            //TODO:add subset sorter
-            self.current.sorter = setts.sorter || (specs.schema && specs.schema.sorter)|| 'name';
+            self.current.sorter = setts.sorter || (self.current.subset && self.current.subset.sorter)||(specs.schema && specs.schema.sorter)|| 'name';
             if($.type(self.current.sorter) == 'string'){self.current.sorter = [self.current.sorter];}
 
             //self.current.object = null;
@@ -247,7 +271,11 @@ function JsonObjectEditor(specs){
 		specs = specs || {};
 		var titleObj = self.current.object;
 		if(specs.list){
-			titleObj = $.extend({},self.current.object,{_listCount:specs.list.length});
+            var lcount = specs.list.length;
+            if(self.current.subset){
+             lcount = specs.list.where(self.current.subset.filter).length;
+            }
+			titleObj = $.extend({},self.current.object,{_listCount:lcount});
 		}
 		var title = fillTemplate(specs.title || 'Json Object Editor',titleObj);
 		action = specs.action||'onclick="getJoe('+self.joe_index+').closeButtonAction()"';
@@ -921,9 +949,12 @@ function JsonObjectEditor(specs){
 		
 		var html=
 		//'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'
-		'<input class="joe-boolean-field joe-field" type="checkbox" name="'+prop.name+'" '
+            '<label for="joe_checkbox-'+prop.name+'">'
+		+'<input class="joe-boolean-field joe-field" type="checkbox" name="'+prop.name+'" id="joe_checkbox-'+prop.name+'" '
 			+(prop.value == true&&'checked' || '')
-		+' />';
+
+		+' /> <small>'
+            +(prop.label ||'') +'</small></label>';
 		return html;
 	};
 

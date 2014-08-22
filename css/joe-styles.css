@@ -302,7 +302,18 @@ Subset Selector
 	.joe-text-content{
 		padding:20px;
 	}
-	
+
+/*-------------------------
+	Boolean field
+-------------------------*/
+input.joe-boolean-field {
+    float: left;
+    margin: 5px;
+}
+.boolean-field small {
+    padding: 5px;
+    color: #667;
+}
 /*-------------------------
 	UI Panel Object Content
 -------------------------*/	

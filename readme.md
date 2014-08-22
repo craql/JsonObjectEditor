@@ -7,6 +7,9 @@ todo:
 	-conditional fields
 
 ##What's new
+*v1.5*
++ use back button
++url field
 
 *v1.4*
 
@@ -61,6 +64,7 @@ todo:
 
 
 ##specs
+- useBackButton:[false] if true, back button moves through joe panels when joe has history to go to (is open).
 
 ###fields
 Properties for all Fields
