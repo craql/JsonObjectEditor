@@ -1631,7 +1631,7 @@ this.renderSorterField = function(prop){
 	var sortable_index;
 	this.onPanelShow = function(){
 		//init datepicker
-		self.overlay.find('.joe-date-field').Zebra_DatePicker({offset:[5,20]});
+		self.overlay.find('.joe-date-field').Zebra_DatePicker({offset:[5,20],format:'m/d/Y'});
 		self.overlay.find('.joe-multisorter-bin').sortable({connectWith:'.joe-multisorter-bin'});
 		self.overlay.find('.joe-buckets-bin').sortable({
 			connectWith:'.joe-buckets-bin',
