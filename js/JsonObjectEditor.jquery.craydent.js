@@ -136,10 +136,12 @@ function JsonObjectEditor(specs){
 		specs.schema = this.setSchema(schema);
 	//	specs.schema = ($.type(schema) == 'object')? schema : self.schemas[schema] || null;
 	//	self.current.schema = specs.schema;
-		
+
+
+
 /*-------------------------
-	Preformat Functions
--------------------------*/	
+    Preformat Functions
+-------------------------*/
 	specs.preformat = 
 		specs.schema.preformat ||
 		specs.preformat ||
@@ -200,8 +202,27 @@ function JsonObjectEditor(specs){
             //self.current.object = null;
 
 		}
-	
-	
+
+/*-------------------------
+ Submenu
+ -------------------------*/
+    if(specs.mode == 'list') {
+        self.current.submenu =
+            self.current.specs.listsubmenu ||
+            self.current.specs.submenu ||
+            (specs.schema && specs.schema.listSubMenu) ||
+            self.specs.listSubMenu;
+    }else{
+        self.current.submenu =
+            self.current.specs.submenu ||
+            (specs.schema && specs.schema.subMenu) ||
+            self.specs.subMenu;
+    }
+
+        if(self.current.submenu == 'none'){
+            self.current.submenu = null;
+        }
+
 /*-------------------------
 	Rendering
 -------------------------*/	
@@ -253,7 +274,8 @@ function JsonObjectEditor(specs){
 		
 		var html = 
 			self.renderEditorHeader(specs)+
-			self.renderEditorContent(specs)+
+            self.renderEditorSubmenu(specs)+
+            self.renderEditorContent(specs)+
 			self.renderEditorFooter(specs);
 		self.overlay.find('.joe-overlay-panel').html(html);
 		//$('.joe-overlay-panel').html(html);
@@ -325,7 +347,57 @@ function JsonObjectEditor(specs){
     }
 
 /*----------------------------->
-	B | Content
+ B | SubMenu
+ <-----------------------------*/
+    this.renderEditorSubmenu = function(specs) {
+        if(!self.current.submenu){
+            return '';
+        }
+        var subSpecs = {
+            search:true
+        }
+        var userSubmenu = ($.type(self.current.submenu) != 'object')?{}:self.current.submenu;
+        $.extend(subSpecs,userSubmenu);
+
+        var submenu =
+        '<div class="joe-panel-submenu">'
+            +((subSpecs.search && self.renderSubmenuSearch(subSpecs.search))||'')
+        +'</div>';
+        return submenu;
+    };
+
+    this.renderSubmenuSearch = function(s){
+        var action =' onkeyup="_joe.filterListFromSubmenu(this);" ';
+        var submenusearch =
+            "<div class='joe-submenu-search'>"
+            +'<input class="joe-submenu-search-field" '+action+' placeholder="find" />'
+            +"</div>";
+        return submenusearch;
+    };
+    this.filterListFromSubmenu = function(dom){
+        var value=dom.value.toLowerCase();
+        if(dom.value.length){
+            $('.joe-button[data-btnid=select_all]').hide();
+        }else{
+            $('.joe-button[data-btnid=select_all]').show();
+        }
+        var haystack;
+        var items = $(dom).parents('.joe-panel-submenu')
+            .siblings('.joe-panel-content')
+            .find('.joe-panel-content-option-content').each(function(){
+                haystack = this.innerText.toLocaleLowerCase();
+                if(haystack.indexOf(value) ==-1){
+                    this.hide();
+                }else{
+                    this.show();
+                }
+            })
+        //$('.joe-panel-content-option-content')[0].childNodes
+
+        logit(value);
+    };
+/*----------------------------->
+	C | Content
 <-----------------------------*/
 	this.renderEditorContent = function(specs){
 		//specs = specs || {};
@@ -355,8 +427,9 @@ function JsonObjectEditor(specs){
 	
 			
 		}
+        var submenu = (self.current.submenu)?' with-submenu ':'';
 		var html = 
-		'<div class="joe-panel-content joe-inset">'+
+		'<div class="joe-panel-content joe-inset '+submenu+'">'+
 			content+
 		'</div>';
 		return html;
@@ -477,7 +550,7 @@ function JsonObjectEditor(specs){
 
 
 /*----------------------------->
-	C | Footer
+	D | Footer
 <-----------------------------*/	
 	this.renderEditorFooter = function(specs){
 		specs = specs || this.specs || {};
@@ -1840,10 +1913,11 @@ this.renderSorterField = function(prop){
 	};
 	
 	this.selectAllItems = function(){
-		self.overlay.find('.joe-panel-content-option').addClass('selected');
+		self.overlay.find('.joe-panel-content-option').filter(':visible').addClass('selected');
 		self.overlay.addClass('multi-edit');
-		self.overlay.find('.joe-panel-content-option.selected').map(function(i,listitem){
-			self.current.selectedListItems.push($(listitem).data('id'));
+		self.overlay.find('.joe-panel-content-option.selected')
+            .map(function(i,listitem){
+			    self.current.selectedListItems.push($(listitem).data('id'));
 		})
 	};
 /*-------------------------------------------------------------------->

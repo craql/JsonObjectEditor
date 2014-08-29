@@ -174,8 +174,11 @@ an array of menu buttons
 - _listWindowTitle: the title of the window (can be passed in with the schema);
 - _listCount: added to the current object and can be used in the title.
 - _listTitle:'${name} ${species}', *how to display items in the list*
+- listSubMenu:a function or object that represents the list submenu
 - stripeColor:string or function that returns valid css color descriptor.
 - subsets: name:string, filter:object 
+- subMenu:a function or object that represents the single item submenu
+
 - _listTemplate: html template that uses ${var} to write out the item properties for the list item.
 	- standard css class `joe-panel-content-option`
 
@@ -221,6 +224,8 @@ an array of menu buttons
 
 - `deletes`:array of properties to clear for new item
 	- note that you will need to delete guid/id fields or the id will be the same.	
+
+
 
 ### e | exporting an object in pretty format json (or minified)
 JOE.exportJSON = function(object,objvarname,minify)
