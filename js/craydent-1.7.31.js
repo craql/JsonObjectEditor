@@ -2447,9 +2447,9 @@ if (__thisIsNewer) {
                 bVal = bVal.toLowerCase();
             }
             tmpVal = aVal;
-            aVal = (parseInt(aVal) && aVal.toString() == tmpVal && tmpVal) || tmpVal;
+            aVal = (parseInt(aVal) && aVal.toString() == tmpVal && parseInt(aVal)) || tmpVal;
             tmpVal = bVal;                    
-            bVal = (parseInt(bVal) && bVal.toString() == tmpVal && tmpVal) || tmpVal;
+            bVal = (parseInt(bVal) && bVal.toString() == tmpVal && parseInt(bVal)) || tmpVal;
                     
                     
 
