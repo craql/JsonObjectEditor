@@ -29,6 +29,36 @@
 	z-index: 2000;
 	display:none;
 	position: fixed;
+    transition: .25s;
+}
+
+@-webkit-keyframes fadeOut {
+    0%   {background-color: rgba(0,0,0,.7);}
+    100% {background-color: rgba(0,0,0,0);}
+}
+
+/* Standard syntax */
+@keyframes fadeOut {
+    0%   {background-color: rgba(0,0,0,.7);}
+    100% {background-color: rgba(0,0,0,0);}
+}
+
+.joe-overlay.fade-out{
+    -webkit-animation: fadeOut .25s linear ; /* Chrome, Safari, Opera */
+    animation: fadeOut .25s linear ;
+
+    -webkit-animation-fill-mode: forwards; /* Chrome, Safari, Opera */
+    animation-fill-mode: forwards;
+}
+
+.joe-overlay.fade-in{
+    -webkit-animation: fadeOut .25s linear; /* Chrome, Safari, Opera */
+    animation: fadeOut .25s linear;
+
+    -webkit-animation-fill-mode: forwards; /* Chrome, Safari, Opera */
+    animation-fill-mode: forwards;
+    -webkit-animation-direction: reverse; /* Chrome, Safari, Opera */
+    animation-direction: reverse;
 }
 
 .joe-icon{
@@ -96,7 +126,17 @@
 	bottom:0;
 	right:0;
 	box-shadow:0 0 4px 0 rgba(0,0,0,.7);
-    margin:20px;
+    margin:10px;
+    transition: .25s;
+}
+.joe-overlay-panel.offscreen-bottom{
+    top:110%;
+    bottom:-100px;
+}
+.joe-overlay-panel.centerscreen-collapse{
+    top:50%;
+    bottom:50%;
+    overflow:hidden;
 }
 
 .joe-panel{
@@ -240,7 +280,7 @@ Subset Selector
 }
 
 /*---------------------------------------
-	UI Panel Content
+	Panel Submenu
 ---------------------------------------*/
 .joe-panel-content.with-submenu{
 top:80px;
@@ -249,7 +289,6 @@ top:80px;
 .joe-panel-submenu {
     position: absolute;
     top: 42px;
-    background: #fff;
     left: 0;
     right: 0;
     height: 30px;
@@ -259,7 +298,7 @@ top:80px;
 
 input.joe-submenu-search-field {
     padding: 4px;
-    width: 40%;
+    width: 25%;
 }
 
 /*-------------------------

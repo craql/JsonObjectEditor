@@ -66,7 +66,7 @@ function JsonObjectEditor(specs){
         );
         self.container.append(html);
         self.overlay = $('.joe-overlay[data-joeindex=' + self.joe_index + ']');
-
+        self.panel = self.overlay.find('.joe-overlay-panel');
         if (self.specs.useBackButton) {
             window.onkeydown = function (e) {
                 var nonBackElements = ['input','select','textarea'];
@@ -324,7 +324,9 @@ function JsonObjectEditor(specs){
 	};
 	this.closeButtonAction = function(){
 		self.history = [];
-		self.overlay.toggleClass('active');
+        self.panel.addClass('centerscreen-collapse');
+        self.hide(500);
+
         self.clearAuxiliaryData();
 	};
 	this.goBack = function(){
@@ -1656,11 +1658,20 @@ this.renderSorterField = function(prop){
 	
 	//this.show = function(data,schema,profile,callback){
 	this.show = function(data,specs){
-		
+    //handle transition animations.
+		self.overlay.removeClass('fade-out');
+       /* if(!self.overlay.hasClass('active')){
+            self.overlay.
+        }*/
+        self.overlay.addClass('fade-in');
+        setTimeout(function(){
+            self.overlay.removeClass('fade-in');
+        },500);
+
 		var data = data || '';
 		//profile = profile || null
 		var specs=specs || {};
-		self.overlay.find('.joe-overlay-panel').attr('class', 'joe-overlay-panel');
+		self.panel.attr('class', 'joe-overlay-panel');
 		if(specs.compact === true){self.overlay.addClass('compact');}
 		if(specs.compact === false){self.overlay.removeClass('compact');}
 		
@@ -1669,8 +1680,14 @@ this.renderSorterField = function(prop){
 		self.overlay.addClass('active');
 		setTimeout(self.onPanelShow(),0);
 	};
-	this.hide = function(data){
-		self.overlay.removeClass('active');
+	this.hide = function(timeout){
+        timeout = timeout || 0;
+       // self.overlay.removeClass('fade-in');
+        self.overlay.addClass('fade-out');
+        setTimeout(function(){
+            //self.overlay.removeClass('active');
+            //self.overlay.removeClass('fade-out');
+        },timeout);
 	};
 	
 	this.compactMode = function(compact){
