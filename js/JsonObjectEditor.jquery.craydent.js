@@ -1658,15 +1658,17 @@ this.renderSorterField = function(prop){
 	
 	//this.show = function(data,schema,profile,callback){
 	this.show = function(data,specs){
+        clearTimeout(self.hideTimeout);
+        self.overlay.removeClass('hidden');
     //handle transition animations.
-		self.overlay.removeClass('fade-out');
-       /* if(!self.overlay.hasClass('active')){
+		/*self.overlay.removeClass('fade-out');
+        if(!self.overlay.hasClass('active')){
             self.overlay.
-        }*/
+        }
         self.overlay.addClass('fade-in');
         setTimeout(function(){
             self.overlay.removeClass('fade-in');
-        },500);
+        },500);*/
 
 		var data = data || '';
 		//profile = profile || null
@@ -1683,9 +1685,11 @@ this.renderSorterField = function(prop){
 	this.hide = function(timeout){
         timeout = timeout || 0;
        // self.overlay.removeClass('fade-in');
-        self.overlay.addClass('fade-out');
-        setTimeout(function(){
-            //self.overlay.removeClass('active');
+        self.overlay.addClass('hidden');
+        self.hideTimeout = setTimeout(function(){
+            self.overlay.removeClass('active');
+
+            self.overlay.removeClass('hidden');
             //self.overlay.removeClass('fade-out');
         },timeout);
 	};

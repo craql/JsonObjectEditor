@@ -30,6 +30,7 @@
 	display:none;
 	position: fixed;
     transition: .25s;
+    opacity:1;
 }
 
 @-webkit-keyframes fadeOut {
@@ -59,6 +60,11 @@
     animation-fill-mode: forwards;
     -webkit-animation-direction: reverse; /* Chrome, Safari, Opera */
     animation-direction: reverse;
+}
+
+.hidden{
+    transition-delay: .25s;
+   opacity:0;
 }
 
 .joe-icon{
