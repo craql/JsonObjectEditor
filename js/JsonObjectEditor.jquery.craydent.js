@@ -591,6 +591,9 @@ function JsonObjectEditor(specs){
 	
 	this.renderFooterMenuItem=function(m){//takes a menuitem
 		var display,action,html='';
+        if(m.condition && !m.condition(m)){
+            return '';
+        };
 		display = m.label || m.name;
 		action = m.action || 'alert(\''+display+'\')';
 		html+= '<div class="joe-button joe-footer-button '+(m.css ||'')+'" onclick="'+action+'" data-btnid="'+m.name+'" >'+display+'</div>';
