@@ -138,6 +138,8 @@ an array of menu buttons
     //the default save button
     //this is the dom object, 
     //use _joe.current.object for current object
+    condition:function(field,object) to call
+    self = Joe object
     var __saveBtn__ = {name:'save',label:'Save', action:'_joe.updateObject(this);', css:'joe-save-button'};
 
 ###Addition properties

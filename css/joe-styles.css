@@ -305,6 +305,7 @@ top:80px;
 input.joe-submenu-search-field {
     padding: 4px;
     width: 25%;
+    min-width: 200px;
 }
 
 /*-------------------------

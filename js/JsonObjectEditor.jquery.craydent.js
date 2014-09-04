@@ -187,7 +187,9 @@ function JsonObjectEditor(specs){
             if(self.current.specs.subset && self.current.subsets.where({name:specs.subset}).length){
                     self.current.subset = self.current.subsets.where({name:specs.subset})[0]||false;
             }else{
-                self.current.subset = null;
+                //select deaulf subset if it exists
+                self.current.subset =
+                    (self.current.subsets &&  self.current.subsets.where({default:true})[0])||null;
             }
 
 
@@ -462,8 +464,9 @@ function JsonObjectEditor(specs){
 		var html = '';
         var filteredList;
         list = list.sortBy(self.current.sorter);
-		if(!self.current.userSpecs.subset || !self.current.subset || !self.current.subsets || (self.current.subsets && self.current.subsets.indexOf(self.current.subset) == -1 )){
-			list.map(function(li){
+//		if(!self.current.userSpecs.subset || !self.current.subset || !self.current.subsets || (self.current.subsets && self.current.subsets.indexOf(self.current.subset) == -1 )){
+		if(!self.current.subset){
+				list.map(function(li){
 				html += self.renderListItem(li);
 			})
 		}
@@ -589,9 +592,9 @@ function JsonObjectEditor(specs){
 		return html;
 	};
 	
-	this.renderFooterMenuItem=function(m){//takes a menuitem
+	this.renderFooterMenuItem=function(m){//passes a menu item
 		var display,action,html='';
-        if(m.condition && !m.condition(m)){
+        if(m.condition && !m.condition(m,self.current.object)){
             return '';
         };
 		display = m.label || m.name;
@@ -1349,6 +1352,9 @@ this.renderSorterField = function(prop){
 			'<textarea class="joe-rendering-field joe-field" name="'+prop.name+'" >'+(prop.value || "")+'</textarea>';
 		return html;
 	};
+
+
+
 /*-------------------------------------------------------------------->
 	4 | OBJECT LISTS
 <--------------------------------------------------------------------*/
@@ -1368,7 +1374,7 @@ this.renderSorterField = function(prop){
 		var action = 'onclick="getJoe('+self.joe_index+').listItemClickHandler({dom:this,id:\''+id+'\'});"';
 
 
-        var stripeColor = ($.type(listSchema.stripeColor)=='function')?listSchema.stripeColor(listItem):listSchema.stripeColor;
+        var stripeColor = ($.type(listSchema.stripeColor)=='function')?listSchema.stripeColor(listItem):fillTemplate(listSchema.stripeColor,listItem);
         var stripeHTML ='';
         if(stripeColor){
             stripeHTML = 'style="background-color:'+stripeColor+';"';
