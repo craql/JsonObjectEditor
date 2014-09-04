@@ -37,7 +37,7 @@ if (typeof jQuery == 'undefined') {
 	
 }
 
-if (typeof Craydent == 'undefined') {  
+if (typeof Craydent == 'undefined' || Craydent.version < '1.7.31') {
    scripts.push("craydent-1.7.31.js");
 }
 scripts.push(
