@@ -622,6 +622,7 @@ input.joe-image-field{
 .joe-image-field-image {
 	margin: 15px 0 10px 0;
 	display: block;
+    max-width: 100%;
 }
 .joe-image-field-size {
 	margin: 10px 0;

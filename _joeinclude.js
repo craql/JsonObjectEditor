@@ -8,7 +8,7 @@ projectName = 'JsonObjectEditor';
 if(location && location.hostname){//fix for devices
 	switch(location.hostname){
 		case 'webapps-cdn-stg.esri.com':
-			web_dir = "http://webapps-cdn-stg.esri.com/tools/"+projectName+"/";
+			web_dir = "http://webapps-cdn-stg.esri.com/tools/JOE/";
 		break;
 		case 'webapps-cdn.esri.com':
 			web_dir = "http://webapps-cdn.esri.com/tools/JOE/";

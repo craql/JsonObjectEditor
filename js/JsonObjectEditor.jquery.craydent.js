@@ -378,27 +378,30 @@ function JsonObjectEditor(specs){
             +"</div>";
         return submenusearch;
     };
+    this.searchTimeout;
     this.filterListFromSubmenu = function(dom){
-        var value=dom.value.toLowerCase();
-        if(dom.value.length){
-            $('.joe-button[data-btnid=select_all]').hide();
-        }else{
-            $('.joe-button[data-btnid=select_all]').show();
+        clearTimeout(self.searchTimeout );
+        self.searchTimeout = setTimeout(function(){searchFilter(dom);},400);
+        function searchFilter(dom){
+            var value=dom.value.toLowerCase();
+            if(dom.value.length){
+                $('.joe-button[data-btnid=select_all]').hide();
+            }else{
+                $('.joe-button[data-btnid=select_all]').show();
+            }
+            var haystack;
+            var items = $(dom).parents('.joe-panel-submenu')
+                .siblings('.joe-panel-content')
+                .find('.joe-panel-content-option-content').each(function(){
+                    haystack = this.innerText.toLocaleLowerCase();
+                    if(haystack.indexOf(value) ==-1){
+                        this.hide();
+                    }else{
+                        this.show();
+                    }
+                })
         }
-        var haystack;
-        var items = $(dom).parents('.joe-panel-submenu')
-            .siblings('.joe-panel-content')
-            .find('.joe-panel-content-option-content').each(function(){
-                haystack = this.innerText.toLocaleLowerCase();
-                if(haystack.indexOf(value) ==-1){
-                    this.hide();
-                }else{
-                    this.show();
-                }
-            })
-        //$('.joe-panel-content-option-content')[0].childNodes
 
-        logit(value);
     };
 /*----------------------------->
 	C | Content
