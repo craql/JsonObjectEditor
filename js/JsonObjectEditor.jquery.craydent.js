@@ -142,8 +142,8 @@ function JsonObjectEditor(specs){
 /*-------------------------
     Preformat Functions
 -------------------------*/
-	specs.preformat = 
-		specs.schema.preformat ||
+	specs.preformat =
+        (specs.schema && specs.schema.preformat) ||
 		specs.preformat ||
 		function(d){return d;};
 	
@@ -154,7 +154,7 @@ function JsonObjectEditor(specs){
 	//when object passed in
 		if($.type(data) == 'object' || datatype =='object'){
 			specs.object = data;
-			specs.menu = specs.menu || specs.schema.menu || self.specs.menu || (specs.multiedit && __defaultMultiButtons) || __defaultObjectButtons;
+			specs.menu = specs.menu || (specs.schema && specs.schema.menu) || self.specs.menu || (specs.multiedit && __defaultMultiButtons) || __defaultObjectButtons;
 
 			specs.mode="object";
 			self.current.object = data;
@@ -702,6 +702,10 @@ function JsonObjectEditor(specs){
             case 'url':
                 html+= self.renderURLField(prop);
                 break;
+
+            case 'objectList':
+                html+= self.renderObjectListField(prop);
+            break;
 
 			default:
 				html+= self.renderTextField(prop);
@@ -1329,9 +1333,9 @@ this.renderSorterField = function(prop){
         return html;
 
     };
-    /*----------------------------->
-     M | URL
-     <-----------------------------*/
+/*----------------------------->
+ M | URL
+ <-----------------------------*/
     this.renderURLField = function(prop){
         var profile = self.current.profile;
             var disabled = (prop.locked &&'disabled')||'';
@@ -1345,16 +1349,105 @@ this.renderSorterField = function(prop){
         var url = $(dom).siblings('.joe-url-field').val();
         window.open(url);
     }
+
+
+/*----------------------------->
+ O | Object List Field
+ <-----------------------------*/
+
+    this.renderObjectListField = function(prop){
+        var html ="<table class='joe-objectlist-table'>"
+            +self.renderObjectListProperties(prop)
+            +self.renderObjectListObjects(prop)
+        //render a (table/divs) of properties
+        //cross reference with array properties.
+        //make sortable ?
+        +"</table>";
+        return html;
+    };
+    this.objectlistdefaultproperties = ['name','_id'];
+//render headers
+    this.renderObjectListProperties = function(prop){
+        var properties = prop.properties || self.objectlistdefaultproperties;
+        var property;
+        var subprop;
+        var html = '<thead><tr><th class="joe-objectlist-object-row-handle-header"></th>';
+        for(var p = 0,tot = properties.length; p<tot;p++){
+            subprop = ($.type(properties[p]) == "string")?{name:properties[p]}:subprop;
+            property = {
+                name: subprop.name,
+                type: subprop.type||'text'
+            };
+
+            html+="<th>"+subprop.name+"</th>";
+        }
+
+        html+="</tr></thead>";
+        return html;
+    };
+
+//render objects
+    this.renderObjectListObjects = function(prop){
+        var objects = self.current.object[prop.name] || [];
+        var properties = prop.properties || self.objectlistdefaultproperties;
+
+        var html = '<tbody id="joe-objectist-table">';
+        var objHtml = '';
+        var obj;
+        for(var o = 0,objecttot = objects.length; o<objecttot;o++){
+            obj = objects[o];
+            html+=self.renderObjectListObject(obj,properties);
+        //parse across properties
+
+        }
+        html+="</tbody>";
+        return html;
+    };
+    this.renderObjectListObject = function(object,objectListProperties){
+        var properties = objectListProperties || self.objectlistdefaultproperties;
+        var prop,property;
+        var html = "<tr><td class='joe-objectlist-object-row-handle'>|||</td>";
+
+        function renderTextInput(prop){
+            var html = '<input type="text" class="joe-objectlist-object-input" style="width:auto;" value="'+prop.value+'"/>';
+            return html;
+        }
+
+        var renderInput = {
+            'text':renderTextInput,
+            select:self.renderSelectField
+        };
+
+        //show all properties
+        //TODO:create template in previous function and then use that to show values?
+        for(var p = 0,tot = properties.length; p<tot;p++){
+            prop = ($.type(properties[p]) == "string")?{name:properties[p]}:prop;
+            property = {
+                name: prop.name,
+                type:prop.type||'text',
+                value:object[prop.name] || ''
+            };
+
+            html+="<td>"+renderInput[property.type](property)+"</td>";
+
+        }
+        html+= '</tr>';
+
+
+
+        return html;
+    }
 /*----------------------------->
 	R | Rendering Field
 <-----------------------------*/
 	this.renderRenderingField = function(prop){
 		var profile = self.current.profile;
-		
+
 		var html=
 			'<textarea class="joe-rendering-field joe-field" name="'+prop.name+'" >'+(prop.value || "")+'</textarea>';
 		return html;
 	};
+
 
 
 
@@ -1755,7 +1848,24 @@ this.renderSorterField = function(prop){
 			}
 		});
 		self.overlay.find('input.joe-image-field').each(function(){_joe.updateImageFieldImage(this);})
-	};
+	    self.overlay.find('.joe-objectlist-table').each(function(){
+            $(this).find('tbody').sortable(
+                {   axis:'y',
+                handle:'.joe-objectlist-object-row-handle',
+                    helper: function (e, tr) {
+                        var $originals = tr.children();
+                        var $helper = tr.clone();
+                        $helper.children().each(function (index) {
+                            // Set helper cell sizes to match the original sizes
+                            $(this).width($originals.eq(index).width());
+                        });
+                        return $helper;
+                    }
+                }
+            )
+
+        })
+    };
 
 /*-------------------------------------------------------------------->
 	D | DATA

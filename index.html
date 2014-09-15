@@ -44,10 +44,14 @@ height: 300px;
 
 <a href="javascript:_joe.show({},{schema:'animal',callback:addAnimal});">Add Animal</a><br/>
 
-<div>
-<p>City with geo + multiselect</p>
-<a href="javascript:_joe.show({},{schema:'city',callback:addCity});">Add City</a><br/>
-<a href="javascript:goJoe(cities,{schema:'city'});">View Cities</a><br/>
+    <p>With object lists</p>
+    <a href="javascript:_joe.show(objectListItems[0],{schema:'objectList'});">Default List</a><br/>
+    <a href="javascript:_joe.show(objectListItems,{schema:'objectList'});">Add Animal List</a><br/>
+
+    <div>
+    <p>City with geo + multiselect</p>
+    <a href="javascript:_joe.show({},{schema:'city',callback:addCity});">Add City</a><br/>
+    <a href="javascript:goJoe(cities,{schema:'city'});">View Cities</a><br/>
 </div>
 
 <h3>Editing html Renderings</h3>
@@ -99,6 +103,15 @@ var monkey =
 var animals =[cat,dog,rat,monkey];
 var animalLinks = ['cat','dog','rat'];
 
+var defaultObjectList = {
+    id:"b52624a1-3070-404c-bd45-18d34ffac7a3",
+    name:'default',
+    animalList:[
+        {id:"9de0d472-f8bc-4da1-84e6-36caa326c62e",name:'corey',city:'orlando'},
+        {id:"b673426f-cefc-45ec-b72d-7d772c62bfee",name:'max',city:'tahoma'}
+    ]
+}
+var objectListItems = [defaultObjectList];
 var cities =[];
 function addAnimal(obj){
 	animals.push(obj);
@@ -146,7 +159,9 @@ var thingschema =
 		_listTitle:'${name} ${species}'
 		
 	}
-	
+
+
+
 var citySchema = 
 	{
 		_title:'City',
@@ -155,6 +170,14 @@ var citySchema =
 		_listTitle:'${name} <br/>${geo}'
 		
 	}
+
+var objectListSchema =
+{
+    _title:'Animal List',
+    fields:['id','name','animalList'],
+    _listID:'id',
+    _listTitle:'${name} '
+};
 	var specs = {
 /*		defaultProfile:{
 			lockedFields:['joeUpdated','id'],
@@ -183,12 +206,17 @@ var citySchema =
 			
 		//example of select that takes function (function is passed item)	
 			animalLink:{label:'Link to other animal',type:'select', values:getAnimals},
-			hiddenizer:{hidden:true}
+			hiddenizer:{hidden:true},
+            animalList:{
+                display:'List of animals',type:'objectList',
+                properties:['name','id',{name:'city',type:'select'}]
+            }
 		},
 		schemas:{
 			animal:animalschema,
 			thing:thingschema,
-			city:citySchema			
+			city:citySchema,
+            objectList:objectListSchema
 		},
 		compact:false
 	}
