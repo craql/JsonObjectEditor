@@ -629,6 +629,38 @@ input.joe-image-field{
 	opacity: .5;
 	display: block;
 }
+
+/*-------------------------
+    Object List
+-------------------------*/
+table.joe-objectlist-table {
+    width: 100%;
+    border-collapse:collapse;
+}
+.joe-objectlist-table thead {
+    background-color: #eee;
+}
+.joe-objectlist-table th {
+    padding: 10px 5px;
+}
+.joe-objectlist-table td {
+    /*padding: 5px;*/
+}
+
+.joe-objectlist-object-row-handle-header{
+    background: #fff;
+}
+.joe-objectlist-object-row-handle{
+    cursor: ns-resize;
+    width: 40px;
+    line-height: 40px;
+    text-align: center;
+    background-color: #f2f2f2;
+    border: 5px solid #fff;
+}
+.joe-objectlist-object-row-handle:hover{
+    background-color:#eaeaea;
+}
 /*----------------------------->
 	Field Container
 <-----------------------------*/
@@ -648,7 +680,9 @@ input.joe-image-field{
 	padding-left: 30px !important;
 	background:url(../img/search.png) center left no-repeat;
 }
-/*buckets*/
+/*-------------------------
+	 Buckets
+-------------------------*/
 .joe-buckets-field .joe-filter-field-holder {
 padding: 5px 3px;
 }

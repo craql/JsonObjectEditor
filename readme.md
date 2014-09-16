@@ -99,7 +99,10 @@ Properties for all Fields
 - `content` : show content on in the editor
     - run: function to be run(current_object,field_properties)
     - template: html template for fillTmeplate(template,current_object);
-    
+- `objectlist` : a table of objects with editable properties
+    - properties: array of objects|strings for the object property names
+
+
 **labels:**
 
 - pass an object instead of a string to the fields array.
