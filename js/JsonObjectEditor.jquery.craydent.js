@@ -1671,7 +1671,6 @@ this.renderSorterField = function(prop){
 	//this.show = function(data,schema,profile,callback){
 	this.show = function(data,specs){
         clearTimeout(self.hideTimeout);
-        self.overlay.removeClass('hidden');
     //handle transition animations.
 		/*self.overlay.removeClass('fade-out');
         if(!self.overlay.hasClass('active')){
@@ -1690,7 +1689,8 @@ this.renderSorterField = function(prop){
 		if(specs.compact === false){self.overlay.removeClass('compact');}
 		
 		self.populateFramework(data,specs);
-		
+
+        self.overlay.removeClass('hidden');
 		self.overlay.addClass('active');
 		setTimeout(self.onPanelShow(),0);
 	};
@@ -1769,10 +1769,21 @@ this.renderSorterField = function(prop){
 
     //update object list
         var index = (self.current.list && self.current.list.indexOf(obj));
-        if(index == -1 || index == undefined){
+        if(self.current.list && (index == -1 || index == undefined)){
           //  object not in current list
             self.current.list.push(obj);
         }
+
+
+/*FROM CLARK
+        var index = (self.current.list && self.current.list.indexOf(obj));
+        if(index == -1 || index == undefined){
+            //  object not in current list
+            self.current.list = self.current.list || [];
+            self.current.list.push(obj);
+        }
+*/
+
 
     //run callback
         callback(obj);

@@ -459,7 +459,7 @@ input.joe-boolean-field {
 	width: 300px;
 }
 .joe-object-field input[type=text].joe-url-field {
-    width: 80%;
+    width: 75%;
     margin: 5px 0 0 0;
 }
 
