@@ -170,7 +170,7 @@ function JsonObjectEditor(specs){
 		if($.type(data) == 'array' || datatype =='array'){
 			listMode = true;
 			specs.list = data;
-			specs.menu = specs.listMenu || specs.schema.listMenu || __defaultButtons;//__defaultMultiButtons; 
+			specs.menu = specs.listMenu || (specs.schema && specs.schema.listMenu )|| __defaultButtons;//__defaultMultiButtons;
 			specs.mode="list";
 			//TODO: filter list items here.
 			self.current.list = data;
