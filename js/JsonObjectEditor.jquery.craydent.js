@@ -490,7 +490,7 @@ function JsonObjectEditor(specs){
 		var object = specs.object;
 		var fields = '';
 		var propObj;
-		
+		var fieldProp;
 		if(!specs.schema || !specs.schema.fields){//no schema use items as own schema
 			for( var prop in object){
 				if(object.hasOwnProperty(prop)){
@@ -510,9 +510,11 @@ function JsonObjectEditor(specs){
 		}
 		else{
 			(specs.schema.fields||[]).map(function(prop){
-				
+				//prop is the property name
 				//if(object.hasOwnProperty(prop)){
+
 				if($.type(prop) == "string") {
+                    fieldProp = self.fields[prop] || {};
                     //merge all the items
                     propObj = $.extend(
                         {
@@ -526,10 +528,11 @@ function JsonObjectEditor(specs){
                             onkeyup: specs.schema.onkeypress
 
                         },
-                        self.fields[prop],
+                        fieldProp,
                         //overwrite with value
                         {value: object[prop]}
                     );
+
                     fields += self.renderObjectField(propObj);
                 }
 
@@ -617,7 +620,9 @@ function JsonObjectEditor(specs){
 		if(prop.value == undefined && prop.default != undefined){
 			prop.value = prop.default;
 		}
-		
+        if($.type(prop.value) == "function"){
+            prop.value = prop.value(self.current.object);
+        }
 		var hidden = (prop.hidden)?'hidden':'';
 		
 		var html ='';

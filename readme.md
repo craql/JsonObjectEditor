@@ -71,8 +71,9 @@ Properties for all Fields
 
 - `label`: what the field should display as 
 - `value`: default value if not one in object
-- `type`: what type of field should JOE show
 - `default`: default value for field
+- `type`: what type of field should JOE show
+
 - `width`: used for layout control.
 	- can use pixels or percentages (as string)
 
