@@ -57,7 +57,8 @@ todo:
 			animal:animalschema,
 			thing:thingschema			
 		},
-		compact:true
+		compact:true,
+		useHashlink:false
 	}
 	var JOE = new JsonObjectEditor(specs);
 	JOE.init();
@@ -65,6 +66,8 @@ todo:
 
 ##specs
 - useBackButton:[false] if true, back button moves through joe panels when joe has history to go to (is open).
+- useHashlink:(false), true or a template for hashlinks. 
+    default template is '${schema_name}_${_id}'
 
 ###fields
 Properties for all Fields

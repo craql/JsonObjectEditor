@@ -286,6 +286,12 @@ function JsonObjectEditor(specs){
 		if(!self.current.specs.noHistory && self.history.length){
 			$.extend({_joeHistoryTitle:self.overlay.find('.joe-panel-title').html()},self.history[self.history.length-1]);
 		}
+
+
+
+    //update hashlink
+        self.updateHashLink();
+
 		return html;
 	};
 /*----------------------------->
@@ -2079,6 +2085,8 @@ this.renderSorterField = function(prop){
 			    self.current.selectedListItems.push($(listitem).data('id'));
 		})
 	};
+
+
 /*-------------------------------------------------------------------->
 	H | HELPERS
 <--------------------------------------------------------------------*/
@@ -2092,6 +2100,22 @@ this.renderSorterField = function(prop){
 		var prop = (self.current.schema && self.current.schema._listID) || 'id' || '_id';
 		return prop;
 	};
+
+/*-------------------------------------------------------------------->
+ I | Hashlink
+ <--------------------------------------------------------------------*/
+    this.renderHashlink = function(){
+        var hlink = fillTemplate();
+    }
+
+    this.updateHashLink = function(){
+        if(!specs.useHashlink){
+            return;
+        }
+        var hashtemplate = ($.type(specs.useHashlink) == 'string')?specs.useHashlink:'!${schema_name}::${_id}';
+        $SET('@!',fillTemplate(hashtemplate,{schema_name:'schema'}));
+    }
+
 /*<------------------------------------------------------------->*/
 
 	if(self.specs.autoInit){
