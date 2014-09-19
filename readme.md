@@ -71,7 +71,7 @@ Properties for all Fields
 
 - `label`: what the field should display as 
 - `value`: default value if not one in object
-- `default`: default value for field
+- `default`: default value for field || function(object)
 - `type`: what type of field should JOE show
 
 - `width`: used for layout control.
