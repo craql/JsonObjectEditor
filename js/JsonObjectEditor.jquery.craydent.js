@@ -50,10 +50,16 @@ function JsonObjectEditor(specs){
 	//TODO: check for class/id selector
 	this.container = $(this.specs.container);
 	this.fields = this.specs.fields;
-	this.schemas = this.specs.schemas;
-	
+
+    //configure schemas
+    this.schemas = this.specs.schemas;
+    for(var s in _joe.schemas){
+        _joe.schemas[s].__schemaname = s;
+    }
+
 	this.defaultProfile = this.specs.defaultProfile || this.specs.joeprofile;
 	this.current.profile = this.defaultProfile;
+
 /*-------------------------------------------------------------------->
 	1 | INIT
 <--------------------------------------------------------------------*/
@@ -70,15 +76,22 @@ function JsonObjectEditor(specs){
         if (self.specs.useBackButton) {
             window.onkeydown = function (e) {
                 var nonBackElements = ['input','select','textarea'];
-                if (e.keyCode == 8 && self.history.length) {
-                    //if in editor fields, don't go back
-                    if(nonBackElements.indexOf(e.target.tagName.toLowerCase()) != -1) {
-                        //logit('t');
-                        //return false;
-                    }else {
-                        //otherwise, go back.
-                        self.goBack();
-                        return false;
+                if (e.keyCode == 8) {
+                    if(self.history.length) {
+                        //if in editor fields, don't go back
+                        if (nonBackElements.indexOf(e.target.tagName.toLowerCase()) != -1) {
+                            //logit('t');
+                            //return false;
+                        } else {
+                            //otherwise, go back.
+                            self.goBack();
+                            return false;
+                        }
+                    }else{//no history
+                        var leavePage = confirm('Are you sure you want to leave the project dashboard?');
+                        if(!leavePage){
+                            return false;
+                        }
                     }
                 }
             }
@@ -1750,10 +1763,14 @@ this.renderSorterField = function(prop){
 <--------------------------------------------------------------------*/
 	this.setSchema = function(schemaName){
 		if(!schemaName){return false;}
-		//setup schema 
+		//setup schema
+
+
 		var schema = ($.type(schemaName) == 'object')? schemaName : self.schemas[schemaName] || null;
+
+
 		self.current.schema = schema;
-		return schema;
+        return schema;
 	};
 	this.resetSchema = function(schemaName){
 		var newObj = self.constructObjectFromFields(self.joe_index);
@@ -2112,8 +2129,18 @@ this.renderSorterField = function(prop){
         if(!specs.useHashlink){
             return;
         }
-        var hashtemplate = ($.type(specs.useHashlink) == 'string')?specs.useHashlink:'!${schema_name}::${_id}';
-        $SET('@!',fillTemplate(hashtemplate,{schema_name:'schema'}));
+        var hashInfo ={}
+
+        hashInfo.schema_name =self.current.schema && self.current.schema.__schemaname;
+        if(listMode){
+            hashInfo.object_id = '';
+        }else{
+
+            hashInfo.object_id = (self.current.object && self.current.object[self.getIDProp()])||'';
+        }
+
+        var hashtemplate = ($.type(specs.useHashlink) == 'string')?specs.useHashlink:'${schema_name}_${object_id}';
+        $SET('@!',fillTemplate(hashtemplate,hashInfo));
     }
 
 /*<------------------------------------------------------------->*/
