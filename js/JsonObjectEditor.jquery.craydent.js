@@ -96,6 +96,7 @@ function JsonObjectEditor(specs){
                 }
             }
         }
+        self.readHashLink();
 	};
 
 
@@ -2139,8 +2140,18 @@ this.renderSorterField = function(prop){
             hashInfo.object_id = (self.current.object && self.current.object[self.getIDProp()])||'';
         }
 
-        var hashtemplate = ($.type(specs.useHashlink) == 'string')?specs.useHashlink:'${schema_name}_${object_id}';
+        var hashtemplate = ($.type(specs.useHashlink) == 'string')?specs.useHashlink:'${schema_name}:::${object_id}';
         $SET('@!',fillTemplate(hashtemplate,hashInfo));
+    };
+
+    this.readHashLink = function(){
+        var useHash = $GET('!');
+        if(!useHash || self.joe_index != 0){return;}
+        var hashBreakdown = useHash.split(':::');
+        var hashSchema = self.schemas[hashBreakdown[0]];
+        if(hashSchema && hashSchema.dataset){
+            goJoe({},{schema:hashSchema})
+        }
     }
 
 /*<------------------------------------------------------------->*/
