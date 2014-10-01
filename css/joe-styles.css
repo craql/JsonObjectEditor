@@ -333,7 +333,7 @@ input.joe-submenu-search-field {
     background-color: rgba(0,0,0,.1);
 }*/
 .joe-panel-content-option.selected{
-    background-color: rgba(0,100,200,.1);
+    background-color: rgba(0,100,200,.1) !important;
 }
 .joe-panel-content-option-stripe {
     position: absolute;
