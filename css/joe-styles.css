@@ -2,33 +2,33 @@
 /* JOE UI Styles */
 
 .clear{
-	clear:both;
+    clear:both;
 }
 
 .joe-no-select{
-	-webkit-touch-callout: none;
-	-webkit-user-select: none;
-	-khtml-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 .joe-overlay{
-	font-family:Cambria, "Hoefler Text", "Liberation Serif", Times, "Times New Roman", serif;
+    font-family:Cambria, "Hoefler Text", "Liberation Serif", Times, "Times New Roman", serif;
 }
 .joe-block,.joe-overlay{
-	position:absolute;
-	top:0;
-	right:0;
-	bottom:0;
-	left:0;
+    position:absolute;
+    top:0;
+    right:0;
+    bottom:0;
+    left:0;
 }
 
 .joe-overlay{
-	background-color: rgba(0,0,0,.7);
-	z-index: 2000;
-	display:none;
-	position: fixed;
+    background-color: rgba(0,0,0,.7);
+    z-index: 2000;
+    display:none;
+    position: fixed;
     transition: .25s;
     opacity:1;
 }
@@ -64,29 +64,29 @@
 
 .hidden{
     transition-delay: .25s;
-   opacity:0;
+    opacity:0;
 }
 
 .joe-icon{
-	background-position:center center;
-	background-repeat:no-repeat;
+    background-position:center center;
+    background-repeat:no-repeat;
 }
 /*-------------------------
 	JOE Button
 -------------------------*/
 .joe-panel-menu {
-	padding: 0 1px 2px 1px;
+    padding: 0 1px 2px 1px;
 }
 .joe-button {
     padding: 8px 16px;
     margin: 5px;
     background-color:#fcfcfc;
-	box-shadow: 0 1px 2px 0px rgba(0,0,0,.3);
-	cursor: pointer;
-	transition: .2s;
+    box-shadow: 0 1px 2px 0px rgba(0,0,0,.3);
+    cursor: pointer;
+    transition: .2s;
 }
 .joe-button:hover{
-	background-color: #f0f0f0;
+    background-color: #f0f0f0;
 }
 
 .joe-button.center{text-align:center;}
@@ -103,35 +103,35 @@
 
 .joe-right-button,
 .joe-footer-button {
-    float: right; 
+    float: right;
 }
 
 .joe-left-button,
 .joe-delete-button {
-	float: left;
+    float: left;
 }
 
 /*-------------------------
 	UI Overlays
--------------------------*/	
+-------------------------*/
 
 .joe-overlay.active{
-	display:block;
+    display:block;
 }
 .joe-overlay.compact{
-	text-align:center;
+    text-align:center;
 }
 /*-------------------------
 	UI Panels
--------------------------*/	
+-------------------------*/
 .joe-overlay-panel {
-	background: #eee;
-	position:absolute;
-	top:0;
-	left:0;
-	bottom:0;
-	right:0;
-	box-shadow:0 0 4px 0 rgba(0,0,0,.7);
+    background: #eee;
+    position:absolute;
+    top:0;
+    left:0;
+    bottom:0;
+    right:0;
+    box-shadow:0 0 4px 0 rgba(0,0,0,.7);
     margin:10px;
     transition: .25s;
 }
@@ -146,65 +146,65 @@
 }
 
 .joe-panel{
-	position:relative;
+    position:relative;
 }
 
 .joe-mini-panel {
-	margin: 100px auto;
-	box-shadow: 0 0 20px 1px #000;
-	position: relative;
-	min-height: 250px;
-	background: #eee;
-	width: 60%;
-	min-width:300px;
-	display:none;
+    margin: 100px auto;
+    box-shadow: 0 0 20px 1px #000;
+    position: relative;
+    min-height: 250px;
+    background: #eee;
+    width: 60%;
+    min-width:300px;
+    display:none;
 }
 .joe-mini-panel.active{
-	display:block;
+    display:block;
 }
 /*-------------------------
 	UI Panels Floating
--------------------------*/	
+-------------------------*/
 
 .compact .joe-overlay-panel {
-	top: auto;
-	left: auto;
-	bottom: auto;
-	right: auto;
-	position: relative;
-	width: 50%;
-	margin: 20px auto;
-	height: 80%;
-	text-align: left;
-	min-width: 340px;
+    top: auto;
+    left: auto;
+    bottom: auto;
+    right: auto;
+    position: relative;
+    width: 50%;
+    margin: 20px auto;
+    height: 80%;
+    text-align: left;
+    min-width: 340px;
 }
 
 /*-------------------------------------------------------------------->
 	UI Panel Header
 <--------------------------------------------------------------------*/
 .joe-panel-header{
-	height:40px;
-	position:relative;
-	background-color: rgba(0,0,0,.1);
-	border-bottom: 1px solid #eee;
-	box-shadow: 0 0 2px 0 rgba(0,0,0,.3);
+    height:40px;
+    position:relative;
+    background-color: rgba(0,0,0,.1);
+    border-bottom: 1px solid #eee;
+    box-shadow: 0 0 2px 0 rgba(0,0,0,.3);
 }
 
 .joe-panel-close{
-	position: absolute;
-	top: 0;
-	right: 0;
-	line-height: 40px;
-	font-size: 14px;
-	width: 30px;
-	text-align: center;
-	cursor: pointer;
-	height: 28px;
-	background: url(../img/close-x.png) center center no-repeat;
-	background-color: #DDD;
-	background-color: rgba(0, 0, 0, 0.1);
-	margin: 5px;
-	border: 1px solid #AAA;
+    position: absolute;
+    top: 0;
+    right: 0;
+    line-height: 40px;
+    font-size: 14px;
+    width: 30px;
+    text-align: center;
+    cursor: pointer;
+    height: 28px;
+    background: url(../img/close-x.png) center center no-repeat;
+    background-color: #DDD;
+    background-color: rgba(0, 0, 0, 0.1);
+    margin: 5px;
+    border: 1px solid #AAA;
 }
 .joe-panel-close:hover{
     background-color: #ccc;
@@ -214,55 +214,57 @@
     font-weight: bold;
     padding: 5px;
     color: #007ac2;
-	line-height:30px;
+    line-height:30px;
 }
 
 .joe-header-back-btn{
-	float: left;
-	width: 40px;
-	cursor: pointer;
-	text-align: center;
-	line-height: 30px;
-	border-right: 1px solid #bbb;
-	margin: 5px 0;
-	padding-right: 5px;
-	margin-right: 10px;
-	color: #888;
+    float: left;
+    width: 40px;
+    cursor: pointer;
+    text-align: center;
+    line-height: 30px;
+    border-right: 1px solid #bbb;
+    margin: 5px 0;
+    padding-right: 5px;
+    margin-right: 10px;
+    color: #888;
 }
 .joe-header-back-btn:hover{
-	background:#bbb;
+    background:#bbb;
 }
 /*-------------------------
 Subset Selector
--------------------------*/	
+-------------------------*/
 .joe-subset-selector {
     line-height: 40px;
-    padding: 0 10px;
+    padding: 0 8px;
 
     cursor: pointer;
     z-index: 10;
     position: absolute;
-    right: 50px;
-    min-width: 120px;
+    right: 35px;
+    min-width: 100px;
 }
 
 .joe-subset-selector .selector-option{
     background: rgba(0,0,0,.2);
-	padding:0 10px;
+
+    padding: 0 7px;
 }
 .joe-subset-selector .selector-option:hover{
-    background: rgba(0,0,0,.4);	
+    background: rgba(0,0,0,.4);
 }
 .joe-subset-selector .selector-label{
     background: rgba(0,0,0,.2);
-	    padding-right: 30px;
+
+    /* padding-right: 30px; */
 }
 
 .joe-subset-selector .selector-options{
-	display:none;
+    display:none;
 }
 .joe-subset-selector.active .selector-options{
-	display:block;
+    display:block;
 }
 
 
@@ -270,26 +272,26 @@ Subset Selector
 	UI Panel Content
 ------------------------------------------------------------------*/
 .joe-panel-content {
-	min-height:50px;
-	position: absolute;
-	top: 50px;
-	bottom: 50px;
-	left: 5px;
-	right: 5px;
-	overflow: auto;
+    min-height:50px;
+    position: absolute;
+    top: 50px;
+    bottom: 50px;
+    left: 5px;
+    right: 5px;
+    overflow: auto;
     -webkit-overflow-scrolling: touch;
 }
 .joe-panel-content.joe-inset{
-	background:#fff;
-	box-shadow:inset 0 0 3px 0 rgba(0,0,0,.5);
-	border:1px solid #efefef;
+    background:#fff;
+    box-shadow:inset 0 0 3px 0 rgba(0,0,0,.5);
+    border:1px solid #efefef;
 }
 
 /*---------------------------------------
 	Panel Submenu
 ---------------------------------------*/
 .joe-panel-content.with-submenu{
-top:80px;
+    top:80px;
 }
 
 .joe-panel-submenu {
@@ -310,7 +312,7 @@ input.joe-submenu-search-field {
 
 /*-------------------------
 	List Options
--------------------------*/	
+-------------------------*/
 .joe-panel-content-option {
     /* height: 40px; */
     /* line-height: 40px; */
@@ -319,8 +321,11 @@ input.joe-submenu-search-field {
     /* min-height: 30px; */
     cursor: pointer;
     font-size: 14px;
-	clear:both;
+    clear:both;
 }
+
+/*STRIPE*/
+
 .joe-panel-content-option.striped{
     /*padding-left:10px;*/
 }
@@ -328,7 +333,7 @@ input.joe-submenu-search-field {
     background-color: rgba(0,0,0,.1);
 }*/
 .joe-panel-content-option.selected{
-	 background-color: rgba(0,100,200,.1);
+    background-color: rgba(0,100,200,.1);
 }
 .joe-panel-content-option-stripe {
     position: absolute;
@@ -337,6 +342,20 @@ input.joe-submenu-search-field {
     top: 3px;
     bottom: 3px;
     opacity: .8;
+    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+    filter: alpha(opacity=80);
+}
+
+/*BG*/
+.joe-panel-content-option-bg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right:0;
+    opacity: .1;
+    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=10)";
+    filter: alpha(opacity=10);
 }
 /*-------------------------
 	List Option content
@@ -345,7 +364,7 @@ input.joe-submenu-search-field {
     padding: 10px 10px 10px 10px;
 }
 .joe-panel-content-option-content:hover {
-    background-color: rgba(0,0,0,.1);
+    background-color: rgba(0,0,0,.1) !important;
 }
 
 /*-------------------------
@@ -365,9 +384,9 @@ input.joe-submenu-search-field {
 /*-------------------------
 	UI Panel Content Types
 -------------------------*/
-	.joe-text-content{
-		padding:20px;
-	}
+.joe-text-content{
+    padding:20px;
+}
 
 /*-------------------------
 	Boolean field
@@ -382,37 +401,37 @@ input.joe-boolean-field {
 }
 /*-------------------------
 	UI Panel Object Content
--------------------------*/	
+-------------------------*/
 /*.joe-field-label {
 	padding: 5px 10px;
 	display: inline-block;
 	width: 100px;
 }*/
 .joe-field-label {
-	padding: 0 4px;
-	display: inline-block;
-	position: absolute;
-	top: -12px;
-	background-color: #fff;
-	left: 5px;
+    padding: 0 4px;
+    display: inline-block;
+    position: absolute;
+    top: -12px;
+    background-color: #fff;
+    left: 5px;
 }
-	
+
 /*-------------------------------------------------------------------->
-	Editor Form 
-<--------------------------------------------------------------------*/	
+	Editor Form
+<--------------------------------------------------------------------*/
 .joe-object-content {
-	padding-top: 10px;
-}	
+    padding-top: 10px;
+}
 /*.joe-object-field{
 	margin: 5px;
 	border: 1px solid #f2f2f2;
 	padding: 5px 0;
 }*/
 .joe-object-field{
-	margin: 10px 5px;
-	border: 1px solid #f2f2f2;
-	padding: 8px 6px;
-	position: relative;
+    margin: 10px 5px;
+    border: 1px solid #f2f2f2;
+    padding: 8px 6px;
+    position: relative;
 }
 /*-------------------------
 	Label
@@ -421,7 +440,7 @@ input.joe-boolean-field {
     background-color: rgba(0,40,80,.15);
     padding: 5px 10px;
     margin: 15px 0 15px 0px;
-     font-weight: bold;
+    font-weight: bold;
     clear: both;
     /*font-size: 1.1em;*/
     /* padding: 0 10px; */
@@ -429,34 +448,34 @@ input.joe-boolean-field {
 
 /*-------------------------
 	Multiedit
--------------------------*/	
+-------------------------*/
 
 .joe-field-multiedit-toggle {
-	position: absolute;
-	top: 0;
-	right: 0;
-	width: 24px;
-	height: 24px;
-	border: 1px solid #DDD;
-	margin: 8px;
-	cursor: pointer;
-	background: #EFEFEF;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 24px;
+    height: 24px;
+    border: 1px solid #DDD;
+    margin: 8px;
+    cursor: pointer;
+    background: #EFEFEF;
 
 }
 .joe-object-field.multi-selected{
-		border-color:#007ac2;
+    border-color:#007ac2;
 }
 
 .multi-selected .joe-field-multiedit-toggle{
-	background:rgba(0,100,200,.4)
+    background:rgba(0,100,200,.4)
 }
 
 .joe-object-field.hidden{
-	display:none;
+    display:none;
 }
 .joe-object-field input[type=text] {
-	padding: 4px;
-	width: 300px;
+    padding: 4px;
+    width: 300px;
 }
 .joe-object-field input[type=text].joe-url-field {
     width: 75%;
@@ -475,10 +494,10 @@ input.joe-boolean-field {
     background-color:#ddd;
 }
 .joe-object-field input[type=text].joe-number-field {
-	width: 200px;
+    width: 200px;
 }
 .joe-object-field input[type=text].joe-int-field {
-	width: 100px;
+    width: 100px;
 }
 
 .joe-select-field {
@@ -488,36 +507,36 @@ input.joe-boolean-field {
 
 /* Rendering */
 .joe-object-field.rendering-field {
-	min-height: 250px;
+    min-height: 250px;
 }
 
 
 textarea.joe-rendering-field{
-/*	padding: 5px;
-	position: absolute;
-	top: 5px;
-	right: 5px;
-	bottom: 5px;
-	left: 5px;
-	width: 60%;
-	min-width: 304px;*/
-	padding: 1%;
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	width: 96%;
-	min-width: 304px;
-	margin: 1%;
+    /*	padding: 5px;
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        bottom: 5px;
+        left: 5px;
+        width: 60%;
+        min-width: 304px;*/
+    padding: 1%;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 96%;
+    min-width: 304px;
+    margin: 1%;
 }
 
 /* Geo */
 .joe-geo-map {
-	height: 250px;
-	margin-bottom: 10px;
-	width: 100%;
-	position: relative;
+    height: 250px;
+    margin-bottom: 10px;
+    width: 100%;
+    position: relative;
 
 }
 
@@ -527,18 +546,18 @@ textarea.joe-rendering-field{
     z-index: 1001;
     background: #eee;
     width: 312px;
-	display:none;
+    display:none;
 }
 .joe-text-autocomplete.active{
-	display:block;
+    display:block;
 }
 .joe-text-autocomplete-option {
     padding: 5px;
     cursor: pointer;
-	display:none;
+    display:none;
 }
 .joe-text-autocomplete-option.visible{
-	display:block;
+    display:block;
 }
 .joe-text-autocomplete-option:hover {
     background: #ccc;
@@ -546,88 +565,88 @@ textarea.joe-rendering-field{
 
 /*-------------------------
 	J | MultiSorter
--------------------------*/	
+-------------------------*/
 
 
 
 .joe-multisorter-bin{
-	width: 48%;
-	background: #EEE;
-	min-height: 100px;
-	float: left;
-	margin: 0 1%;
-	list-style: none;
-	max-height: 500px;
-	overflow: auto;
+    width: 48%;
+    background: #EEE;
+    min-height: 100px;
+    float: left;
+    margin: 0 1%;
+    list-style: none;
+    max-height: 500px;
+    overflow: auto;
 }
 .joe-multisorter-bin li,
 .joe-buckets-bin li {
-	/*line-height: 30px;*/
-	min-height: 30px;
-	padding: 5px;
-	cursor: move;
-	position:relative;
+    /*line-height: 30px;*/
+    min-height: 30px;
+    padding: 5px;
+    cursor: move;
+    position:relative;
 }
 .joe-multisorter-bin li:hover,
 .joe-buckets-bin li:hover{
-	background:rgba(0,0,0,.1);
+    background:rgba(0,0,0,.1);
 }
 
 
 /*-------------------------
 	k | Buckets
--------------------------*/	
+-------------------------*/
 .joe-buckets-field-holder{
-float:left;
+    float:left;
 }
 
 .joe-buckets-bin{
-	background: #EEE;
-	min-height: 100px;
-	margin: 0 1%;
-	list-style: none;
-	max-height: 500px;
-	overflow: auto;
+    background: #EEE;
+    min-height: 100px;
+    margin: 0 1%;
+    list-style: none;
+    max-height: 500px;
+    overflow: auto;
 }
 
 .joe-buckets-bin.selections-bin{
-	float: left;
-	width: 31%;
-	margin-bottom: 10px;
+    float: left;
+    width: 31%;
+    margin-bottom: 10px;
 }
 
 .joe-bucket-delete {
-	left:auto;
-	width: 30px;
+    left:auto;
+    width: 30px;
 
-	background-image: url(../img/close-x.png);
-	display:none;
-	margin: 5px;
-	cursor: pointer;
+    background-image: url(../img/close-x.png);
+    display:none;
+    margin: 5px;
+    cursor: pointer;
 }
 .joe-bucket-delete:hover{
-	background-color: #DDD;
-	background-color: rgba(0,0,0,.1);
+    background-color: #DDD;
+    background-color: rgba(0,0,0,.1);
 }
 .joe-buckets-bin.selections-bin .joe-bucket-delete{
-	display:block;
+    display:block;
 }
 
 /*-------------------------
 	i | Image
 -------------------------*/
 input.joe-image-field{
-	width: 90% !important;
+    width: 90% !important;
 }
 .joe-image-field-image {
-	margin: 15px 0 10px 0;
-	display: block;
+    margin: 15px 0 10px 0;
+    display: block;
     max-width: 100%;
 }
 .joe-image-field-size {
-	margin: 10px 0;
-	opacity: .5;
-	display: block;
+    margin: 10px 0;
+    opacity: .5;
+    display: block;
 }
 
 /*-------------------------
@@ -665,35 +684,35 @@ table.joe-objectlist-table {
 	Field Container
 <-----------------------------*/
 .joe-field-container{
-	float:left;
-	min-width:320px;
+    float:left;
+    min-width:320px;
 }
 
 /*-------------------------
 	 Filter Field
--------------------------*/	
+-------------------------*/
 .joe-filter-field-holder {
     padding: 5px 1%;
 }
 .joe-filter-field-holder input {
     max-width: 46% !important;
-	padding-left: 30px !important;
-	background:url(../img/search.png) center left no-repeat;
+    padding-left: 30px !important;
+    background:url(../img/search.png) center left no-repeat;
 }
 /*-------------------------
 	 Buckets
 -------------------------*/
 .joe-buckets-field .joe-filter-field-holder {
-padding: 5px 3px;
+    padding: 5px 3px;
 }
 .joe-buckets-field .joe-filter-field-holder input {
-max-width: 24% !important;
+    max-width: 24% !important;
 }
 
 
 /*-------------------------------------------------------------------->
 	4 | Footer
-<--------------------------------------------------------------------*/	
+<--------------------------------------------------------------------*/
 .joe-panel-footer {
     position: absolute;
     bottom: 0;
@@ -702,11 +721,11 @@ max-width: 24% !important;
 }
 
 .joe-multi-only{
-	display:none;
+    display:none;
 }
 
 .multi-edit .joe-multi-only{
-	display:block;
+    display:block;
 }
 
 

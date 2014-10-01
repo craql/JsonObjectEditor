@@ -185,6 +185,7 @@ an array of menu buttons
 - _listTitle:'${name} ${species}', *how to display items in the list*
 - listSubMenu:a function or object that represents the list submenu
 - stripeColor:string or function that returns valid css color descriptor.
+- bgColor:string or function that returns valid css color descriptor.
 - subsets: name:string, filter:object 
 - subMenu:a function or object that represents the single item submenu
 

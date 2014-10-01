@@ -1494,20 +1494,28 @@ this.renderSorterField = function(prop){
 		//var action = 'onclick="_joe.editObjectFromList(\''+id+'\');"';
 		var action = 'onclick="getJoe('+self.joe_index+').listItemClickHandler({dom:this,id:\''+id+'\'});"';
 
-
+    //add stripe color
         var stripeColor = ($.type(listSchema.stripeColor)=='function')?listSchema.stripeColor(listItem):fillTemplate(listSchema.stripeColor,listItem);
         var stripeHTML ='';
         if(stripeColor){
             stripeHTML = 'style="background-color:'+stripeColor+';"';
         }
-		if(!listSchema._listTemplate){
+
+    //add background color
+        var bgColor = ($.type(listSchema.bgColor)=='function')?listSchema.bgColor(listItem):fillTemplate(listSchema.bgColor,listItem);
+        var bgHTML ='';
+        if(bgColor){
+            bgHTML = 'style="background-color:'+bgColor+';"';
+        }
+
+        if(!listSchema._listTemplate){
 			var title = listSchema._listTitle || listItem.name || id || 'untitled';
             var listItemButtons = '';//<div class="joe-panel-content-option-button fleft">#</div><div class="joe-panel-content-option-button fright">#</div>';
             //list item content
             title="<div class='joe-panel-content-option-content' "+action+">"+title+"</div>";
-			var html = '<div class="joe-panel-content-option joe-no-select '+((stripeColor && 'striped')||'')+'"  data-id="'+id+'">'
+			var html = '<div class="joe-panel-content-option joe-no-select '+((stripeColor && 'striped')||'')+'"  data-id="'+id+'" '+bgHTML+'>'
 
-
+                //+'<div class="joe-panel-content-option-bg" '+bgHTML+'></div>'
                 +'<div class="joe-panel-content-option-stripe" '+stripeHTML+'></div>'
                 +listItemButtons
                 +fillTemplate(title,listItem)
