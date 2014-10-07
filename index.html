@@ -209,7 +209,10 @@ var objectListSchema =
 			hiddenizer:{hidden:true},
             animalList:{
                 display:'List of animals',type:'objectList',
-                properties:['name','id',{name:'city',type:'select'}]
+                properties:['name','id',
+                    {name:'city', display:'Location',type:'select', values:['cat','dog','rat','thing']},
+                    {name:'mood', autocomplete:true,values:['happy','sad','frivilous','distinguished']}
+                ]
             }
 		},
 		schemas:{

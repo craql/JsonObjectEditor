@@ -368,7 +368,7 @@ function JsonObjectEditor(specs){
         self.current.list = null;
         self.current.subsets = null;
         self.current.subset = null;
-    }
+    };
 
 /*----------------------------->
  B | SubMenu
@@ -379,7 +379,7 @@ function JsonObjectEditor(specs){
         }
         var subSpecs = {
             search:true
-        }
+        };
         var userSubmenu = ($.type(self.current.submenu) != 'object')?{}:self.current.submenu;
         $.extend(subSpecs,userSubmenu);
 
@@ -566,7 +566,7 @@ function JsonObjectEditor(specs){
 			
 			})//end map
 			
-		};
+		};;
 		var html = '<div class="joe-object-content">'+fields+'<div class="clear"></div></div>';
 		return html;
 	};
@@ -1367,13 +1367,13 @@ this.renderSorterField = function(prop){
         var html=
             '<div class="joe-button" onclick="_joe.gotoFieldURL(this);">view</div>'
             +'<input class="joe-url-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+disabled+' />'
-       + __clearDiv__
+       + __clearDiv__;
         return html;
     };
     this.gotoFieldURL = function(dom){
         var url = $(dom).siblings('.joe-url-field').val();
         window.open(url);
-    }
+    };
 
 
 /*----------------------------->
@@ -1398,13 +1398,15 @@ this.renderSorterField = function(prop){
         var subprop;
         var html = '<thead><tr><th class="joe-objectlist-object-row-handle-header"></th>';
         for(var p = 0,tot = properties.length; p<tot;p++){
+            subprop = properties[p];
             subprop = ($.type(properties[p]) == "string")?{name:properties[p]}:subprop;
             property = {
-                name: subprop.name,
+                name: subprop.display||subprop.name,
                 type: subprop.type||'text'
             };
 
-            html+="<th>"+subprop.name+"</th>";
+            html+="<th data-subprop='"+subprop.name+"'>"
+                +(subprop.label || subprop.name)+"</th>";
         }
 
         html+="</tr></thead>";
@@ -1439,19 +1441,21 @@ this.renderSorterField = function(prop){
         }
 
         var renderInput = {
-            'text':renderTextInput,
+         //   'text':renderTextInput,
+            'text':self.renderTextField,
             select:self.renderSelectField
         };
 
         //show all properties
         //TODO:create template in previous function and then use that to show values?
         for(var p = 0,tot = properties.length; p<tot;p++){
+            prop = properties[p]
             prop = ($.type(properties[p]) == "string")?{name:properties[p]}:prop;
-            property = {
+            property = $.extend({
                 name: prop.name,
                 type:prop.type||'text',
                 value:object[prop.name] || ''
-            };
+            },prop);
 
             html+="<td>"+renderInput[property.type](property)+"</td>";
 
@@ -1461,7 +1465,7 @@ this.renderSorterField = function(prop){
 
 
         return html;
-    }
+    };
 /*----------------------------->
 	R | Rendering Field
 <-----------------------------*/
@@ -1884,7 +1888,7 @@ this.renderSorterField = function(prop){
 				
 			}
 		});
-		self.overlay.find('input.joe-image-field').each(function(){_joe.updateImageFieldImage(this);})
+		self.overlay.find('input.joe-image-field').each(function(){_joe.updateImageFieldImage(this);});
 	    self.overlay.find('.joe-objectlist-table').each(function(){
             $(this).find('tbody').sortable(
                 {   axis:'y',
@@ -1987,6 +1991,9 @@ this.renderSorterField = function(prop){
 		//var parentFind = $('.joe-overlay.active');
 		
 		parentFind.find('.joe-field').each(function(){
+            if($(this).parents('.objectList-field').length){
+                return true;
+            }
 			if(self.current.userSpecs.multiedit){
 				if(!$(this).parent().hasClass('multi-selected')){
 					return;
@@ -2036,6 +2043,36 @@ this.renderSorterField = function(prop){
 				break;
 			}
 		});
+    //OBJECT LISTS
+        parentFind.find('.objectList-field').each(function(){
+            var ol_property = $(this).data('name');
+            var ol_array = [];
+        //get table header rows
+            var subprops = [];
+            $(this).find('thead').find('th').each(function(i){
+               // if($(this).data('subprop')) {//skip handle
+                    subprops.push($(this).data('subprop'));
+              //  }
+            });
+
+        //parse all trs and tds and match values to subprops array
+            $(this).find('tbody').find('tr').each(function(){
+            //find all tds
+                var ol_array_obj = {};
+                $(this).find('td').each(function(i){
+                  //  if($(this).data('subprop')) {//skip row handle
+                        ol_array_obj[subprops[i]] = $(this).find('input,select').val();
+                   // }
+                });
+            //store to ol_array
+                delete ol_array_obj.undefined;
+                ol_array.push(ol_array_obj);
+            });
+
+
+            object[ol_property] = ol_array;
+        });
+
 		return object;
 	};
 	
@@ -2132,13 +2169,13 @@ this.renderSorterField = function(prop){
  <--------------------------------------------------------------------*/
     this.renderHashlink = function(){
         var hlink = fillTemplate();
-    }
+    };
 
     this.updateHashLink = function(){
         if(!specs.useHashlink){
             return;
         }
-        var hashInfo ={}
+        var hashInfo ={};
 
         hashInfo.schema_name =self.current.schema && self.current.schema.__schemaname;
         if(listMode){
@@ -2160,7 +2197,7 @@ this.renderSorterField = function(prop){
         if(hashSchema && hashSchema.dataset){
             goJoe({},{schema:hashSchema})
         }
-    }
+    };
 
 /*<------------------------------------------------------------->*/
 
