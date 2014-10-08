@@ -789,8 +789,15 @@ function JsonObjectEditor(specs){
 <-----------------------------*/
 	this.renderTextField = function(prop){
 		var autocomplete;
-		if(prop.autocomplete && prop.values && $.type(prop.values) == 'array'){
-		autocomplete =true;
+		if(prop.autocomplete && prop.values){
+
+            if(typeof prop.values == "function"){
+                prop.values = prop.values(self.current.object);
+            }
+            if($.type(prop.values) != 'array'){
+                prop.values = [prop.values];
+            }
+            autocomplete =true;
 		}
 	/*	var disabled = (profile.lockedFields.indexOf(prop.name) == -1)?
 			'':'disabled';
@@ -812,9 +819,14 @@ function JsonObjectEditor(specs){
 		
 		if(autocomplete){
 			html+='<div class="joe-text-autocomplete">';
+            var ac_opt;
 			for(var v = 0, len = prop.values.length; v < len; v++){
+                ac_opt = ($.type(prop.values[v]) == "object")?
+                    prop.values[v]:
+                    {id:prop.values[v],name:prop.values[v]};
 				html+='<div class="joe-text-autocomplete-option" '
-					+'onclick=" getJoe('+self.joe_index+').autocompleteTextFieldOptionClick(this);">'+prop.values[v]+'</div>';	
+					+'onclick="getJoe('+self.joe_index+').autocompleteTextFieldOptionClick(this);" '
+                    +'data-value="'+(ac_opt._id||ac_opt.id||ac_opt.name)+'">'+ac_opt.name+'</div>';
 			}
 			
 			html+='</div>';	
