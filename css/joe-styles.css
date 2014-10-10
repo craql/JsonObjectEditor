@@ -280,6 +280,7 @@ Subset Selector
     right: 5px;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
+    padding: 5px 0;
 }
 .joe-panel-content.joe-inset{
     background:#fff;
@@ -322,6 +323,7 @@ input.joe-submenu-search-field {
     cursor: pointer;
     font-size: 14px;
     clear:both;
+    border-bottom: 1px solid #e1e1e1;
 }
 
 /*STRIPE*/
@@ -680,6 +682,19 @@ table.joe-objectlist-table {
 .joe-objectlist-object-row-handle:hover{
     background-color:#eaeaea;
 }
+
+.joe-objectlist-table select {
+    padding: 4px;
+    min-width: 80px;
+    width:98%;
+    box-sizing: border-box;
+}
+.joe-objectlist-table input[type=text] {
+    padding: 4px;
+    width: 98%;
+    box-sizing: border-box;
+}
+
 /*----------------------------->
 	Field Container
 <-----------------------------*/
@@ -835,3 +850,20 @@ button.Zebra_DatePicker_Icon_Disabled       { background-image: url('calendar-di
 /* don't set vertical margins! */
 button.Zebra_DatePicker_Icon                { margin: 0 0 0 3px }
 button.Zebra_DatePicker_Icon_Inside         { margin: 0 3px 0 0 }
+
+
+
+/* For phones and small tablets */
+@media only screen and (max-width: 600px),
+screen and (max-height:400px) and (orientation:landscape){
+
+    .joe-overlay-panel {
+        margin: 0px;
+    }
+
+    .joe-button {
+        padding: 8px 8px !important;
+        min-width: 40px;
+        text-align: center;
+    }
+}
