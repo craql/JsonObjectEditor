@@ -749,6 +749,11 @@ function JsonObjectEditor(specs){
 	0 | Event Handlers
 <-----------------------------*/
 	this.getActionString = function(evt,prop){
+        var evt = prop[evt];
+        if(!evt){ return '';}
+        if($.type(evt) == "string"){
+           return evt;
+        }
 		var str = (prop[evt])? ' '+self.functionName(prop[evt])+'(this); ' : '' ;
 		return str;
 	};
