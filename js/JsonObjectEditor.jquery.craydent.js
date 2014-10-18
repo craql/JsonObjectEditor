@@ -1488,7 +1488,7 @@ this.renderSorterField = function(prop){
 <-----------------------------*/
 	this.renderRenderingField = function(prop){
 		var profile = self.current.profile;
-        var height = (prop.height)?'height="'+prop.height+'"' : '';
+        var height = (prop.height)?'style="height:'+prop.height+';"' : '';
 		var html=
 			'<textarea class="joe-rendering-field joe-field" '+height+' name="'+prop.name+'" >'+(prop.value || "")+'</textarea>';
 		return html;
