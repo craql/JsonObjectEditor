@@ -383,6 +383,19 @@ input.joe-submenu-search-field {
     background-color: rgba(0,0,0,.1);
 }
 
+.joe-option-view-button{
+position: absolute;
+    right:0;
+    top:0;
+    bottom:0;
+    padding:5px;
+}
+
+.joe-panel-content-option .joe-button{
+    margin:0;
+    margin-left:5px;
+}
+
 
 /*-------------------------
 	UI Panel Content Types
@@ -524,7 +537,7 @@ textarea.joe-rendering-field{
         width: 60%;
         min-width: 304px;*/
     padding: 1%;
-    position: absolute;
+    position: relative;
     top: 0;
     right: 0;
     bottom: 0;
@@ -532,6 +545,7 @@ textarea.joe-rendering-field{
     width: 96%;
     min-width: 304px;
     margin: 1%;
+    height: 200px;
 }
 
 /* Geo */
