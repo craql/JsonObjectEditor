@@ -389,7 +389,10 @@ position: absolute;
     bottom:0;
     padding:5px;
 }
-
+.joe-option-view-button:hover{
+    cursor:pointer;
+    background-color:rgba(0,0,0,.5);
+}
 .joe-panel-content-option .joe-button{
     margin:0;
     margin-left:5px;
@@ -522,7 +525,7 @@ input.joe-boolean-field {
 
 /* Rendering */
 .joe-object-field.rendering-field {
-    min-height: 250px;
+    min-height: 100px;
 }
 
 

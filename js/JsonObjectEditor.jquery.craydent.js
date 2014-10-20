@@ -1223,7 +1223,7 @@ this.renderSorterField = function(prop){
 		
 		var html=
 		'<div class="joe-multisorter-field joe-field" name="'+prop.name+'" data-ftype="multisorter" data-multiple="'+(prop.allowMultiple||'false')+'">'+
-			'<p style="text-align:center;"> click item to switch columns.</p>'+
+			'<p style="text-align:center;"> click or drag item to switch columns.</p>'+
 			'<div class="joe-filter-field-holder"><input type="text"class="" onkeyup="_joe.filterSorterOptions(this);"/></div>'+
 			'<ul class="joe-multisorter-bin options-bin">'+optionsHtml+'</ul>'+
 			'<ul class="joe-multisorter-bin selections-bin">'+selectionsHtml+'</ul>'+
