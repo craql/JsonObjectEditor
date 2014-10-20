@@ -1534,9 +1534,9 @@ this.renderSorterField = function(prop){
             var listItemButtons = '';//<div class="joe-panel-content-option-button fleft">#</div><div class="joe-panel-content-option-button fright">#</div>';
             //list item content
             title="<div class='joe-panel-content-option-content' "+action+">"+title+"</div>";
-			var html = '<div class="joe-panel-content-option joe-no-select '+((stripeColor && 'striped')||'')+'"  data-id="'+id+'" '+bgHTML+'>'
+			var html = '<div class="joe-panel-content-option joe-no-select '+((stripeColor && 'striped')||'')+'"  data-id="'+id+'" >'
 
-                //+'<div class="joe-panel-content-option-bg" '+bgHTML+'></div>'
+                +'<div class="joe-panel-content-option-bg" '+bgHTML+'></div>'
                 +'<div class="joe-panel-content-option-stripe" '+stripeHTML+'></div>'
                 +listItemButtons
                 +fillTemplate(title,listItem)

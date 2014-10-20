@@ -355,15 +355,16 @@ input.joe-submenu-search-field {
     top: 0;
     bottom: 0;
     right:0;
-    opacity: .1;
-    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=10)";
-    filter: alpha(opacity=10);
+    opacity: .5;
+    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+    filter: alpha(opacity=50);
 }
 /*-------------------------
 	List Option content
 -------------------------*/
 .joe-panel-content-option-content {
     padding: 10px 10px 10px 10px;
+    position:relative;
 }
 .joe-panel-content-option-content:hover {
     background-color: rgba(0,0,0,.1) !important;
