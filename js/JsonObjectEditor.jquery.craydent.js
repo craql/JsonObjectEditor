@@ -2203,16 +2203,42 @@ this.renderSorterField = function(prop){
         }
 
         var hashtemplate = ($.type(specs.useHashlink) == 'string')?specs.useHashlink:'${schema_name}:::${object_id}';
-        $SET('@!',fillTemplate(hashtemplate,hashInfo));
+        $SET({'@!':fillTemplate(hashtemplate,hashInfo)},{setHistory:false});
     };
 
     this.readHashLink = function(){
-        var useHash = $GET('!');
-        if(!useHash || self.joe_index != 0){return;}
-        var hashBreakdown = useHash.split(':::');
-        var hashSchema = self.schemas[hashBreakdown[0]];
-        if(hashSchema && hashSchema.dataset){
-            goJoe({},{schema:hashSchema})
+        try {
+            var useHash = $GET('!');
+            if (!useHash || self.joe_index != 0) {
+                return;
+            }
+            var hashBreakdown = useHash.split(':::');
+            var hashSchema = self.schemas[hashBreakdown[0]];
+            var hashItemID = hashBreakdown[1];
+            if (hashSchema && (hashSchema.dataset || (!$.isEmptyObject(NPC.Data) && NPC.Data[hashSchema.__schemaname]))) {
+                var dataset;
+                if(hashSchema.dataset) {
+                    dataset = (typeof(hashSchema.dataset) == "function") ? hashSchema.dataset() : hashSchema.dataset;
+                }else{
+                    dataset =  NPC.Data[hashSchema.__schemaname] || [];
+                }
+                //SINGLE ITEM
+                if(hashItemID ){
+                    if(!$.isEmptyObject(NPC.Data)) {
+                        var collectionName = hashSchema.__collection || hashSchema.__schemaname;
+                        if(collectionName){
+                            var collectionItem = getNPCDataItem(hashItemID,collectionName);
+                            if(collectionItem){
+                                goJoe(collectionItem, {schema: hashSchema});
+                            }
+                        }
+                    }
+                }else {//SHOW LIST, NO item
+                    goJoe(dataset, {schema: hashSchema});
+                }
+            }
+        }catch(e){
+            logit('error reading hashlink:'+e);
         }
     };
 
