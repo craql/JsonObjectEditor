@@ -384,15 +384,17 @@ input.joe-submenu-search-field {
 }
 
 .joe-option-view-button{
-position: absolute;
+    position: absolute;
     right:0;
     top:0;
     bottom:0;
     padding:5px;
+    line-height: 2;
+    color: #007ac2;
 }
 .joe-option-view-button:hover{
     cursor:pointer;
-    background-color:rgba(0,0,0,.5);
+    background-color:rgba(0,0,0,.2);
 }
 .joe-panel-content-option .joe-button{
     margin:0;
@@ -728,9 +730,10 @@ table.joe-objectlist-table {
     padding: 5px 1%;
 }
 .joe-filter-field-holder input {
-    max-width: 46% !important;
+    max-width: 200px !important;
     padding-left: 30px !important;
-    background:url(../img/search.png) center left no-repeat;
+    background: url(../img/search.png) center left no-repeat;
+    border: 1px solid #ddd;
 }
 /*-------------------------
 	 Buckets

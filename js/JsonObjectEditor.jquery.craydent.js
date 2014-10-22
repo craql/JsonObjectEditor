@@ -2203,7 +2203,7 @@ this.renderSorterField = function(prop){
         }
 
         var hashtemplate = ($.type(specs.useHashlink) == 'string')?specs.useHashlink:'${schema_name}:::${object_id}';
-        $SET({'@!':fillTemplate(hashtemplate,hashInfo)},{setHistory:false});
+        $SET({'@!':fillTemplate(hashtemplate,hashInfo)},{noHistory:true});
     };
 
     this.readHashLink = function(){
