@@ -2203,7 +2203,8 @@ this.renderSorterField = function(prop){
         }
 
         var hashtemplate = ($.type(specs.useHashlink) == 'string')?specs.useHashlink:'${schema_name}:::${object_id}';
-        $SET({'@!':fillTemplate(hashtemplate,hashInfo)},{noHistory:true});
+        //$SET({'@!':fillTemplate(hashtemplate,hashInfo)},{noHistory:true});
+        $SET({'@!':fillTemplate(hashtemplate,hashInfo)});
     };
 
     this.readHashLink = function(){
@@ -2223,8 +2224,8 @@ this.renderSorterField = function(prop){
                     dataset =  NPC.Data[hashSchema.__schemaname] || [];
                 }
                 //SINGLE ITEM
-                if(hashItemID ){
-                    if(!$.isEmptyObject(NPC.Data)) {
+                if(!$.isEmptyObject(NPC.Data)) {
+                    if(hashItemID ){
                         var collectionName = hashSchema.__collection || hashSchema.__schemaname;
                         if(collectionName){
                             var collectionItem = getNPCDataItem(hashItemID,collectionName);
@@ -2232,9 +2233,9 @@ this.renderSorterField = function(prop){
                                 goJoe(collectionItem, {schema: hashSchema});
                             }
                         }
+                    }else {//SHOW LIST, NO item
+                        goJoe(dataset, {schema: hashSchema});
                     }
-                }else {//SHOW LIST, NO item
-                    goJoe(dataset, {schema: hashSchema});
                 }
             }
         }catch(e){
