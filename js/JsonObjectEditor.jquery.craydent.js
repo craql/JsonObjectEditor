@@ -1928,7 +1928,7 @@ this.renderSorterField = function(prop){
 /*-------------------------------------------------------------------->
 	D | DATA
 <--------------------------------------------------------------------*/
-	this.updateObject = function(dom,callback){
+	this.updateObject = function(dom,callback,stayOnItem){
 		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || logit;
 		var newObj = self.constructObjectFromFields(self.joe_index);
 		newObj.joeUpdated = new Date();
@@ -1957,7 +1957,7 @@ this.renderSorterField = function(prop){
         callback(obj);
 		logit('object updated');
 
-		self.goBack();
+		if(!stayOnItem){self.goBack();}
 	};
 	
 	this.deleteObject = function(callback){
