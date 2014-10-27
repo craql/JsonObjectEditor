@@ -1,4 +1,10 @@
-//Dev'd By Corey Hadden
+/*/---------------------------------------------------------
+    Craydent LLC
+	Copyright 2014 (http://craydent.com/joe)
+    Dual licensed under the MIT or GPL Version 2 licenses.
+	(http://craydent.com/license)                       
+---------------------------------------------------------/*/
+
 /*TODO:
 
 	-merge specs (profile,schema,object,call?)
