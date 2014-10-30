@@ -470,7 +470,7 @@ function JsonObjectEditor(specs){
 
 	this.renderTextContent = function(specs){
 		specs = specs || {};
-		var text = specs.text || '';
+		var text = specs.text || specs.object || '';
 		var html = '<div class="joe-text-content">'+text+'</div>';
 		return html;
 		
@@ -523,6 +523,7 @@ function JsonObjectEditor(specs){
 					propObj = $.extend({
 						name:prop,
 						type:'text',
+                        //type:($.type(object[prop]) == 'object')?'rendering':'text',
 						value:object[prop]	
 					},
 					self.fields[prop],				
@@ -673,7 +674,9 @@ function JsonObjectEditor(specs){
 		if(self.current.userSpecs.multiedit){
 			html+='<div class="joe-field-multiedit-toggle" onclick="$(this).parent().toggleClass(\'multi-selected\')"></div>';	
 		}
-		
+/*        if($.type(prop.value) == "object" && !prop.type){
+            prop.type = "rendering";
+        }*/
 		switch(prop.type){
 			case 'select':
 				html+= self.renderSelectField(prop);
@@ -1755,10 +1758,11 @@ this.renderSorterField = function(prop){
 
 		var html = 
 			self.renderEditorHeader({title:title,action:'onclick="getJoe('+self.joe_index+').hideMini()"'})
-			+'<div class="joe-panel-content joe-inset">'
-				+self.renderObjectContent({object:specs.props})
+			//+'<div class="joe-panel-content joe-inset">'
+				//+self.renderObjectContent({object:specs.props})
+                +self.renderEditorContent({object:specs.props,mode:specs.mode||'object'})
 			//	+JSON.stringify(specs.props)
-			+'</div>'
+			//+'</div>'
 			+self.renderEditorFooter(specs);
 			
 		$('.joe-mini-panel').addClass('active').html(html);

@@ -101,6 +101,9 @@
 .joe-blue-button{background-color:#336699}
 .joe-blue-button:hover{background-color:#447799;}
 
+.joe-red-button{background-color:#ff3300}
+.joe-red-button:hover{background-color:#dd1100}
+
 .joe-right-button,
 .joe-footer-button {
     float: right;
@@ -161,6 +164,10 @@
 }
 .joe-mini-panel.active{
     display:block;
+}
+
+.joe-mini-panel .joe-panel-content {
+    top: 40px;
 }
 /*-------------------------
 	UI Panels Floating
