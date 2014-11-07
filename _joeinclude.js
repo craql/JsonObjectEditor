@@ -21,8 +21,10 @@ if(location && location.hostname){//fix for devices
 
 		case 'localhost':
 		case 'localhost:81':
-			web_dir ='http://'+location.hostname+':'+location.port+"/"+projectName+'/';
-		break;
+			if(location && location.port < 1000) {
+				web_dir = 'http://' + location.hostname + ':' + location.port + "/" + projectName + '/';
+			}
+			break;
 		case 'coreyh.esri.com':
 			web_dir = 'http://coreyh.esri.com:81/'+projectName+'/';
 		break;
@@ -37,16 +39,15 @@ if (typeof jQuery == 'undefined') {
 	
 }
 
-if (typeof Craydent == 'undefined' || Craydent.version < '1.7.31') {
-   scripts.push("craydent-1.7.31.js");
+if (typeof Craydent == 'undefined' || Craydent.version < '1.7.33') {
+   scripts.push("craydent-1.7.33.js");
 }
 scripts.push(
 	"JsonObjectEditor.jquery.craydent.js",
 	"leaflet.js",
 	"esri-leaflet-geocoder.js",
-	
-	"zebra_datepicker.js"
-	
+	"zebra_datepicker.js",
+	"ace/ace.js"
 	
 );
 

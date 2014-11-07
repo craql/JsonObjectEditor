@@ -66,6 +66,7 @@ function JsonObjectEditor(specs){
 	this.defaultProfile = this.specs.defaultProfile || this.specs.joeprofile;
 	this.current.profile = this.defaultProfile;
 
+	this.ace_editors = {};
 /*-------------------------------------------------------------------->
 	1 | INIT
 <--------------------------------------------------------------------*/
@@ -293,7 +294,10 @@ function JsonObjectEditor(specs){
 			self.specs.joeprofile;	
 			
 		self.current.profile = specs.profile;
-		
+
+
+	//cleanup variables
+		self.cleanUp();
 		var html = 
 			self.renderEditorHeader(specs)+
             self.renderEditorSubmenu(specs)+
@@ -374,8 +378,14 @@ function JsonObjectEditor(specs){
         self.current.list = null;
         self.current.subsets = null;
         self.current.subset = null;
-    };
 
+    };
+	this.cleanUp = function(){
+		for (var p in _joe.ace_editors){
+			_joe.ace_editors[p].destroy();
+		}
+		_joe.ace_editors = {};
+	};
 /*----------------------------->
  B | SubMenu
  <-----------------------------*/
@@ -571,9 +581,9 @@ function JsonObjectEditor(specs){
 
 				//}
 			
-			})//end map
+			}); //end map
 			
-		};;
+		}
 		var html = '<div class="joe-object-content">'+fields+'<div class="clear"></div></div>';
 		return html;
 	};
@@ -640,10 +650,9 @@ function JsonObjectEditor(specs){
 <--------------------------------------------------------------------*/
 	var preProp;
 	this.renderObjectField = function(prop){
-		//requires {name,type}
-		
-	//set default value
-		//prop.value = (prop.value != undefined || prop.default || null;
+		//field requires {name,type}
+
+		//set default value
 		if(prop.value == undefined && prop.default != undefined){
 			prop.value = prop.default;
 		}
@@ -656,6 +665,7 @@ function JsonObjectEditor(specs){
 		
 	//add clear div if the previous fields are floated.
 		if(preProp){
+		//TODO:deal with 50,50,50,50 four way float
 			if(preProp.width && !prop.width){
 				html+='<div class="clear"></div>';
 			}
@@ -677,74 +687,8 @@ function JsonObjectEditor(specs){
 /*        if($.type(prop.value) == "object" && !prop.type){
             prop.type = "rendering";
         }*/
-		switch(prop.type){
-			case 'select':
-				html+= self.renderSelectField(prop);
-			break;
-			case 'multisort':
-			case 'multisorter':
-				html+= self.renderMultisorterField(prop);
-			break;
-			case 'sorter':
-				html+= self.renderSorterField(prop);
-			break;
-/*			case 'multi-select':
-				html+= self.renderMultiSelectField(prop);*/
-			break;
-			case 'guid':
-				html+= self.renderGuidField(prop);
-			break;
-			case 'number':
-				html+= self.renderNumberField(prop);
-			break;
-			case 'int':
-				html+= self.renderIntegerField(prop);
-			break;
+		html += self.selectAndRenderFieldType(prop);
 
-/*            case 'textarea':
-                prop.type = 'rendering';*/
-			case 'rendering':
-					html+= self.renderRenderingField(prop);
-			break;
-			
-			case 'date':
-				html+= self.renderDateField(prop);
-			break;
-			
-			case 'boolean':
-				html+= self.renderBooleanField(prop);
-			break;
-			
-			case 'geo':
-			case 'map':
-				html += self.renderGeoField(prop);
-			break;
-			
-			case 'image':
-			case 'img':
-				html+= self.renderImageField(prop);
-			break;
-			
-			case 'buckets':
-				html+= self.renderBucketsField(prop);
-			break;
-
-            case 'content':
-                html+= self.renderContentField(prop);
-            break;
-
-            case 'url':
-                html+= self.renderURLField(prop);
-                break;
-
-            case 'objectList':
-                html+= self.renderObjectListField(prop);
-            break;
-
-			default:
-				html+= self.renderTextField(prop);
-			break;
-		}
 		html+='</div>';
 		if(prop.width){
 			html+='</div>';
@@ -754,6 +698,83 @@ function JsonObjectEditor(specs){
 		
 		return html;
 	};
+
+	this.selectAndRenderFieldType = function(prop){
+		var html = '';
+		switch(prop.type){
+			case 'select':
+				html+= self.renderSelectField(prop);
+				break;
+			case 'multisort':
+			case 'multisorter':
+				html+= self.renderMultisorterField(prop);
+				break;
+			case 'sorter':
+				html+= self.renderSorterField(prop);
+				break;
+				/*			case 'multi-select':
+				 html+= self.renderMultiSelectField(prop);*/
+				break;
+			case 'guid':
+				html+= self.renderGuidField(prop);
+				break;
+			case 'number':
+				html+= self.renderNumberField(prop);
+				break;
+			case 'int':
+				html+= self.renderIntegerField(prop);
+				break;
+
+			/*            case 'textarea':
+			 prop.type = 'rendering';*/
+			case 'code':
+				html+= self.renderCodeField(prop);
+				break;
+			case 'rendering':
+				html+= self.renderRenderingField(prop);
+				break;
+
+			case 'date':
+				html+= self.renderDateField(prop);
+				break;
+
+			case 'boolean':
+				html+= self.renderBooleanField(prop);
+				break;
+
+			case 'geo':
+			case 'map':
+				html += self.renderGeoField(prop);
+				break;
+
+			case 'image':
+			case 'img':
+				html+= self.renderImageField(prop);
+				break;
+
+			case 'buckets':
+				html+= self.renderBucketsField(prop);
+				break;
+
+			case 'content':
+				html+= self.renderContentField(prop);
+				break;
+
+			case 'url':
+				html+= self.renderURLField(prop);
+				break;
+
+			case 'objectList':
+				html+= self.renderObjectListField(prop);
+				break;
+
+			default:
+				html+= self.renderTextField(prop);
+				break;
+		}
+
+		return html;
+	}
 /*----------------------------->
 	0 | Event Handlers
 <-----------------------------*/
@@ -951,7 +972,7 @@ function JsonObjectEditor(specs){
 		var multiple =(prop.multiple)?' multiple ':'';
 		var selectSize = prop.size || ((valObjs.length*.5) > 10)? 10 : valObjs.length/2;
 		
-		if(!prop.size & !prop.multiple){
+		if(!prop.size && !prop.multiple){
 			selectSize = 1;
 		}
 		var html=/*
@@ -1475,7 +1496,7 @@ this.renderSorterField = function(prop){
         //show all properties
         //TODO:create template in previous function and then use that to show values?
         for(var p = 0,tot = properties.length; p<tot;p++){
-            prop = properties[p]
+            prop = properties[p];
             prop = ($.type(properties[p]) == "string")?{name:properties[p]}:prop;
             property = $.extend({
                 name: prop.name,
@@ -1492,6 +1513,35 @@ this.renderSorterField = function(prop){
 
         return html;
     };
+/*----------------------------->
+ Q | Code Field
+ <-----------------------------*/
+this.renderCodeField = function(prop){
+
+	var profile = self.current.profile;
+	var height = (prop.height)?'style="height:'+prop.height+';"' : '';
+	var code_language = prop.language||'html';
+	var editor_id = cuid();
+	var html=
+		'<div class="joe-ace-holder joe-rendering-field joe-field" '
+		+height+' data-ace_id="'+editor_id+'" data-ftype="ace" name="'+prop.name+'">'+
+		'<textarea class=""  id="'+editor_id+'"  >'
+		+(prop.value || "")
+		+'</textarea>'+
+		'</div>'+
+	'<script>'+
+		'var editor = ace.edit("'+editor_id+'");\
+		editor.setTheme("ace/theme/tomorrow");\
+		editor.getSession().setUseWrapMode(true);\
+		editor.getSession().setMode("ace/mode/'+code_language+'");\
+		editor.setOptions({\
+			enableBasicAutocompletion: true,\
+			enableLiveAutocompletion: false\
+		});\
+		_joe.ace_editors["'+editor_id+'"] = editor;'
+	+' </script>';
+	return html;
+};
 /*----------------------------->
 	R | Rendering Field
 <-----------------------------*/
@@ -2027,6 +2077,7 @@ this.renderSorterField = function(prop){
 				}
 			}
 			switch($(this).attr('type')){
+
 				case 'checkbox':
 					prop = $(this).attr('name');
 					if($(this).is(':checked')){
@@ -2043,6 +2094,14 @@ this.renderSorterField = function(prop){
 					prop = $(this).attr('name');
 					
 					switch($(this).data('ftype')){
+					//ace editor
+						case 'ace':
+							var editor = _joe.ace_editors[$(this).data('ace_id')];
+							//$(this).find('.ace_editor');
+							object[prop] = editor.getValue();
+							break;
+
+
 						case 'multisorter':
 							var vals = [];
 							$(this).find('.selections-bin').find('li').each(function(){
@@ -2057,7 +2116,8 @@ this.renderSorterField = function(prop){
 								$(this).find('li').each(function(){
 									vals[vals.length-1].push($(this).data('id'));
 								});
-							})/*
+							});
+							/*
 							$(this).find('.selections-bin').find('li').each(function(){
 								vals.push($(this).data('id'));
 							});*/
@@ -2066,7 +2126,7 @@ this.renderSorterField = function(prop){
 						default:
 						object[prop] = $(this).val();
 						break;
-					};
+					}
 				break;
 			}
 		});
