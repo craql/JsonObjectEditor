@@ -302,7 +302,8 @@ function JsonObjectEditor(specs){
 			self.renderEditorHeader(specs)+
             self.renderEditorSubmenu(specs)+
             self.renderEditorContent(specs)+
-			self.renderEditorFooter(specs);
+			self.renderEditorFooter(specs)+
+			self.renderMessageContainer();
 		self.overlay.find('.joe-overlay-panel').html(html);
 		//$('.joe-overlay-panel').html(html);
 	
@@ -1984,6 +1985,40 @@ this.renderCodeField = function(prop){
 
         })
     };
+/*-------------------------------------------------------------------->
+ J | MESSAGING
+ <--------------------------------------------------------------------*/
+	this.renderMessageContainer = function(){
+		var mhtml = '<div class="joe-message-container left"></div>';
+		return mhtml;
+	};
+	this.showMessage = function(message,specs){
+		var mspecs = $.extend({
+			timeout:5,
+			message_class:''
+		},(specs||{}));
+		var message = message || 'JOE Message';
+		var attr = 'class';
+		var transition_time = 500;
+		self.overlay.find('.joe-message-container').html('<div class="joe-message-content">'+message+'</div>').attr('class','joe-message-container active left');
+
+		var target = "getJoe("+self.joe_index+").overlay.find('.joe-message-container')";
+
+		setTimeout(target+".attr('class','joe-message-container active')",50);
+		if(mspecs.timeout){//only hide if timer is running.
+			setTimeout(target+".attr('class','joe-message-container active right')",(mspecs.timeout*1000)+transition_time);
+			setTimeout(target+".attr('class','joe-message-container')",(mspecs.timeout*1000)+(2*transition_time)+50);
+
+		}
+
+/*
+		.delay(50)
+			.attr(attr,'joe-message-container active')
+			.delay(mspecs.timeout*1000)
+			.attr(attr,'joe-message-container right')
+			.delay(50)
+			.attr(attr,'joe-message-container');*/
+	};
 
 /*-------------------------------------------------------------------->
 	D | DATA

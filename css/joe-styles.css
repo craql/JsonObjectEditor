@@ -772,6 +772,39 @@ table.joe-objectlist-table {
 }
 
 /*-------------------------------------------------------------------->
+	5 | Message
+<--------------------------------------------------------------------*/
+.joe-message-container {
+    position: absolute;
+    background: rgba(0,25,50,.7);
+    min-height: 50px;
+    left: 0;
+    bottom: 0;
+    width:100%;
+    border-top: 5px solid #f88004;
+    transition: width .5s;
+    display:none;
+   /* -webkit-transition: width 1s;*/
+}
+.joe-message-container.active{
+    display:block;
+}
+.joe-message-container.left {
+    width: 0;
+}
+
+.joe-message-container.right {
+    width: 0;
+    left:auto;
+    right:0;
+}
+
+.joe-message-content {
+    color: #fff;
+    padding: 10px;
+    font-size: 16px;
+}
+/*-------------------------------------------------------------------->
 	ACE EDITOR
 <--------------------------------------------------------------------*/
 .joe-ace-holder{
