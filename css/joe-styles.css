@@ -777,32 +777,41 @@ table.joe-objectlist-table {
 .joe-message-container {
     position: absolute;
     background: rgba(0,25,50,.7);
-    min-height: 50px;
+    height: 50px;
     left: 0;
     bottom: 0;
     width:100%;
     border-top: 5px solid #f88004;
-    transition: width .5s;
+    transition: width .4s;
     display:none;
    /* -webkit-transition: width 1s;*/
 }
 .joe-message-container.active{
     display:block;
+    min-height:50px;
+    height:auto;
 }
 .joe-message-container.left {
     width: 0;
+    height:50px;
 }
 
 .joe-message-container.right {
     width: 0;
     left:auto;
     right:0;
+    height:50px;
 }
 
 .joe-message-content {
     color: #fff;
     padding: 10px;
     font-size: 16px;
+    opacity:0;
+    transition: opacity .25s;
+}
+.show-message .joe-message-content{
+    opacity:1;
 }
 /*-------------------------------------------------------------------->
 	ACE EDITOR

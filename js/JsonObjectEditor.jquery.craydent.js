@@ -1994,17 +1994,18 @@ this.renderCodeField = function(prop){
 	};
 	this.showMessage = function(message,specs){
 		var mspecs = $.extend({
-			timeout:5,
+			timeout:3,
 			message_class:''
 		},(specs||{}));
 		var message = message || 'JOE Message';
 		var attr = 'class';
-		var transition_time = 500;
+		var transition_time = 400;
 		self.overlay.find('.joe-message-container').html('<div class="joe-message-content">'+message+'</div>').attr('class','joe-message-container active left');
 
 		var target = "getJoe("+self.joe_index+").overlay.find('.joe-message-container')";
 
 		setTimeout(target+".attr('class','joe-message-container active')",50);
+		setTimeout(target+".attr('class','joe-message-container active show-message')",transition_time);
 		if(mspecs.timeout){//only hide if timer is running.
 			setTimeout(target+".attr('class','joe-message-container active right')",(mspecs.timeout*1000)+transition_time);
 			setTimeout(target+".attr('class','joe-message-container')",(mspecs.timeout*1000)+(2*transition_time)+50);
