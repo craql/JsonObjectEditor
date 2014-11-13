@@ -1226,7 +1226,7 @@ this.renderSorterField = function(prop){
 		
 		
 		function renderMultisorterOption(v){
-			var html = '<li data-id="'+v[idprop]+'" onclick="_joe.toggleMultisorterBin(this);">'+fillTemplate(template,v)+'</li>';
+			var html = '<li data-id="'+v[idprop]+'" ondblclick="_joe.toggleMultisorterBin(this);">'+fillTemplate(template,v)+'</li>';
 			return html;
 		}
 		
