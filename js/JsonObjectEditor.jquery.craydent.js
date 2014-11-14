@@ -1612,6 +1612,9 @@ this.renderCodeField = function(prop){
 	
 	this.listItemClickHandler=function(specs){
 		self.current.selectedListItems = [];
+		if(!window.event){//firefox fix
+			self.editObjectFromList(specs);
+		}
 		if(!window.event.shiftKey && !window.event.ctrlKey){
 			self.editObjectFromList(specs);
 		}else if(window.event.ctrlKey){
