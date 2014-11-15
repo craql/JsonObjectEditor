@@ -109,7 +109,7 @@ function JsonObjectEditor(specs){
 
 
 /*-------------------------------------------------------------------->
-	2 | FRAMEWORK
+	2 | FRAMEWORK START
 <--------------------------------------------------------------------*/
 	this.renderFramework = function(content){
 		var html = 
@@ -126,7 +126,8 @@ function JsonObjectEditor(specs){
 	
 	
 	this.populateFramework = function(data,setts){
-
+		var joePopulateBenchmarker = new Benchmarker();
+		joePopulateBenchmarker.start;
 		var specs = setts || {};
 		self.current.specs = setts; 
 		self.current.data = data;
@@ -316,9 +317,14 @@ function JsonObjectEditor(specs){
 
     //update hashlink
         self.updateHashLink();
-
+		logit('Joe Populated in '+joePopulateBenchmarker.stop()+' seconds');
 		return html;
 	};
+/*-------------------------------------------------------------------->
+ 2e | FRAMEWORK END
+ <--------------------------------------------------------------------*/
+
+
 /*----------------------------->
 	A | Header
 <-----------------------------*/	
