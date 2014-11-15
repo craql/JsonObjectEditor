@@ -1232,7 +1232,7 @@ this.renderSorterField = function(prop){
 		
 		
 		function renderMultisorterOption(v){
-			var html = '<li data-id="'+v[idprop]+'" onclick="_joe.toggleMultisorterBin(this);">'+fillTemplate(template,v)+'</li>';
+			var html = '<li data-id="'+v[idprop]+'" ondblclick="_joe.toggleMultisorterBin(this);">'+fillTemplate(template,v)+'</li>';
 			return html;
 		}
 		
@@ -1618,6 +1618,9 @@ this.renderCodeField = function(prop){
 	
 	this.listItemClickHandler=function(specs){
 		self.current.selectedListItems = [];
+		if(!window.event){//firefox fix
+			self.editObjectFromList(specs);
+		}
 		if(!window.event.shiftKey && !window.event.ctrlKey){
 			self.editObjectFromList(specs);
 		}else if(window.event.ctrlKey){
