@@ -348,13 +348,13 @@ function JsonObjectEditor(specs){
 			}
 			return html;
 		}
-		
+		//.replace(/(<([^>]+)>)/ig,"");
 		var html = 
 		'<div class="joe-panel-header">'+
 			((specs.schema && specs.schema.subsets && self.renderSubsetselector(specs.schema)) || (specs.subsets && self.renderSubsetselector(specs)) || '')+
 			renderHeaderBackButton()+
 			'<div class="joe-panel-title">'+
-				(title || 'Json Object Editor')+
+				(('<div>'+title+'</div>').toDomElement().innerText || title || 'Json Object Editor')+
 			'</div>'+
 			'<div class="joe-panel-close" '+action+'></div>'+	
 			'<div class="clear"></div>'+
@@ -664,8 +664,13 @@ function JsonObjectEditor(specs){
 			prop.value = prop.default;
 		}
         if($.type(prop.value) == "function"){
-            prop.value = prop.value(self.current.object);
-        }
+			try {
+				prop.value = prop.value(self.current.object);
+			}catch(e){
+				logit('error with propoerty "'+(prop.name||'')+'": '+e);
+				prop.value= prop.value;
+			}
+		}
 		var hidden = (prop.hidden)?'hidden':'';
 		
 		var html ='';
@@ -1260,8 +1265,9 @@ this.renderSorterField = function(prop){
 		
 		var html=
 		'<div class="joe-multisorter-field joe-field" name="'+prop.name+'" data-ftype="multisorter" data-multiple="'+(prop.allowMultiple||'false')+'">'+
-			'<p style="text-align:center;"> click or drag item to switch columns.</p>'+
+
 			'<div class="joe-filter-field-holder"><input type="text"class="" onkeyup="_joe.filterSorterOptions(this);"/></div>'+
+			'<p class="joe-tooltip"> double click or drag item to switch columns.</p>'+
 			'<ul class="joe-multisorter-bin options-bin">'+optionsHtml+'</ul>'+
 			'<ul class="joe-multisorter-bin selections-bin">'+selectionsHtml+'</ul>'+
 			__clearDiv__
