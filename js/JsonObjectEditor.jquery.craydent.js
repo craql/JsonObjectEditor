@@ -1965,22 +1965,26 @@ this.renderCodeField = function(prop){
 	this.onPanelShow = function(){
 		//init datepicker
 		self.overlay.find('.joe-date-field').Zebra_DatePicker({offset:[5,20],format:'m/d/Y'});
-		self.overlay.find('.joe-multisorter-bin').sortable({connectWith:'.joe-multisorter-bin'});
-		self.overlay.find('.joe-buckets-bin').sortable({
-			connectWith:'.joe-buckets-bin',
-			start:function(event, ui){
-				sortable_index = ui.item.index();
-				ui.item.parents();
-			},
-			update:function(event, ui){
-				if(ui.sender && ui.sender.hasClass('options-bin') && ui.sender.hasClass('allow-multiple')){
-					//add the element back into the list.
-					ui.sender.find('li').eq(sortable_index).before(ui.item.clone());
-					//ui.item.parents('.joe-buckets-bin');
-				}
-				
-			}
-		});
+        try {
+            self.overlay.find('.joe-multisorter-bin').sortable({connectWith: '.joe-multisorter-bin'});
+            self.overlay.find('.joe-buckets-bin').sortable({
+                connectWith: '.joe-buckets-bin',
+                start: function (event, ui) {
+                    sortable_index = ui.item.index();
+                    ui.item.parents();
+                },
+                update: function (event, ui) {
+                    if (ui.sender && ui.sender.hasClass('options-bin') && ui.sender.hasClass('allow-multiple')) {
+                        //add the element back into the list.
+                        ui.sender.find('li').eq(sortable_index).before(ui.item.clone());
+                        //ui.item.parents('.joe-buckets-bin');
+                    }
+
+                }
+            });
+        }catch(e){
+            logit('Error creating sortables:\n'+e);
+        }
 		self.overlay.find('input.joe-image-field').each(function(){_joe.updateImageFieldImage(this);});
 	    self.overlay.find('.joe-objectlist-table').each(function(){
             $(this).find('tbody').sortable(
