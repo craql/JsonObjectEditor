@@ -656,6 +656,7 @@ function JsonObjectEditor(specs){
 	3 | OBJECT FORM
 <--------------------------------------------------------------------*/
 	var preProp;
+	var prePropWidths = 0;
 	this.renderObjectField = function(prop){
 		//field requires {name,type}
 
@@ -678,7 +679,9 @@ function JsonObjectEditor(specs){
 	//add clear div if the previous fields are floated.
 		if(preProp){
 		//TODO:deal with 50,50,50,50 four way float
+			//prePropWidths
 			if(preProp.width && !prop.width){
+			//if((preProp.width && !prop.width)||){
 				html+='<div class="clear"></div>';
 			}
 		}
