@@ -7,6 +7,12 @@ todo:
 	-conditional fields
 
 ##What's new
+12/3/14 - +Added dynamicDisplay specs. (default:30)
+this allows for infinite scroll of big lists. Set how many items to load on initial draw.
+Changed search in accordance to use list not dom elements. Not updates _listCount property in title after searching.
+onUpdate and onMultipleUpdate added to schema for callbacks to these functions/buttons
+
+
 *v1.5*
 + use back button
 +url field
@@ -133,8 +139,10 @@ a list of schema objects that can configure the editor fields, these can be give
 		/*callback:function(obj){
 			alert(obj.name);
 		},*/
-		onblur:logit
-		
+		onblur:logit,
+		multipleCallback:function to be called after a multi-edit. passed list of edited items.
+		onUpdate: callback for after update. passed single edited items.
+		onMultipleUpdate:callback for after multi update.passed list of edited items.
 	}
 ###Pre-formating
 you can preformat at the joe call or schema level. The data item will be affected by the passed function (which should return the preformated item). 

@@ -40,6 +40,8 @@ height: 300px;
 
 <a href="javascript:_joe.show(dog,{schema:'thing', title:'Thing with Rendering'});">edit Dog(thing)</a><br/>
 
+    <a href="javascript:goJoe(things,{schema:'thing', title:'List of Things | ${_listCount}'});">view Things</a><br/>
+
 <a href="javascript:_joe.show(animals,{schema:'animal',subsets:[{name:'Two-Legged',filter:{legs:2}}]});">edit Animals</a><br/>
 
 <a href="javascript:_joe.show({},{schema:'animal',callback:addAnimal});">Add Animal</a><br/>
@@ -110,7 +112,7 @@ var defaultObjectList = {
         {id:"9de0d472-f8bc-4da1-84e6-36caa326c62e",name:'corey',city:'orlando'},
         {id:"b673426f-cefc-45ec-b72d-7d772c62bfee",name:'max',city:'tahoma'}
     ]
-}
+};
 var objectListItems = [defaultObjectList];
 var cities =[];
 function addAnimal(obj){
@@ -149,18 +151,25 @@ var animalschema =
 		},*/
 		onblur:logit
 		
-	}
+	};
 
 var thingschema = 
 	{
 		_title:'Thing',
 		fields:['id','name','thingType','legs','species','weight','color','gender','html','friends'],
 		_listID:'id',
-		_listTitle:'${name} ${species}'
+		_listTitle:'${name} ${species}',
+        subsets:[
+            {name:'Has 2',filter:{name:/2/}},
+            {name:'99ers',filter:{name:/99/}}
+        ]
 		
-	}
+	};
 
-
+var things = [];
+for (var p = 1; p<= 3000; p++){
+    things.push({id:cuid(),name:'thing-'+(p/1000)});
+}
 
 var citySchema = 
 	{
@@ -169,7 +178,7 @@ var citySchema =
 		_listID:'id',
 		_listTitle:'${name} <br/>${geo}'
 		
-	}
+	};
 
 var objectListSchema =
 {
@@ -222,7 +231,7 @@ var objectListSchema =
             objectList:objectListSchema
 		},
 		compact:false
-	}
+	};
 
     var bucketItems = [];
     for(var i = 0; i<1000;i++) {

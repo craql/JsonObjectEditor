@@ -47,7 +47,10 @@ function JsonObjectEditor(specs){
 		}},
 		compact:false,
 		useControlEnter:true,
-		autoInit:false
+		autoInit:false,
+        dynamicDisplay:30,
+
+        listSubMenu:true
 	};
 	
 	this.specs = $.extend({},defaults,specs||{});
@@ -336,9 +339,11 @@ function JsonObjectEditor(specs){
             if(self.current.subset){
              lcount = specs.list.where(self.current.subset.filter).length;
             }
-			titleObj = $.extend({},self.current.object,{_listCount:lcount});
+			titleObj = $.extend({},self.current.object,{_listCount:lcount||'0'});
 		}
-		var title = fillTemplate(specs.title || 'Json Object Editor',titleObj);
+        self.current.title = specs.title || 'Json Object Editor';
+		var title = fillTemplate(self.current.title,titleObj);
+
 		action = specs.action||'onclick="getJoe('+self.joe_index+').closeButtonAction()"';
 		
 		function renderHeaderBackButton(){
@@ -427,11 +432,11 @@ function JsonObjectEditor(specs){
         self.searchTimeout = setTimeout(function(){searchFilter(dom);},400);
         function searchFilter(dom){
             var value=dom.value.toLowerCase();
-            if(dom.value.length){
+            /*if(dom.value.length){
                 $('.joe-button[data-btnid=select_all]').hide();
             }else{
                 $('.joe-button[data-btnid=select_all]').show();
-            }
+            }*/
             var haystack;
             var items = $(dom).parents('.joe-panel-submenu')
                 .siblings('.joe-panel-content')
@@ -442,7 +447,18 @@ function JsonObjectEditor(specs){
                     }else{
                         this.show();
                     }
-                })
+                });
+            var testable;
+            var listables = (self.current.subset)?self.current.list.where(self.current.subset.filter):self.current.list;
+            currentListItems = listables.filter(function(i){
+                testable = self.renderListItem(i);
+                return (__removeTags(testable).toLowerCase().indexOf(value) != -1);
+            });
+
+            self.panel.find('.joe-panel-content').html(self.renderListItems(currentListItems,0,self.specs.dynamicDisplay));
+            var titleObj = $.extend({},self.current.object,{_listCount:currentListItems.length||'0'});
+            self.panel.find('.joe-panel-title').html(fillTemplate(self.current.title,titleObj));
+
         }
 
     };
@@ -478,8 +494,9 @@ function JsonObjectEditor(specs){
 			
 		}
         var submenu = (self.current.submenu)?' with-submenu ':'';
+        var scroll = 'onscroll="getJoe('+self.joe_index+').onListContentScroll(this);"'
 		var html = 
-		'<div class="joe-panel-content joe-inset '+submenu+'">'+
+		'<div class="joe-panel-content joe-inset '+submenu+'" '+((listMode && scroll)||'')+'>'+
 			content+
 		'</div>';
 		return html;
@@ -499,8 +516,14 @@ function JsonObjectEditor(specs){
 		return html;
 		
 	};
+
+/*--
 //LIST
+--*/
+
+    var currentListItems;
 	this.renderListContent = function(specs){
+        currentListItems = [];
 		self.current.selectedListItems=[];
 		self.current.anchorListItem=null;
 		
@@ -510,24 +533,65 @@ function JsonObjectEditor(specs){
 		var html = '';
         var filteredList;
         list = list.sortBy(self.current.sorter);
-//		if(!self.current.userSpecs.subset || !self.current.subset || !self.current.subsets || (self.current.subsets && self.current.subsets.indexOf(self.current.subset) == -1 )){
-		if(!self.current.subset){
-				list.map(function(li){
-				html += self.renderListItem(li);
-			})
+		var numItemsToRender;
+        if(!self.current.subset){
+            currentListItems = list;
 		}
 		else{
             filteredList = list.where(self.current.subset.filter);
-                //(self.filterList(list,self.current.subset.filter)||[])
-            filteredList.map(function(li){
-				html += self.renderListItem(li);
-			});
+            currentListItems = filteredList;
 		}
+
+        numItemsToRender = self.specs.dynamicDisplay || currentListItems.length;
+        html+= self.renderListItems(currentListItems,0,numItemsToRender);
+
 		return html;
 		
 	};
-	
-//OBJECT
+
+    this.renderListItems = function(items,start,stop){
+        var html = '';
+        var listItem;
+        var items = items || currentListItems;
+        var start = start || 0;
+        var stop = stop || currentListItems.length -1;
+
+        for(var i=start;i <stop;i++){
+            listItem = items[i];
+            if(listItem) {
+                html += self.renderListItem(listItem);
+            }
+        }
+
+        return html;
+    };
+
+    this.onListContentScroll = function(domObj){
+     // logit(domObj);
+        var listItem = self.panel.find('.joe-panel-content-option').last()[0];
+        var currentItemCount = self.panel.find('.joe-panel-content-option').length;
+        if( currentItemCount== currentListItems.length){
+           // logit('all items showing');
+            return;
+        }
+            //$('.app-list-group-content').not('.events-group').not('.collapsed').find('.app-list-divider-count').prev('.app-list-item');
+        //var listItem;
+        var viewPortHeight = self.panel.find('.joe-panel-content').height();
+        var html = '';
+        try {
+                if (listItem.getBoundingClientRect().bottom - 500 < viewPortHeight) {
+                    //self.generateGroupContent(groupIndex);
+                   // logit('more content coming');
+                    html +=self.renderListItems(null,currentItemCount,currentItemCount+self.specs.dynamicDisplay);
+                    self.panel.find('.joe-panel-content').append(html);
+                }
+        }catch(e){
+            alert('error scrolling for more content: \n'+e);
+        }
+    };
+/*--
+     //OBJECT
+ --*/
 	this.renderObjectContent = function(specs){
 		specs = specs || {};
 		var object = specs.object;
@@ -2232,13 +2296,19 @@ this.renderCodeField = function(prop){
 	
 /*-------------------------
 	Multi Functions
--------------------------*/		
-	this.updateMultipleObjects = function(dom,callback){
-		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || logit;
-		
+-------------------------*/
+
+	this.updateMultipleObjects = function(dom,multipleCallback, callback){
+		var callback = callback || self.current.onUpdate || self.current.callback || (self.current.schema && (self.current.schema.onUpdate || self.current.schema.callback)) || logit;
+		var multipleCallback = multipleCallback || self.current.onMultipleUpdate || self.current.multipleCallback
+            || (self.current.schema && (self.current.schema.onMultipleUpdate || self.current.schema.multipleCallback)) || logit;
 		var idprop = self.getIDProp();
 		var newObj = self.constructObjectFromFields(self.joe_index);
-		newObj.joeUpdated = new Date();
+        if(Object && Object.keys && Object.keys(newObj).length == 1 && Object.keys(newObj)[0] == "joeUpdated"){
+            self.showMessage('please select at least one property to update.');
+            return;
+        }
+		//newObj.joeUpdated = new Date();
 	
 	//clear id from merged object	
 		delete newObj[idprop];
@@ -2249,6 +2319,7 @@ this.renderCodeField = function(prop){
 
 		var needles = self.current.selectedListItems;
 		//var items = [];
+        var updatedItems = [];
 		haystack.map(function(i){
 			
 			if(needles.indexOf(i[idprop]) == -1){//not selected
@@ -2256,15 +2327,19 @@ this.renderCodeField = function(prop){
 			}else{//make updates to items
 				//protoItem = merge(protoItem,i);
 				$.extend(i,newObj);
-				logit('object updated');
+				//logit('object updated');
+                //itemsUpdated++;
 				callback(i);
-				//items.push(i);
+                updatedItems.push(i);
+                //self.showMessage(updatedItems.length +' item(s) updated');
 			}
 		});
-		
-			
-		
-		self.hide();
+
+		logit(updatedItems.length +' item(s) updated');
+        multipleCallback(updatedItems);
+
+		self.goBack();
+        self.showMessage(updatedItems.length +' item(s) updated');
 	};
 	
 	this.deleteMultipleObjects = function(callback){
@@ -2286,6 +2361,9 @@ this.renderCodeField = function(prop){
 	};
 	
 	this.selectAllItems = function(){
+        var itemsRendered = self.panel.find('.joe-panel-content-option').length;
+        self.panel.find('.joe-panel-content').append(self.renderListItems(currentListItems,itemsRendered,currentListItems.length));
+        self.renderListItems(currentListItems.length-1);
 		self.overlay.find('.joe-panel-content-option').filter(':visible').addClass('selected');
 		self.overlay.addClass('multi-edit');
 		self.overlay.find('.joe-panel-content-option.selected')
@@ -2395,3 +2473,6 @@ var __defaultButtons = [];
 var __defaultObjectButtons = [__deleteBtn__,__saveBtn__];
 var __defaultMultiButtons = [__multisaveBtn__,__multideleteBtn__];
 
+function __removeTags(str){
+    return str.replace(/<(?:.|\n)*?>/gm, '');
+}
