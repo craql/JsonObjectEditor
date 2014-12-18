@@ -9,15 +9,14 @@
 
 	-merge specs (profile,schema,object,call?)
 	-required fields
-	
-	!make rendering a field type as well as a datatype
+
 	
 */
 
 function JsonObjectEditor(specs){
 	var self = this;
 	var listMode = false;
-	this.VERSION = '1.0.0';
+	this.VERSION = '1.0.1';
 	window._joes = window._joes || [];
 	this.joe_index = window._joes.length;
 	if(!window._joes.length){window._joe = this;} 
@@ -758,8 +757,10 @@ function JsonObjectEditor(specs){
 			'<div class="joe-object-field '+hidden+' '+prop.type+'-field " data-type="'+prop.type+'" data-name="'+prop.name+'">'+
 			'<label class="joe-field-label">'
                 +fillTemplate((prop.display||prop.label||prop.name),self.current.object)
+				+self.renderFieldTooltip(prop)
             +'</label>';
-	
+
+		//html+= self.renderFieldTooltip(prop);
 	//add multi-edit checkbox	
 		if(self.current.userSpecs.multiedit){
 			html+='<div class="joe-field-multiedit-toggle" onclick="$(this).parent().toggleClass(\'multi-selected\')"></div>';	
@@ -777,6 +778,16 @@ function JsonObjectEditor(specs){
 		preProp = prop;
 		
 		return html;
+	};
+
+	this.renderFieldTooltip = function(prop){
+		if(!prop.tooltip){
+			return '';
+		}
+		//var tooltip_html = '<p class="joe-tooltip">'+prop.tooltip+'</p>';
+		var tooltip_html = '<span class="joe-field-tooltip" title="'+prop.tooltip+'">i</span>';
+
+		return tooltip_html;
 	};
 
 	this.selectAndRenderFieldType = function(prop){
@@ -848,6 +859,10 @@ function JsonObjectEditor(specs){
 				html+= self.renderObjectListField(prop);
 				break;
 
+			case 'tags':
+				html+= self.renderTagsField(prop);
+				break;
+
 			default:
 				html+= self.renderTextField(prop);
 				break;
@@ -914,12 +929,7 @@ function JsonObjectEditor(specs){
             }
             autocomplete =true;
 		}
-	/*	var disabled = (profile.lockedFields.indexOf(prop.name) == -1)?
-			'':'disabled';
-		
-	*/	
-		//var bluraction = 'onblur="'+self.getActionString('onblur',prop)+'"';
-			//show autocomplete
+
 		
 		var html=
 		'<input class="joe-text-field joe-field" type="text"  name="'+prop.name+'" value="'+(prop.value || '')+'" '
@@ -1317,6 +1327,10 @@ this.renderSorterField = function(prop){
 		
 		var val_index;
 	//render options list
+		if(!values){
+			values = [];
+			//todo: do some error reporting here.
+		}
 		values.map(function(v){
 			li = renderMultisorterOption(v);//'<li data-id="'+v[idprop]+'" onclick="_joe.toggleMultisorterBin(this);">'+fillTemplate(template,v)+'</li>';
 			val_index = value.indexOf(v[idprop]);
@@ -1597,32 +1611,32 @@ this.renderSorterField = function(prop){
 /*----------------------------->
  Q | Code Field
  <-----------------------------*/
-this.renderCodeField = function(prop){
+	this.renderCodeField = function(prop){
 
-	var profile = self.current.profile;
-	var height = (prop.height)?'style="height:'+prop.height+';"' : '';
-	var code_language = prop.language||'html';
-	var editor_id = cuid();
-	var html=
-		'<div class="joe-ace-holder joe-rendering-field joe-field" '
-		+height+' data-ace_id="'+editor_id+'" data-ftype="ace" name="'+prop.name+'">'+
-		'<textarea class=""  id="'+editor_id+'"  >'
-		+(prop.value || "")
-		+'</textarea>'+
-		'</div>'+
-	'<script>'+
-		'var editor = ace.edit("'+editor_id+'");\
-		editor.setTheme("ace/theme/tomorrow");\
-		editor.getSession().setUseWrapMode(true);\
-		editor.getSession().setMode("ace/mode/'+code_language+'");\
-		editor.setOptions({\
-			enableBasicAutocompletion: true,\
-			enableLiveAutocompletion: false\
-		});\
-		_joe.ace_editors["'+editor_id+'"] = editor;'
-	+' </script>';
-	return html;
-};
+		var profile = self.current.profile;
+		var height = (prop.height)?'style="height:'+prop.height+';"' : '';
+		var code_language = prop.language||'html';
+		var editor_id = cuid();
+		var html=
+			'<div class="joe-ace-holder joe-rendering-field joe-field" '
+			+height+' data-ace_id="'+editor_id+'" data-ftype="ace" name="'+prop.name+'">'+
+			'<textarea class=""  id="'+editor_id+'"  >'
+			+(prop.value || "")
+			+'</textarea>'+
+			'</div>'+
+		'<script>'+
+			'var editor = ace.edit("'+editor_id+'");\
+			editor.setTheme("ace/theme/tomorrow");\
+			editor.getSession().setUseWrapMode(true);\
+			editor.getSession().setMode("ace/mode/'+code_language+'");\
+			editor.setOptions({\
+				enableBasicAutocompletion: true,\
+				enableLiveAutocompletion: false\
+			});\
+			_joe.ace_editors["'+editor_id+'"] = editor;'
+		+' </script>';
+		return html;
+	};
 /*----------------------------->
 	R | Rendering Field
 <-----------------------------*/
@@ -1631,6 +1645,20 @@ this.renderCodeField = function(prop){
         var height = (prop.height)?'style="height:'+prop.height+';"' : '';
 		var html=
 			'<textarea class="joe-rendering-field joe-field" '+height+' name="'+prop.name+'" >'+(prop.value || "")+'</textarea>';
+		return html;
+	};
+/*----------------------------->
+ T | Tags Field
+ <-----------------------------*/
+	this.renderTagsField = function(prop){
+		var profile = self.current.profile;
+		var height = (prop.height)?'style="height:'+prop.height+';"' : '';
+		var specs = $.extend({},prop,{onblur:'_joe.showMessage($(this).val());'})
+		var html= '<div class="joe-tags-container">'
+			+self.renderTextField(specs)
+			+'<div class="joe-text-input-button">add</div>'
+		+'</div>'
+
 		return html;
 	};
 
@@ -2094,6 +2122,7 @@ this.renderCodeField = function(prop){
 		setTimeout(target+".attr('class','joe-message-container active')",50);
 		setTimeout(target+".attr('class','joe-message-container active show-message')",transition_time);
 		if(mspecs.timeout){//only hide if timer is running.
+			setTimeout(target+".attr('class','joe-message-container active ')",(mspecs.timeout*1000)+transition_time-250);
 			setTimeout(target+".attr('class','joe-message-container active right')",(mspecs.timeout*1000)+transition_time);
 			setTimeout(target+".attr('class','joe-message-container')",(mspecs.timeout*1000)+(2*transition_time)+50);
 
@@ -2476,4 +2505,11 @@ var __defaultMultiButtons = [__multisaveBtn__,__multideleteBtn__];
 
 function __removeTags(str){
     return str.replace(/<(?:.|\n)*?>/gm, '');
+}
+
+function _COUNT(array){
+	if(typeof array == 'array') {
+		return array.length;
+	}
+	return 0;
 }

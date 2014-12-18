@@ -465,6 +465,7 @@ input.joe-boolean-field {
     border: 1px solid #f2f2f2;
     padding: 8px 6px;
     position: relative;
+    padding-top: 15px;
 }
 /*-------------------------
 	Label
@@ -478,7 +479,23 @@ input.joe-boolean-field {
     /*font-size: 1.1em;*/
     /* padding: 0 10px; */
 }
+/*-------------------------
+	Field Tooltip
+-------------------------*/
+.joe-field-tooltip {
+    border: 1px solid #007ac2;
+    border-radius: 50%;
 
+    display: inline-block;
+
+    text-align: center;
+    margin: 0 10px;
+    font-size: 10px;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    /* cursor: pointer; */
+}
 /*-------------------------
 	Multiedit
 -------------------------*/
@@ -618,7 +635,7 @@ textarea.joe-rendering-field{
     /*line-height: 30px;*/
     min-height: 30px;
     padding: 5px;
-    cursor: move;
+    cursor: ew-resize;
     position:relative;
 }
 .joe-multisorter-bin li:hover,
@@ -725,6 +742,26 @@ table.joe-objectlist-table {
     padding: 4px;
     width: 98%;
     box-sizing: border-box;
+}
+
+/*-------------------------
+    T: Tags
+-------------------------*/
+    .joe-tags-container{
+        display: inline-block;
+        position: relative;
+    }
+
+/*----------------------------->
+	Text Input Button
+<-----------------------------*/
+.joe-text-input-button {
+    position: absolute;
+    right: 0;
+    background: #ccc;
+    top: 0;
+    padding: 4px 5px;
+    cursor: pointer;
 }
 
 /*----------------------------->
