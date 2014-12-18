@@ -131,6 +131,7 @@ function JsonObjectEditor(specs){
 	this.populateFramework = function(data,setts){
 		var joePopulateBenchmarker = new Benchmarker();
 		joePopulateBenchmarker.start;
+		logit('------Beginning joe population');
 		var specs = setts || {};
 		self.current.specs = setts; 
 		self.current.data = data;
@@ -791,6 +792,8 @@ function JsonObjectEditor(specs){
 	};
 
 	this.selectAndRenderFieldType = function(prop){
+		var joeFieldBenchmarker = new Benchmarker();
+		joeFieldBenchmarker.start;
 		var html = '';
 		switch(prop.type){
 			case 'select':
@@ -868,8 +871,10 @@ function JsonObjectEditor(specs){
 				break;
 		}
 
+		logit('Joe rendered '+(prop.name||"a field")+' in '+joeFieldBenchmarker.stop()+' seconds');
 		return html;
-	}
+
+	};
 /*----------------------------->
 	0 | Event Handlers
 <-----------------------------*/
@@ -1388,8 +1393,9 @@ this.renderSorterField = function(prop){
 /*----------------------------->
 	K | Buckets
 <-----------------------------*/
+	//TODO: progressively render bucket options.
 	this.renderBucketsField = function(prop){
-		
+
 		var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];
 		var valObjs = [];
 		
