@@ -786,7 +786,7 @@ function JsonObjectEditor(specs){
 			return '';
 		}
 		//var tooltip_html = '<p class="joe-tooltip">'+prop.tooltip+'</p>';
-		var tooltip_html = '<span class="joe-field-tooltip" title="'+prop.tooltip+'">i</span>';
+		var tooltip_html = '<span class="joe-field-tooltip" title="'+__removeTags(prop.tooltip)+'">i</span>';
 
 		return tooltip_html;
 	};
