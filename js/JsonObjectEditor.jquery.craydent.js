@@ -1540,7 +1540,7 @@ this.renderSorterField = function(prop){
 		var itemObj = self.current.object;
 		var idProp = self.getIDProp();
 		var constructedItem = self.constructObjectFromFields();
-		if(constructedItem[idProp] && constructedItem[idProp] == self.current.object[idProp]){
+		if(!self.current.object[idProp] ||(constructedItem[idProp] && constructedItem[idProp] == self.current.object[idProp])){
 			itemObj = constructedItem;
 		}
         if(prop.run){
@@ -1752,7 +1752,7 @@ this.renderSorterField = function(prop){
 			var title = listSchema._listTitle || listItem.name || id || 'untitled';
             var listItemButtons = '';//<div class="joe-panel-content-option-button fleft">#</div><div class="joe-panel-content-option-button fright">#</div>';
             //list item content
-            title="<div class='joe-panel-content-option-content' "+action+">"+title+"</div>";
+            title="<div class='joe-panel-content-option-content' "+action+">"+title+"<div class='clear'></div></div>";
 			var html = '<div class="joe-panel-content-option joe-no-select '+((stripeColor && 'striped')||'')+'"  data-id="'+id+'" >'
 
                 +'<div class="joe-panel-content-option-bg" '+bgHTML+'></div>'

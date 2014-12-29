@@ -15,6 +15,7 @@
 }
 .joe-overlay{
     font-family:Cambria, "Hoefler Text", "Liberation Serif", Times, "Times New Roman", serif;
+    color: #068;
 }
 .joe-block,.joe-overlay{
     position:absolute;
@@ -71,6 +72,21 @@
     background-position:center center;
     background-repeat:no-repeat;
 }
+
+.joe-title{
+    font-weight: bold;
+    font-size: 1.1em;
+}
+.joe-subtext{
+    font-size:.8em;
+    font-weight: normal;
+    opacity: .8;
+}
+.joe-fright{  float:right;  }
+.joe-fleft{  float:left;  }
+
+
+
 /*-------------------------
 	JOE Button
 -------------------------*/

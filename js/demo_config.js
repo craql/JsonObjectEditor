@@ -11,8 +11,10 @@ var demo_config = {
                 '_id'
             ],
             idprop:'_id',
-            _listTitle:'${name} <br/>${_id}',
-            _title:'Function',
+            _listTitle:
+                '<div class="joe-fright"><div class="joe-subtext">${_id}</div><div>Global:${global_function}</div></div>'
+                +'<div class="joe-title">${name}</div><p>${parameters}</p><div>${description}</div>',
+            _title:'&fnof; ${name}',
             _listMenuTitle:'Functions | ${_listCount}',
             listmenu:[__createBtn__]
         }
@@ -35,7 +37,7 @@ var demo_config = {
                     }else{
 
                         if(eval(_joe[item.name])){
-                            evalString = eval(item.name);
+                            evalString = eval(_joe[item.name]);
                         }else{
                             evalString ='joe does not have the function '+item.name;
                         }
