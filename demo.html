@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>JOE Demo</title>
+<script src="_joeinclude.js"></script>
+</head>
+
+<body>
+<h1>JOE Demo</h1>
+<div class="joe-button" onclick="goJoe();">go joe</div>
+<div class="joe-button" onclick="showJoeView('function');">Functions </div>
+<div class="joe-button" onclick="getDemoData();">Data </div>
+<script src="js/demo_data.js"></script>
+<script src="js/demo_config.js"></script>
+<script>
+	var specs = demo_config;
+	var App = {Data:demo_data};
+	Craydent.DEBUG_MODE =true;
+	var JOE = new JsonObjectEditor(specs);
+	JOE.init();
+
+	function showJoeView(view){
+		var dataset = getData(view);
+		goJoe(dataset,{schema:view});
+
+	}
+
+	function getData(dataset,specs){
+		var specs = $.extend({},(specs||{}));
+		var query = specs.where || {};
+		var results = App.Data[dataset].where(query);
+		return results;
+	}
+
+	function getDemoData(){
+		var payload = 'var demo_data=<pre>'+ JSON.stringify(App.Data,'','  ')+'</pre>';
+		goJoe(payload);
+
+
+	}
+</script>
+</body>
+</html>

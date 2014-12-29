@@ -30,17 +30,20 @@ if(location && location.hostname){//fix for devices
 		break;
 	}
 }
+if(location && location.origin == 'file://'){
+	web_dir = location.href.slice(0,location.href.lastIndexOf('/')+1);
+}
 var
 scripts_dir = web_dir+"js/",
 scripts = [];
 if (typeof jQuery == 'undefined') {  
-	scripts.push("jquery-1.11.0.min.js");
-	scripts.push("jquery-ui-1.10.4.custom.min.js");
+	scripts.push("libs/jquery-1.11.2.min.js");
+	scripts.push("libs/jquery-ui.min.js");
 	
 }
 
 if (typeof Craydent == 'undefined' || Craydent.version < '1.7.33') {
-   scripts.push("craydent-1.7.33.js");
+   scripts.push("libs/craydent-1.7.33.js");
 }
 scripts.push(
 	"JsonObjectEditor.jquery.craydent.js",
@@ -57,7 +60,8 @@ styles =[
    "leaflet.css",
    "esri-leaflet-geocoder.css",
    "joe-styles.css",
-   "jquery-ui-1.10.4.custom.min.css"
+   //"jquery-ui-1.10.4.custom.min.css",
+	"jquery-ui.min.css"
 ],
 script,style,sc,st,
 sc_len = scripts.length,st_len = styles.length;

@@ -593,6 +593,7 @@ function JsonObjectEditor(specs){
 /*--
      //OBJECT
  --*/
+	//TODO: Add configed listeneres via jquery not strings
 	this.renderObjectContent = function(specs){
 		specs = specs || {};
 		var object = specs.object;
@@ -619,10 +620,11 @@ function JsonObjectEditor(specs){
 		}
 		else{
 			(specs.schema.fields||[]).map(function(prop){
-				//prop is the property name
-				//if(object.hasOwnProperty(prop)){
 
-				if($.type(prop) == "string") {
+				fields += self.renderObjectPropFieldUI(prop,specs);
+				//prop is the property name
+
+		/*		if($.type(prop) == "string") {
                     fieldProp = self.fields[prop] || {};
                     //merge all the items
                     propObj = $.extend(
@@ -634,7 +636,7 @@ function JsonObjectEditor(specs){
                             onblur: specs.schema.onblur,
                             onchange: specs.schema.onchange,
                             onkeypress: specs.schema.onkeypress,
-                            onkeyup: specs.schema.onkeypress
+                            onkeyup: specs.schema.onkeyup
 
                         },
                         fieldProp,
@@ -643,16 +645,12 @@ function JsonObjectEditor(specs){
                     );
 
                     fields += self.renderObjectField(propObj);
-                }
-
-                if($.type(prop) == "object"){
+                } else if($.type(prop) == "object"){
                     if(prop.label){
                         fields += self.renderContentLabel(prop);
                     }
                 }
-
-				//}
-			
+		*/
 			}); //end map
 			
 		}
@@ -660,6 +658,50 @@ function JsonObjectEditor(specs){
 		return html;
 	};
 
+	this.rerenderField = function(fieldname){
+		var fields = self.renderObjectPropFieldUI(fieldname);
+		$('.joe-object-field[data-name='+fieldname+']').replaceWith(fields);
+	};
+
+	self.renderObjectPropFieldUI = function(prop,specs){
+		//var prop = fieldname;
+		var fields = '';
+
+		var schemaspec = specs || self.current.schema;
+		if($.type(prop) == "string") {
+			var fieldProp = self.fields[prop] || {};
+			//merge all the items
+			var propObj = $.extend(
+				{
+					name: prop,
+					type: 'text'
+				},
+				{
+					onblur: schemaspec.onblur,
+					onchange: schemaspec.onchange,
+					onkeypress: schemaspec.onkeypress,
+					onkeyup: schemaspec.onkeyup
+
+				},
+				fieldProp,
+				//overwrite with value
+				{value: self.current.object[prop]}
+			);
+
+			if(self.constructObjectFromFields()[prop] !== undefined){
+
+				fieldProp.value = self.constructObjectFromFields()[prop]
+			}
+			fields += self.renderObjectField(propObj);
+		}else if($.type(prop) == "object"){
+			if(prop.label){
+				fields += self.renderContentLabel(prop);
+			}
+		}
+
+		return fields;
+
+	};
 //PROP LABELS
     self.renderContentLabel = function(specs){
         var html="<div class='joe-content-label'>"+fillTemplate(specs.label,self.current.object)+"</div>";
@@ -761,14 +803,11 @@ function JsonObjectEditor(specs){
 				+self.renderFieldTooltip(prop)
             +'</label>';
 
-		//html+= self.renderFieldTooltip(prop);
 	//add multi-edit checkbox	
 		if(self.current.userSpecs.multiedit){
 			html+='<div class="joe-field-multiedit-toggle" onclick="$(this).parent().toggleClass(\'multi-selected\')"></div>';	
 		}
-/*        if($.type(prop.value) == "object" && !prop.type){
-            prop.type = "rendering";
-        }*/
+
 		html += self.selectAndRenderFieldType(prop);
 
 		html+='</div>';
@@ -935,7 +974,7 @@ function JsonObjectEditor(specs){
             autocomplete =true;
 		}
 
-		
+		//TODO: Use jquery ui autocomplete
 		var html=
 		'<input class="joe-text-field joe-field" type="text"  name="'+prop.name+'" value="'+(prop.value || '')+'" '
 			+self.renderFieldAttributes(prop)
@@ -1207,7 +1246,7 @@ function JsonObjectEditor(specs){
             '<label for="joe_checkbox-'+prop.name+'">'
 		+'<input class="joe-boolean-field joe-field" type="checkbox" name="'+prop.name+'" id="joe_checkbox-'+prop.name+'" '
 			+(prop.value == true&&'checked' || '')
-
+			+self.renderFieldAttributes(prop)
 		+' /> <small>'
             +(prop.label ||'') +'</small></label>';
 		return html;
@@ -1498,10 +1537,16 @@ this.renderSorterField = function(prop){
  <-----------------------------*/
     this.renderContentField = function(prop){
         var html = '';
+		var itemObj = self.current.object;
+		var idProp = self.getIDProp();
+		var constructedItem = self.constructObjectFromFields();
+		if(constructedItem[idProp] && constructedItem[idProp] == self.current.object[idProp]){
+			itemObj = constructedItem;
+		}
         if(prop.run){
-            html+= prop.run(self.current.object,prop);
+            html+= prop.run(itemObj,prop)||'';
         }else if(prop.template){
-            html += fillTemplate(prop.template,self.current.object);
+            html += fillTemplate(prop.template,itemObj);
         }
         return html;
 
@@ -1684,7 +1729,7 @@ this.renderSorterField = function(prop){
 			self.current.specs
 		);
 		
-		var idprop = listSchema._listID;
+		var idprop = self.getIDProp() // listSchema._listID;
 		var id = listItem[idprop] || null;
 		//var action = 'onclick="_joe.editObjectFromList(\''+id+'\');"';
 		var action = 'onclick="getJoe('+self.joe_index+').listItemClickHandler({dom:this,id:\''+id+'\'});"';
@@ -2146,8 +2191,17 @@ this.renderSorterField = function(prop){
 /*-------------------------------------------------------------------->
 	D | DATA
 <--------------------------------------------------------------------*/
+	this.createObject = function(specs){
+		//takes fields to be deleted
+		specs = specs || {};
+		goJoe({},{schema:self.current.schema});
+	};
+
 	this.updateObject = function(dom,callback,stayOnItem){
-		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || logit;
+		function defaultCallback(data){
+			self.showMessage(data.name +' updated successfully');
+		}
+		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || defaultCallback; //logit;
 		var newObj = self.constructObjectFromFields(self.joe_index);
 		newObj.joeUpdated = new Date();
 		var obj = $.extend(self.current.object,newObj);
@@ -2172,10 +2226,11 @@ this.renderSorterField = function(prop){
 
 
     //run callback
-        callback(obj);
+
 		logit('object updated');
 
 		if(!stayOnItem){self.goBack();}
+		callback(obj);
 	};
 	
 	this.deleteObject = function(callback){
@@ -2419,7 +2474,7 @@ this.renderSorterField = function(prop){
 	};
 	
 	this.getIDProp = function(){
-		var prop = (self.current.schema && self.current.schema._listID) || 'id' || '_id';
+		var prop = (self.current.schema && (self.current.schema.idprop || self.current.schema._listID)) || 'id' || '_id';
 		return prop;
 	};
 
@@ -2495,6 +2550,8 @@ this.renderSorterField = function(prop){
 
 var __clearDiv__ = '<div class="clear"></div>';
 
+var __createBtn__ = {name:'create',label:'Create', action:'_joe.createObject();', css:'joe-orange-button'};
+var __quicksaveBtn__ = {name:'quicksave',label:'QuickSave', action:'_joe.updateObject(this,null,true);', css:'joe-save-button joe-confirm-button'};
 var __saveBtn__ = {name:'save',label:'Save', action:'_joe.updateObject(this);', css:'joe-save-button joe-confirm-button'};
 var __deleteBtn__ = {name:'delete',label:'Delete',action:'_joe.deleteObject(this);', css:'joe-delete-button'};
 var __multisaveBtn__ = {name:'save_multi',label:'Multi Save', action:'_joe.updateMultipleObjects(this);', css:'joe-save-button joe-confirm-button'};
@@ -2518,4 +2575,4 @@ function _COUNT(array){
 		return array.length;
 	}
 	return 0;
-}
+};
