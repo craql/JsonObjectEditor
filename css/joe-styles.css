@@ -85,8 +85,26 @@
 .joe-fright{  float:right;  }
 .joe-fleft{  float:left;  }
 
-
-
+/*-------------------------
+	JOE Button
+-------------------------*/
+#joeDebugMode{
+    margin:5px;
+    background: rgba(0,0,0,.6);
+    z-index: 2001;
+    color:#fff;
+}
+.debug-div{
+    float:left;
+    height:100%;
+    width:50%;
+    background:rgba(200,50,0,.5);
+    text-align: center;
+    /*padding:20px 0;*/
+}
+.debug-div.ok,.debug-div:hover{
+    background:rgba(50,200,0,.5);
+}
 /*-------------------------
 	JOE Button
 -------------------------*/
