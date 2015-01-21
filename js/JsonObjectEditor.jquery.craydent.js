@@ -669,7 +669,8 @@ function JsonObjectEditor(specs){
 
 		var schemaspec = specs || self.current.schema;
 		if($.type(prop) == "string") {
-			var fieldProp = self.fields[prop] || {};
+			//var fieldProp = self.fields[prop] || {};
+			var fieldProp = $.extend({},self.fields[prop] || {});
 			//merge all the items
 			var propObj = $.extend(
 				{
