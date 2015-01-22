@@ -524,6 +524,8 @@ function JsonObjectEditor(specs){
 
     var currentListItems;
 	this.renderListContent = function(specs){
+		var wBM = new Benchmarker();
+
         currentListItems = [];
 		self.current.selectedListItems=[];
 		self.current.anchorListItem=null;
@@ -534,6 +536,7 @@ function JsonObjectEditor(specs){
 		var html = '';
         var filteredList;
         list = list.sortBy(self.current.sorter);
+		logit('list sort complete in '+wBM.stop()+' seconds');
 		var numItemsToRender;
         if(!self.current.subset){
             currentListItems = list;
@@ -541,11 +544,14 @@ function JsonObjectEditor(specs){
 		else{
             filteredList = list.where(self.current.subset.filter);
             currentListItems = filteredList;
+			logit('list where complete in '+wBM.stop()+' seconds');
 		}
 
         numItemsToRender = self.specs.dynamicDisplay || currentListItems.length;
         html+= self.renderListItems(currentListItems,0,numItemsToRender);
 
+
+		logit('list complete in '+wBM.stop()+' seconds');
 		return html;
 		
 	};
@@ -2168,7 +2174,7 @@ this.renderSorterField = function(prop){
 		var attr = 'class';
 		var transition_time = 400;
 		self.overlay.find('.joe-message-container').html('<div class="joe-message-content">'+message+'</div>').attr('class','joe-message-container active left');
-
+			//TODO: don't toggle hidden class if no timeout.
 		var target = "getJoe("+self.joe_index+").overlay.find('.joe-message-container')";
 
 		setTimeout(target+".attr('class','joe-message-container active')",50);
