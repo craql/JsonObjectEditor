@@ -28,6 +28,9 @@ if(location && location.hostname){//fix for devices
 		case 'coreyh.esri.com':
 			web_dir = 'http://coreyh.esri.com:81/'+projectName+'/';
 		break;
+		case 'corey-bootcamp.esri.com':
+			web_dir = 'http://corey-bootcamp.esri.com/'+projectName+'/';
+		break;
 	}
 }
 if(location && location.origin == 'file://'){

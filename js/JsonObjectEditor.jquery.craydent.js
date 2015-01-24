@@ -129,6 +129,7 @@ function JsonObjectEditor(specs){
 	
 	
 	this.populateFramework = function(data,setts){
+		self.overlay.removeClass('multi-edit');
 		var joePopulateBenchmarker = new Benchmarker();
 		joePopulateBenchmarker.start;
 		logit('------Beginning joe population');
@@ -309,7 +310,7 @@ function JsonObjectEditor(specs){
             self.renderEditorContent(specs)+
 			self.renderEditorFooter(specs)+
 			self.renderMessageContainer();
-		self.overlay.find('.joe-overlay-panel').html(html);
+		    self.overlay.find('.joe-overlay-panel').html(html);
 		//$('.joe-overlay-panel').html(html);
 	
 	//update history 2/2	
@@ -429,33 +430,32 @@ function JsonObjectEditor(specs){
     };
     this.searchTimeout;
     this.filterListFromSubmenu = function(dom){
+
         clearTimeout(self.searchTimeout );
         self.searchTimeout = setTimeout(function(){searchFilter(dom);},400);
         function searchFilter(dom){
+            var searchBM = new Benchmarker();
             var value=dom.value.toLowerCase();
-            /*if(dom.value.length){
-                $('.joe-button[data-btnid=select_all]').hide();
-            }else{
-                $('.joe-button[data-btnid=select_all]').show();
-            }*/
-            var haystack;
-            var items = $(dom).parents('.joe-panel-submenu')
-                .siblings('.joe-panel-content')
-                .find('.joe-panel-content-option-content').each(function(){
-                    haystack = this.innerText.toLocaleLowerCase();
-                    if(haystack.indexOf(value) ==-1){
-                        this.hide();
-                    }else{
-                        this.show();
-                    }
-                });
+
             var testable;
             var listables = (self.current.subset)?self.current.list.where(self.current.subset.filter):self.current.list;
+            var searchables = self.current.schema && self.current.schema.searchables;
+            logit('search where in '+searchBM.stop()+' seconds');
             currentListItems = listables.filter(function(i){
-                testable = self.renderListItem(i);
-                return (__removeTags(testable).toLowerCase().indexOf(value) != -1);
+                testable = '';
+                if(searchables){//use searchable array
+                    searchables.map(function(s){
+                        testable+=i[s]+' ';
+                    });
+                    return (testable.toLowerCase().indexOf(value) != -1);
+                }
+                    testable = self.renderListItem(i,true);
+                    return (__removeTags(testable).toLowerCase().indexOf(value) != -1);
+
+
             });
 
+            logit('search filter in '+searchBM.stop()+' seconds');
             self.panel.find('.joe-panel-content').html(self.renderListItems(currentListItems,0,self.specs.dynamicDisplay));
             var titleObj = $.extend({},self.current.object,{_listCount:currentListItems.length||'0'});
             self.panel.find('.joe-panel-title').html(fillTemplate(self.current.title,titleObj));
@@ -746,7 +746,8 @@ function JsonObjectEditor(specs){
 				{	label:'Multi-Edit', 
 					name:'multiEdit', 
 					css:'joe-multi-only', 
-					action:'getJoe('+self.joe_index+').editMultiple()'});
+					action:'getJoe('+self.joe_index+').editMultiple()'}
+				);
 			}
 				
 		html+=
@@ -1726,7 +1727,7 @@ this.renderSorterField = function(prop){
 /*-------------------------------------------------------------------->
 	4 | OBJECT LISTS
 <--------------------------------------------------------------------*/
-	this.renderListItem = function(listItem){
+	this.renderListItem = function(listItem,quick){
 		var listSchema  = $.extend(
 			{
 				_listID:'id',
@@ -1755,6 +1756,11 @@ this.renderSorterField = function(prop){
             bgHTML = 'style="background-color:'+bgColor+';"';
         }
 
+        if(quick){
+
+            var quicktitle = listSchema._listTemplate || listSchema._listTitle || '';
+            return fillTemplate(quicktitle,listItem);
+        }
         if(!listSchema._listTemplate){
 			var title = listSchema._listTitle || listItem.name || id || 'untitled';
             var listItemButtons = '';//<div class="joe-panel-content-option-button fleft">#</div><div class="joe-panel-content-option-button fright">#</div>';
@@ -1770,7 +1776,9 @@ this.renderSorterField = function(prop){
 		}
 		//if there is a list template
 		else{
-			html = fillTemplate(listSchema._listTemplate,$c.merge(listItem,{action:action}));
+            var dup = $c.duplicate(listItem);
+            dup.action = action;
+			html = fillTemplate(listSchema._listTemplate,dup);
 		}
 		
 		return html;
@@ -2156,7 +2164,9 @@ this.renderSorterField = function(prop){
                 }
             )
 
-        })
+        });
+
+        self.overlay.find('.joe-submenu-search-field').focus();
     };
 /*-------------------------------------------------------------------->
  J | MESSAGING
@@ -2350,6 +2360,8 @@ this.renderSorterField = function(prop){
 				break;
 			}
 		});
+
+
     //OBJECT LISTS
         parentFind.find('.objectList-field').each(function(){
             var ol_property = $(this).data('name');
@@ -2391,10 +2403,10 @@ this.renderSorterField = function(prop){
 		goJoe('<b>'+((objvar && 'var '+objvar +' = ')|| 'JSON Object')+'</b><br/><pre>'+obobj+'</pre>');
 		console.log(obobj);
 	};
-	
-/*-------------------------
-	Multi Functions
--------------------------*/
+
+/*-------------------------------------------------------------------->
+    MULTI FUNCTIONS
+ <--------------------------------------------------------------------*/
 
 	this.updateMultipleObjects = function(dom,multipleCallback, callback){
 		var callback = callback || self.current.onUpdate || self.current.callback || (self.current.schema && (self.current.schema.onUpdate || self.current.schema.callback)) || logit;
@@ -2469,6 +2481,55 @@ this.renderSorterField = function(prop){
 			    self.current.selectedListItems.push($(listitem).data('id'));
 		})
 	};
+
+/*-------------------------------------------------------------------->
+ANALYSIS, IMPOR AND MERGE
+ <--------------------------------------------------------------------*/
+    this.analyzeImportMerge = function(newArr,oldArr,idprop,specs){
+        var aimBM = new Benchmarker();
+        var idprop = idprop || '_id';
+        var defs = {
+            callback:printResults,
+            deleteOld:false
+            };
+        specs = $.extend(defs,specs);
+        var data = {
+            add:[],
+            update:[],
+            same:[],
+            delete:[]
+        };
+
+        var newObj, oldObj,matchObj, i = 0,query={};
+        while(newObj = newArr[i++]){
+            matchObj = oldArr.where(newObj);//is it currently in there in the same form
+
+            if(matchObj.length){//currently there and the same
+                data.same.push(newObj);
+            }else{
+                query[idprop] = newObj[idprop];
+                matchObj = oldArr.where(query);
+                if(matchObj.length){//is there, not the same
+                    data.update.push(newObj);
+                }else{//not there
+                    data.add.push(newObj);
+                }
+            }
+        }
+        data.results = {
+            add: data.add.length,
+            update: data.update.length,
+            same: data.same.length
+
+        };
+        self._mergeAnalyzeResults = data;
+
+        logit('Joe Analyzed in '+aimBM.stop()+' seconds');
+        specs.callback(data);
+        function printResults(data){
+            _joe.showMiniJoe({title:'Merge results',props:JSON.stringify(data.results,null,'\n'),mode:'text'})
+        }
+    };
 
 
 /*-------------------------------------------------------------------->
@@ -2583,3 +2644,4 @@ function _COUNT(array){
 	}
 	return 0;
 };
+
