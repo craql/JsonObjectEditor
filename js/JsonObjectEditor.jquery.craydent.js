@@ -62,6 +62,11 @@ function JsonObjectEditor(specs){
 
     //configure schemas
     this.schemas = this.specs.schemas;
+/*
+    this.schemas._function = {
+        idprop:'name'
+    };*/
+
     for(var s in _joe.schemas){
         _joe.schemas[s].__schemaname = s;
     }
@@ -2483,7 +2488,7 @@ this.renderSorterField = function(prop){
 	};
 
 /*-------------------------------------------------------------------->
-ANALYSIS, IMPOR AND MERGE
+ANALYSIS, IMPORT AND MERGE
  <--------------------------------------------------------------------*/
     this.analyzeImportMerge = function(newArr,oldArr,idprop,specs){
         var aimBM = new Benchmarker();
@@ -2531,6 +2536,34 @@ ANALYSIS, IMPOR AND MERGE
         }
     };
 
+        this.analyzeClassObject = function(object,ref){
+            var data ={
+                functions:[],
+                properties:[]
+            };
+            var pReg = /function[\s*]\(([_a-z,A-Z0-9]*)\)/;
+            var curProp;
+            var params
+            for(var p in object){
+                curProp = object[p];
+                try {
+                    if ($.type(curProp) == "function") {
+                        params = pReg.exec(object[p])[1] || 'none';
+                        data.functions.push({
+                            code: object[p],
+                            name: p,
+                            global_function: false,
+                            ref: ref,
+                            parameters:params
+                        })
+                    }
+                }catch(e){
+                    logit(e);
+                }
+            }
+
+            return data;
+        };
 
 /*-------------------------------------------------------------------->
 	H | HELPERS

@@ -10,9 +10,9 @@ var demo_config = {
 
                 '_id'
             ],
-            idprop:'_id',
+            idprop:'name',
             _listTitle:
-                '<div class="joe-fright"><div class="joe-subtext">${_id}</div><div>Global:${global_function}</div></div>'
+                '<div class="joe-fright"><div class="joe-subtext">${_id}</div></div>'
                 +'<div class="joe-title">${name}</div><p>${parameters}</p><div>${description}</div>',
             _title:'&fnof; ${name}',
             _listMenuTitle:'Functions | ${_listCount}',
@@ -36,10 +36,10 @@ var demo_config = {
                         evalString = eval(item.name);
                     }else{
 
-                        if(eval(_joe[item.name])){
-                            evalString = eval(_joe[item.name]);
+                        if(item.ref && eval(item.ref+'.'+item.name)){
+                            evalString = eval(item.ref+'.'+item.name);
                         }else{
-                            evalString ='joe does not have the function '+item.name;
+                            evalString =(item.ref||'object')+' does not have the function '+item.name;
                         }
                     }
                 }catch(e){
