@@ -13,7 +13,8 @@ var demo_config = {
             idprop:'name',
             _listTitle:
                 '<div class="joe-fright"><div class="joe-subtext">${_id}</div></div>'
-                +'<div class="joe-title">${name}</div><p>${parameters}</p><div>${description}</div>',
+                +'<div class="joe-title">${name}()</div><p>${parameters}</p>' +
+                '<div>${description}</div>',
             _title:'&fnof; ${name}',
             _listMenuTitle:'Functions | ${_listCount}',
             listmenu:[__createBtn__]
