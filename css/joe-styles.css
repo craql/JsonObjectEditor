@@ -850,7 +850,7 @@ table.joe-objectlist-table {
 }
 
 .joe-multi-always {
-display:block;
+display:block !important;
 }
 
 /*-------------------------------------------------------------------->
