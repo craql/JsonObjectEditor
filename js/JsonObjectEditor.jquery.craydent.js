@@ -547,7 +547,10 @@ function JsonObjectEditor(specs){
 		var list = specs.list || [];
 		var html = '';
         var filteredList;
-        list = list.sortBy(self.current.sorter);
+        if(self.current.sorter &&(($.type(self.current.sorter) != 'array') || self.current.sorter.length) ){
+            list = list.sortBy(self.current.sorter);
+        };
+        //list = list.sortBy(self.current.sorter);
 		logit('list sort complete in '+wBM.stop()+' seconds');
 		var numItemsToRender;
         if(!self.current.subset){
