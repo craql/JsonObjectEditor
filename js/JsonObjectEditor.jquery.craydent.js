@@ -399,6 +399,12 @@ function JsonObjectEditor(specs){
 			_joe.ace_editors[p].destroy();
 		}
 		_joe.ace_editors = {};
+
+        if(self.current.userSpecs.multiedit){
+            self.overlay.addClass('multi-edit');
+        }else{
+            self.overlay.removeClass('multi-edit');
+        }
 	};
 /*----------------------------->
  B | SubMenu
@@ -432,6 +438,7 @@ function JsonObjectEditor(specs){
     this.filterListFromSubmenu = function(dom){
 
         clearTimeout(self.searchTimeout );
+        self.overlay.removeClass('.multi-edit');
         self.searchTimeout = setTimeout(function(){searchFilter(dom);},400);
         function searchFilter(dom){
             var searchBM = new Benchmarker();
@@ -723,14 +730,12 @@ function JsonObjectEditor(specs){
 <-----------------------------*/	
 	this.renderEditorFooter = function(specs){
 		specs = specs || this.specs || {};
-		var menu = (listMode && (specs.schema && specs.schema.listmenu)||specs.listmenu) ||//list mode
+		var menu = specs.minimenu || (listMode && (specs.schema && specs.schema.listmenu)||specs.listmenu) ||//list mode
 		specs.menu ||  (specs.multiedit && __defaultMultiButtons) || __defaultObjectButtons;
 		if(typeof menu =='function'){
 			menu = menu();
 		}
-		
-		var title = specs.title || 'untitled';
-		var display,action;
+
 		
 		var html = 
 		'<div class="joe-panel-footer">'+
@@ -740,7 +745,8 @@ function JsonObjectEditor(specs){
 				html+= self.renderFooterMenuItem(m);
 			
 			},this);
-			if(self.current.list && $.type(self.current.data) == 'array'){
+        //add default list buttons.
+			if(!specs.minimenu && self.current.list && $.type(self.current.data) == 'array'){
 				html+= self.renderFooterMenuItem(__selectAllBtn__);
 				html+= self.renderFooterMenuItem(
 				{	label:'Multi-Edit', 
@@ -1975,10 +1981,11 @@ this.renderSorterField = function(prop){
 <-------------------------------------------------------------------*/
 	this.showMiniJoe = function(specs){
 		var mini = {};
-		if(!(specs && specs.props)){
+		if(!(specs && (specs.props || specs.object))){
 			return;
 		}
-		title=specs.title || 'Object Focus';
+        var object =specs.props || specs.object;
+		var title=specs.title || 'Object Focus';
 		//mini.name=specs.prop.name||specs.prop.id || specs.prop._id;
 		mini.id = cuid();
 		
@@ -1991,7 +1998,7 @@ this.renderSorterField = function(prop){
                 +self.renderEditorContent({object:specs.props,mode:specs.mode||'object'})
 			//	+JSON.stringify(specs.props)
 			//+'</div>'
-			+self.renderEditorFooter(specs);
+			+self.renderEditorFooter({minimenu:specs.menu});
 			
 		$('.joe-mini-panel').addClass('active').html(html);
 		
@@ -2230,17 +2237,6 @@ this.renderSorterField = function(prop){
           //  object not in current list
             self.current.list.push(obj);
         }
-
-
-/*FROM CLARK
-        var index = (self.current.list && self.current.list.indexOf(obj));
-        if(index == -1 || index == undefined){
-            //  object not in current list
-            self.current.list = self.current.list || [];
-            self.current.list.push(obj);
-        }
-*/
-
 
     //run callback
 
@@ -2525,9 +2521,15 @@ ANALYSIS, IMPOR AND MERGE
         self._mergeAnalyzeResults = data;
 
         logit('Joe Analyzed in '+aimBM.stop()+' seconds');
-        specs.callback(data);
+        var analysisOK = confirm('Run Merge? \n'+JSON.stringify(data.results,null,'\n'));
+        if(analysisOK) {
+            specs.callback(data);
+        }
         function printResults(data){
-            _joe.showMiniJoe({title:'Merge results',props:JSON.stringify(data.results,null,'\n'),mode:'text'})
+
+
+
+            self.showMiniJoe({title:'Merge results',props:JSON.stringify(data.results,null,'\n'),mode:'text',menu:[]})
         }
     };
 
@@ -2622,9 +2624,9 @@ var __createBtn__ = {name:'create',label:'Create', action:'_joe.createObject();'
 var __quicksaveBtn__ = {name:'quicksave',label:'QuickSave', action:'_joe.updateObject(this,null,true);', css:'joe-save-button joe-confirm-button'};
 var __saveBtn__ = {name:'save',label:'Save', action:'_joe.updateObject(this);', css:'joe-save-button joe-confirm-button'};
 var __deleteBtn__ = {name:'delete',label:'Delete',action:'_joe.deleteObject(this);', css:'joe-delete-button'};
-var __multisaveBtn__ = {name:'save_multi',label:'Multi Save', action:'_joe.updateMultipleObjects(this);', css:'joe-save-button joe-confirm-button'};
-var __multideleteBtn__ = {name:'delete_multi',label:'Multi Delete',action:'_joe.deleteMultipleObjects(this);', css:'joe-delete-button'};
-var __selectAllBtn__ = {name:'select_all',label:'select all',action:'_joe.selectAllItems();', css:'joe-left-button'};
+var __multisaveBtn__ = {name:'save_multi',label:'Multi Save', action:'_joe.updateMultipleObjects(this);', css:'joe-save-button joe-confirm-button joe-multi-only'};
+var __multideleteBtn__ = {name:'delete_multi',label:'Multi Delete',action:'_joe.deleteMultipleObjects(this);', css:'joe-delete-button joe-multi-only'};
+var __selectAllBtn__ = {name:'select_all',label:'select all',action:'_joe.selectAllItems();', css:'joe-left-button joe-multi-always'};
 
 var __replaceBtn__ = {name:'replace',label:'Replace', action:'_joe.updateRendering(this);', css:'joe-replace-button joe-confirm-button'};
 var __duplicateBtn__ = {name:'duplicate',label:'Duplicate', action:'_joe.duplicateObject();', css:'joe-left-button'};

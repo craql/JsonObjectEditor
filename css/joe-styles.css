@@ -839,12 +839,18 @@ table.joe-objectlist-table {
     right: 0;
 }
 
-.joe-multi-only{
+.joe-multi-only,
+.multi-edit .joe-footer-button
+{
     display:none;
 }
 
 .multi-edit .joe-multi-only{
     display:block;
+}
+
+.joe-multi-always {
+display:block;
 }
 
 /*-------------------------------------------------------------------->
