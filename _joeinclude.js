@@ -46,7 +46,7 @@ if (typeof jQuery == 'undefined') {
 }
 
 if (typeof Craydent == 'undefined' || (!Craydent.VERSION || Craydent.VERSION < '1.7.35')) {
-   scripts.push("libs/craydent-1.7.35.js");
+   scripts.push("libs/craydent-1.7.34.js");
 }
 scripts.push(
 	"JsonObjectEditor.jquery.craydent.js",
