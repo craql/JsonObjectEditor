@@ -2692,3 +2692,16 @@ function _COUNT(array){
 	return 0;
 };
 
+//UNTIL VERBOSE IS REMOVED
+function logit(){
+    try {
+ /*       var location = "\t\t\t\t    " + (new Error()).stack.split('\n')[2];
+        for (var i = 0, len = arguments.length; i < len; i++) {
+            arguments[i] = arguments[i] + location;
+        }*/
+        cout.apply(this, arguments);
+        //cout.apply(arguments[0])
+    } catch (e) {
+        error('logit', e);
+    }
+}
