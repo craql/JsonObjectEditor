@@ -824,8 +824,9 @@ function JsonObjectEditor(specs){
                 +fillTemplate((prop.display||prop.label||prop.name),self.current.object)
 				+self.renderFieldTooltip(prop)
             +'</label>';
-
-	//add multi-edit checkbox	
+        //render comment
+        html+= self.renderFieldComment(prop);
+        //add multi-edit checkbox
 		if(self.current.userSpecs.multiedit){
 			html+='<div class="joe-field-multiedit-toggle" onclick="$(this).parent().toggleClass(\'multi-selected\')"></div>';	
 		}
@@ -841,7 +842,13 @@ function JsonObjectEditor(specs){
 		
 		return html;
 	};
+    this.renderFieldComment = function(prop){
+        if(!prop.comment){return '';}
+        var comment = ($.type(prop.comment) == "function")?prop.comment():prop.comment;
+        var comment_html = '<div class="joe-field-comment">'+comment+'</div>';
 
+        return comment_html;
+    };
 	this.renderFieldTooltip = function(prop){
 		if(!prop.tooltip){
 			return '';
@@ -1424,9 +1431,11 @@ this.renderSorterField = function(prop){
 		return html;
 	};
 	this.filterSorterOptions = function(dom){
+        var sorterBM = new Benchmarker();
 		var query = $(dom).val().toLowerCase();
-		$(dom).parent().next('.joe-multisorter-bin').find('li').each(function(){$(this).toggle($(this).html().toLowerCase().indexOf(query) != -1 );});
-		logit(query);
+		//$(dom).parent().next('.joe-multisorter-bin').find('li').each(function(){$(this).toggle($(this).html().toLowerCase().indexOf(query) != -1 );});
+        $(dom).parents('.joe-field').find('.joe-multisorter-bin.options-bin').find('li').each(function(){$(this).toggle($(this).html().toLowerCase().indexOf(query) != -1 );});
+        logit('found results for: '+query+' in '+sorterBM.stop()+' secs');
 		
 	};
 	this.toggleMultisorterBin = function(dom) {

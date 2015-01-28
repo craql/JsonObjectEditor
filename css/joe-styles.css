@@ -73,6 +73,7 @@
     background-repeat:no-repeat;
 }
 
+
 .joe-title{
     font-weight: bold;
     font-size: 1.1em;
@@ -80,7 +81,8 @@
 .joe-subtext{
     font-size:.8em;
     font-weight: normal;
-    opacity: .8;
+    opacity: .6;
+    color:#024;
 }
 .joe-fright{  float:right;  }
 .joe-fleft{  float:left;  }
@@ -148,6 +150,29 @@
     float: left;
 }
 
+.joe-block-button {
+    position: absolute;
+    background: rgba(0,0,0,.5);
+    width: 40px;
+    text-align: center;
+    position: absolute;
+    height: 100%;
+    top: 0;
+    right: 0;
+    cursor: pointer;
+    line-height: 2;
+    color: #fff;
+    background-position:center center;
+    background-repeat:no-repeat;
+    opacity:.3;
+}
+.joe-block-button:hover{
+    opacity:.9;
+}
+.goto-icon:hover{
+    background-image:url("../img/goto-arrow.png");
+
+}
 /*-------------------------
 	UI Overlays
 -------------------------*/
@@ -483,6 +508,11 @@ input.joe-boolean-field {
     color: #999;
     font-size:12px;
 }
+
+.joe-field-comment {
+    font-size: 13px;
+    padding: 0 1%;
+}
 /*-------------------------------------------------------------------->
 	Editor Form
 <--------------------------------------------------------------------*/
@@ -524,11 +554,16 @@ input.joe-boolean-field {
 
     text-align: center;
     margin: 0 10px;
-    font-size: 10px;
-    width: 20px;
-    height: 20px;
-    line-height: 20px;
-    /* cursor: pointer; */
+    font-size: 13px;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    cursor: help;
+    font-weight: bold;
+}
+.joe-field-tooltip:hover{
+    background-color:#007ac2;
+    color:#fff;
 }
 /*-------------------------
 	Multiedit
@@ -671,6 +706,7 @@ textarea.joe-rendering-field{
     padding: 5px;
     cursor: ew-resize;
     position:relative;
+    border-top: 1px solid #fafafa;
 }
 .joe-multisorter-bin li:hover,
 .joe-buckets-bin li:hover{
