@@ -12,9 +12,19 @@
 
 	
 */
+var _joeworker;
+if (!!window.Worker) {
 
+    _joeworker = new Worker("../JsonObjectEditor/js/joe-worker.js");
+
+    _joeworker.onmessage = function(e){
+        logit(e.data);
+    };
+
+}
 function JsonObjectEditor(specs){
 	var self = this;
+
 	var listMode = false;
 	this.VERSION = '1.0.1';
 	window._joes = window._joes || [];
@@ -1787,12 +1797,14 @@ this.renderSorterField = function(prop){
         if(!listSchema._listTemplate){
 			var title = listSchema._listTitle || listItem.name || id || 'untitled';
             var listItemButtons = '';//<div class="joe-panel-content-option-button fleft">#</div><div class="joe-panel-content-option-button fright">#</div>';
+            var listItemIcon = (listSchema._icon && renderIcon(listSchema._icon,listItem)) || '';
             //list item content
             title="<div class='joe-panel-content-option-content' "+action+">"+title+"<div class='clear'></div></div>";
 			var html = '<div class="joe-panel-content-option joe-no-select '+((stripeColor && 'striped')||'')+'"  data-id="'+id+'" >'
 
                 +'<div class="joe-panel-content-option-bg" '+bgHTML+'></div>'
                 +'<div class="joe-panel-content-option-stripe" '+stripeHTML+'></div>'
+                    +listItemIcon
                 +listItemButtons
                 +fillTemplate(title,listItem)
                 +'</div>';
@@ -1803,7 +1815,15 @@ this.renderSorterField = function(prop){
             dup.action = action;
 			html = fillTemplate(listSchema._listTemplate,dup);
 		}
-		
+
+
+        function renderIcon(icon,listItem){
+            var iconURL = fillTemplate(icon,listItem);
+            var iconhtml = '<div style=" background-image:url(\''+iconURL+'\'); " class="joe-panel-content-option-icon fleft"  >' +
+                '<img src="'+iconURL+'"/>' +
+                '</div>'
+            return iconhtml;
+        }
 		return html;
 	};
 	
@@ -2484,9 +2504,10 @@ this.renderSorterField = function(prop){
 	};
 	
 	this.selectAllItems = function(){
+        self.current.selectedListItems = [];
         var itemsRendered = self.panel.find('.joe-panel-content-option').length;
         self.panel.find('.joe-panel-content').append(self.renderListItems(currentListItems,itemsRendered,currentListItems.length));
-        self.renderListItems(currentListItems.length-1);
+        //self.renderListItems(currentListItems.length-1);
 		self.overlay.find('.joe-panel-content-option').filter(':visible').addClass('selected');
 		self.overlay.addClass('multi-edit');
 		self.overlay.find('.joe-panel-content-option.selected')
@@ -2503,7 +2524,9 @@ ANALYSIS, IMPORT AND MERGE
         var idprop = idprop || '_id';
         var defs = {
             callback:printResults,
-            deleteOld:false
+            deleteOld:false,
+            dateProp:null,
+            icallback:null
             };
         specs = $.extend(defs,specs);
         var data = {
@@ -2521,14 +2544,27 @@ ANALYSIS, IMPORT AND MERGE
                 data.same.push(newObj);
             }else{
                 query[idprop] = newObj[idprop];
+
                 matchObj = oldArr.where(query);
                 if(matchObj.length){//is there, not the same
-                    data.update.push(newObj);
+                    if(specs.dateProp ) {
+                        if(matchObj[0][specs.dateProp] == newObj[specs.dateProp]) {
+                            data.same.push(newObj);
+                        }
+                    }else {
+                        data.update.push(newObj);
+                    }
                 }else{//not there
                     data.add.push(newObj);
-                }
+
+                   }
             }
-        }
+            if(specs.icallback){
+                specs.icallback(i);
+            }
+        }/*if(specs.dateProp){
+            query[specs.dateProp] = newObj[specs.dateProp];
+        }*/
         data.results = {
             add: data.add.length,
             update: data.update.length,
@@ -2692,6 +2728,10 @@ function _COUNT(array){
 	return 0;
 };
 
+/*-------------------------------------------------------------------->
+CRAYDENT UPDATES
+ <--------------------------------------------------------------------*/
+
 //UNTIL VERBOSE IS REMOVED
 function logit(){
     try {
@@ -2705,3 +2745,67 @@ function logit(){
         error('logit', e);
     }
 }
+
+//until sortBy is updated
+_ext(Array, 'sortBy', function(props, rev, primer, lookup, options){
+    try {
+        options = ($c.isString(options) && options in {"i":1,"ignoreCase":1}) ? {i:1} : {};
+        if($c.isString(props)){props=[props];}
+        var key = function (x) {return primer ? primer(x[prop]) : x[prop]};
+        primer = primer || function(x){return x;}
+        var tmpVal;
+        var reverseProp;
+        var prop_sort = function (a,b,p) {
+            p = p||0,
+                prop = props[p];
+            reverseProp = false;
+
+            if(!prop){return -1;}
+            if(prop[0] == "!"){
+                prop = prop.replace('!','');
+                reverseProp = true;
+            }
+            var aVal = primer((lookup && lookup[a][prop]) || a[prop]),
+                bVal =primer( (lookup && lookup[b][prop]) || b[prop] );
+
+            if (options.i && aVal && bVal) {
+                aVal = aVal.toLowerCase();
+                bVal = bVal.toLowerCase();
+            }
+            //            tmpVal = aVal;
+            //            aVal = (parseInt(aVal) && aVal.toString() == tmpVal && tmpVal) || tmpVal;
+            //            tmpVal = bVal;
+            //            bVal = (parseInt(bVal) && bVal.toString() == tmpVal && tmpVal) || tmpVal;
+            tmpVal = aVal;
+            aVal = (parseInt(aVal) && aVal.toString() == tmpVal && parseInt(tmpVal)) || tmpVal;
+            tmpVal = bVal;
+            bVal = (parseInt(bVal) && bVal.toString() == tmpVal && parseInt(tmpVal)) || tmpVal;
+
+
+
+            if (aVal == bVal) {
+                return prop_sort(a,b,p+1);
+            }
+
+            if(!reverseProp) {
+                if (aVal > bVal) {
+                    return 1;
+                }
+                return -1;
+            }else{
+                if (aVal < bVal) {
+                    return 1;
+                }
+                return -1;
+            }
+        };
+        this.sort(prop_sort);
+        if (rev) {
+            this.reverse();
+        }
+
+        return this;
+    } catch (e) {
+        error('Array.sortBy', e);
+    }
+}, true);

@@ -191,6 +191,7 @@ an array of menu buttons
 - _listWindowTitle: the title of the window (can be passed in with the schema);
 - _listCount: added to the current object and can be used in the title.
 - _listTitle:'${name} ${species}', *how to display items in the list*
+- _icon: [str] template for a list item icon, 'http://www.icons.com/${itemname}'
 - listSubMenu:a function or object that represents the list submenu
 - stripeColor:string or function that returns valid css color descriptor.
 - bgColor:string or function that returns valid css color descriptor.
