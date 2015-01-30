@@ -120,6 +120,7 @@
     box-shadow: 0 1px 2px 0px rgba(0,0,0,.3);
     cursor: pointer;
     transition: .2s;
+    color: #444;
 }
 .joe-button:hover{
     background-color: #f0f0f0;
@@ -137,8 +138,8 @@
 .joe-blue-button{background-color:#336699}
 .joe-blue-button:hover{background-color:#447799;}
 
-.joe-red-button{background-color:#ff3300}
-.joe-red-button:hover{background-color:#dd1100}
+.joe-red-button{background-color:#Bb6655;}
+.joe-red-button:hover{background-color:#ff7755}
 
 .joe-right-button,
 .joe-footer-button {
@@ -172,6 +173,13 @@
 .goto-icon:hover{
     background-image:url("../img/goto-arrow.png");
 
+}
+
+.joe-selection-indicator {
+    float: left;
+    height: 35px;
+    line-height: 35px;
+    padding: 5px;
 }
 /*-------------------------
 	UI Overlays
@@ -401,7 +409,7 @@ input.joe-submenu-search-field {
     background-color: rgba(0,0,0,.1);
 }*/
 .joe-panel-content-option.selected{
-    background-color: rgba(0,100,200,.1) !important;
+    background-color: rgba(0,0,0,.15) !important;
 }
 .joe-panel-content-option-stripe {
     position: absolute;
@@ -424,6 +432,11 @@ input.joe-submenu-search-field {
     opacity: .5;
     -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
     filter: alpha(opacity=50);
+}
+.selected .joe-panel-content-option-bg{
+    opacity: .2;
+    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
+    filter: alpha(opacity=20);
 }
 /*-------------------------
 	List Option content
@@ -510,7 +523,8 @@ input.joe-boolean-field {
     position: absolute;
     top: -12px;
     background-color: #fff;
-    left: 5px;
+  /*  left: 5px;*/
+    left: 2px;
 }
 
 .joe-tooltip{
@@ -521,7 +535,9 @@ input.joe-boolean-field {
 
 .joe-field-comment {
     font-size: 13px;
-    padding: 0 1%;
+    padding: 5px 1px;
+    letter-spacing: .8px;
+    line-height: 16px;
 }
 /*-------------------------------------------------------------------->
 	Editor Form
@@ -604,13 +620,17 @@ input.joe-boolean-field {
 }
 .joe-object-field input[type=text] {
     padding: 4px;
-    /*width: 300px;*/
-    width: 75%;
+    width: 300px;
 }
 .joe-object-field input[type=text].joe-url-field {
     width: 75%;
     margin: 5px 0 0 0;
 }
+
+.joe-object-field input[type=text].joe-date-field {
+    width:200px;
+}
+
 
 .joe-object-field .joe-button {
     /* max-width: 200px; */
@@ -633,7 +653,7 @@ input.joe-boolean-field {
 .joe-select-field {
     min-width: 280px;
     padding: 4px;
-    margin-left: 1%;
+/*    margin-left: 1%;*/
 }
 
 /* Rendering */
@@ -643,23 +663,15 @@ input.joe-boolean-field {
 
 
 textarea.joe-rendering-field{
-    /*	padding: 5px;
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        bottom: 5px;
-        left: 5px;
-        width: 60%;
-        min-width: 304px;*/
+    margin-top: 10px;
     padding: 1%;
     position: relative;
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
-    width: 96%;
+    width: 98%;
     min-width: 304px;
-    margin: 1%;
     height: 200px;
 }
 

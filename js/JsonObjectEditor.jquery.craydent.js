@@ -23,6 +23,7 @@ function JsonObjectEditor(specs){
 	var self = this;
 
 	var listMode = false;
+    var multiEdit = false;
 	this.VERSION = '1.0.1';
 	window._joes = window._joes || [];
 	this.joe_index = window._joes.length;
@@ -199,7 +200,10 @@ function JsonObjectEditor(specs){
 			self.current.object = data;
 			
 		}
-		
+/*-------------------------
+ MultiEdit (Arrays)
+ -------------------------*/
+        self.toggleMultiEditMode(specs,data);
 /*-------------------------
 	Lists (Arrays)
 -------------------------*/			
@@ -213,6 +217,7 @@ function JsonObjectEditor(specs){
 			specs.mode="list";
 			//TODO: filter list items here.
 			self.current.list = data;
+
 
 /*-------------------------
  Subsets
@@ -316,6 +321,10 @@ function JsonObjectEditor(specs){
 
 	//cleanup variables
 		self.cleanUp();
+    /*-------------------------------------------------------------------->
+     Framework Rendering
+     <--------------------------------------------------------------------*/
+
 		var html = 
 			self.renderEditorHeader(specs)+
             self.renderEditorSubmenu(specs)+
@@ -341,6 +350,10 @@ function JsonObjectEditor(specs){
  2e | FRAMEWORK END
  <--------------------------------------------------------------------*/
 
+    this.toggleMultiEditMode = function(specs, data){
+        multiEdit =self.current.userSpecs.multiedit|| false;
+
+    };
 
 /*----------------------------->
 	A | Header
@@ -407,16 +420,19 @@ function JsonObjectEditor(specs){
 
     };
 	this.cleanUp = function(){
+
+        self.shiftSelecting = false;
 		for (var p in _joe.ace_editors){
 			_joe.ace_editors[p].destroy();
 		}
 		_joe.ace_editors = {};
-
         if(self.current.userSpecs.multiedit){
             self.overlay.addClass('multi-edit');
+
         }else{
             self.overlay.removeClass('multi-edit');
         }
+
 	};
 /*----------------------------->
  B | SubMenu
@@ -744,9 +760,12 @@ function JsonObjectEditor(specs){
 	D | Footer
 <-----------------------------*/	
 	this.renderEditorFooter = function(specs){
+        var fBM = new Benchmarker();
 		specs = specs || this.specs || {};
 		var menu = specs.minimenu || (listMode && (specs.schema && specs.schema.listmenu)||specs.listmenu) ||//list mode
-		specs.menu ||  (specs.multiedit && __defaultMultiButtons) || __defaultObjectButtons;
+		 (multiEdit && (specs.multimenu ||  (specs.schema && specs.schema.multimenu) || __defaultMultiButtons)) ||
+        specs.menu
+        || __defaultObjectButtons;
 		if(typeof menu =='function'){
 			menu = menu();
 		}
@@ -763,6 +782,7 @@ function JsonObjectEditor(specs){
         //add default list buttons.
 			if(!specs.minimenu && self.current.list && $.type(self.current.data) == 'array'){
 				html+= self.renderFooterMenuItem(__selectAllBtn__);
+                html+= '<div class="joe-selection-indicator"></div>';
 				html+= self.renderFooterMenuItem(
 				{	label:'Multi-Edit', 
 					name:'multiEdit', 
@@ -775,6 +795,8 @@ function JsonObjectEditor(specs){
 			__clearDiv__+	
 			'</div>'+
 		'</div>';
+
+        logit('joe footer generated in '+fBM.stop()+' secs');
 		return html;
 	};
 	
@@ -1827,7 +1849,7 @@ this.renderSorterField = function(prop){
         }
 		return html;
 	};
-	
+	this.shiftSelecting = false;
 	this.listItemClickHandler=function(specs){
 		self.current.selectedListItems = [];
 		if(!window.event){//firefox fix
@@ -1846,14 +1868,71 @@ this.renderSorterField = function(prop){
 			$('.joe-panel-content-option.selected').map(function(i,listitem){
 				self.current.selectedListItems.push($(listitem).data('id'));
 			})
+
+        /*    if(!window.event.shiftKey){
+                self.shiftSelecting = false;
+            }*/
 			
-		}
-		if(self.current.selectedListItems.length){
-			$(specs.dom).parents('.joe-overlay-panel').addClass('multi-edit');
-		}else{
-			$(specs.dom).parents('.joe-overlay-panel').removeClass('multi-edit');
-		}
+		}else if(window.event.shiftKey){
+            var shiftIndex;
+            var domItem;
+            if($(specs.dom).hasClass('joe-panel-content-option')){
+               /* if(!self.shiftSelecting){
+                    $(specs.dom).toggleClass('selected');}
+                else{
+
+                }*/
+                $(specs.dom).addClass('selected');
+                shiftIndex = $(specs.dom).index();
+
+            }else{
+                $(specs.dom).parents('.joe-panel-content-option').addClass('selected');
+                shiftIndex = $(specs.dom).parents('.joe-panel-content-option').index();
+               /* if($(specs.dom).parents('.joe-panel-content-option').hasClass('selected')) {
+                    shiftIndex = $(specs.dom).parents('.joe-panel-content-option').index();
+                }*/
+            }
+
+            if(self.shiftSelecting !== false){
+                if(shiftIndex < self.shiftSelecting){
+                    var t = shiftIndex;
+                    var p = self.shiftSelecting;
+                    self.shiftSelecting = t;
+                    shiftIndex = p;
+                }
+                $('.joe-panel-content-option').slice(self.shiftSelecting,shiftIndex+1).addClass('selected');
+                $('.joe-panel-content-option').slice(shiftIndex+1).removeClass('selected');
+                $('.joe-panel-content-option').slice(0,self.shiftSelecting).removeClass('selected');
+            }
+            else{
+                self.shiftSelecting = shiftIndex;
+            }
+
+
+
+            $('.joe-panel-content-option.selected').map(function(i,listitem){
+                self.current.selectedListItems.push($(listitem).data('id'));
+            })
+
+        }
+
+
+        self.updateSelectionVisuals();
+
 	};
+
+    this.updateSelectionVisuals=function(){
+
+        if(self.current.selectedListItems.length){
+          //  $(specs.dom).parents('.joe-overlay-panel').addClass('multi-edit');
+            self.overlay.addClass('multi-edit');
+            self.overlay.find('.joe-selection-indicator').html(self.current.selectedListItems.length +' selected');
+        }else{
+          //  $(specs.dom).parents('.joe-overlay-panel').removeClass('multi-edit');
+            self.overlay.removeClass('multi-edit');
+            self.overlay.find('.joe-selection-indicator').html('');
+        }
+    };
 	
 	this.editObjectFromList = function(specs){
 		specs = specs || {};
@@ -1896,7 +1975,7 @@ this.renderSorterField = function(prop){
 			}
 		});
 		
-		goJoe(protoItem,{title:'Multi-Edit '+(self.current.schema._title||'')+': '+items.length+' items',schema:(self.current.schema||null),multiedit:true});
+		goJoe(protoItem,{title:'Multi-Edit '+(self.current.schema.__schemaname||'')+': '+items.length+' items',schema:(self.current.schema||null),multiedit:true});
 		//buttons
 			//delete multiple
 			//save multiple
@@ -2341,7 +2420,7 @@ this.renderSorterField = function(prop){
                 return true;
             }
 			if(self.current.userSpecs.multiedit){
-				if(!$(this).parent().hasClass('multi-selected')){
+				if(!$(this).parents('.joe-object-field').hasClass('multi-selected')){
 					return;
 				}
 			}
@@ -2520,6 +2599,8 @@ this.renderSorterField = function(prop){
             .map(function(i,listitem){
 			    self.current.selectedListItems.push($(listitem).data('id'));
 		})
+        self.updateSelectionVisuals();
+
 	};
 
 /*-------------------------------------------------------------------->
