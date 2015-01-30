@@ -8,11 +8,11 @@
 /*----------------------------------------------------------------------------------------------------------------
 /-	Global CONTANTS and variables
 /---------------------------------------------------------------------------------------------------------------*/
-var __version = "1.7.35",
+var __version = "1.7.35w",
 __thisIsNewer = true,
-$w = typeof window != 'undefined' ? window : {location:(typeof location != "undefined"?location:{href:''}),console:(typeof location != "undefined"?console:{})},
-$d = typeof document != 'undefined' ? document : {},
-$l = $w.location;
+$w = (typeof window != 'undefined')?window:{},
+$d = (typeof document != 'undefined')?document:{},
+$l = $w.location || {href:''};
 
 if ($w.__craydentLoaded || typeof($c) != "undefined") {
     var __current = ($w.__craydentVersion||$c.VERSION||"").split("."),
@@ -2122,7 +2122,7 @@ if (__thisIsNewer) {
     _ie = IEVersion(),_chrm = ChromeVersion(),_ff = FirefoxVersion(),_op = OperaVersion(),_saf = SafariVersion(),
     _droid = isAndroid(),_bbery = isBlackBerry(),_ipad = isIPad(),_ifon = isIPhone(),_ipod = isIPod(),_linx = isLinux(),_mac = isMac(),_palm = isPalmOS(),_symb = isSymbian(),_win = isWindows(),_winm = isWindowsMobile(),
     _amay = isAmaya(),_gekk = isGecko(),_khtm = isKHTML(),_pres = isPresto(),_prin = isPrince(),_trid = isTrident(),_webk = isWebkit(),
-    console = $w.console,
+    console = $w.console || (typeof console != 'undefined' && console)||{},
     _browser = (_ie != -1 && 'Internet Explorer') || (_chrm != -1 && 'Chrome') || (_ff != -1 && 'Firefox') || (_saf != -1 && 'Safari'),
     _os = (_droid && 'Android') || (_bbery && 'BlackBerry') || (_linx && 'Linux') || ((_ipad || _ifon || _ipod) && 'iOS') || (_mac && 'Mac') || (_palm && 'PalmOS') || (_symb && 'Symbian') || (_win && 'Windows') || (_winm && 'Windows Mobile'),
     _device = (_droid && 'Android') || (_bbery && 'BlackBerry') || (_ipad && 'iPad') || (_ifon && 'iPhone') || (_ipod && 'iPod') || (_linx && 'Linux') || (_mac && 'Mac') || (_palm && 'PalmOS') || (_symb && 'Symbian') || (_win && 'Windows') || (_winm && 'Windows Mobile'),

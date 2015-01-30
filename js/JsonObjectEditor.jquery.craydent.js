@@ -12,14 +12,11 @@
 
 	
 */
+var _webworkers = false;
 var _joeworker;
 if (!!window.Worker) {
+    _webworkers = true
 
-    _joeworker = new Worker("../JsonObjectEditor/js/joe-worker.js");
-
-    _joeworker.onmessage = function(e){
-        logit(e.data);
-    };
 
 }
 function JsonObjectEditor(specs){
@@ -782,6 +779,10 @@ function JsonObjectEditor(specs){
 	};
 	
 	this.renderFooterMenuItem=function(m){//passes a menu item
+        if(!m){
+            logit('error loading footer menu button');
+            return '';
+        }
 		var display,action,html='';
         if(m.condition && !m.condition(m,self.current.object)){
             return '';
@@ -2227,13 +2228,18 @@ this.renderSorterField = function(prop){
 		var message = message || 'JOE Message';
 		var attr = 'class';
 		var transition_time = 400;
-		self.overlay.find('.joe-message-container').html('<div class="joe-message-content">'+message+'</div>').attr('class','joe-message-container active left');
-			//TODO: don't toggle hidden class if no timeout.
+        if(self.overlay.find('.joe-message-container').hasClass('active')){
+            self.overlay.find('.joe-message-container').html('<div class="joe-message-content">'+message+'</div>').attr('class','joe-message-container');
+        }else{
+            self.overlay.find('.joe-message-container').html('<div class="joe-message-content">'+message+'</div>').attr('class','joe-message-container active left');
+        }
+            //TODO: don't toggle hidden class if no timeout.
 		var target = "getJoe("+self.joe_index+").overlay.find('.joe-message-container')";
 
 		setTimeout(target+".attr('class','joe-message-container active')",50);
 		setTimeout(target+".attr('class','joe-message-container active show-message')",transition_time);
-		if(mspecs.timeout){//only hide if timer is running.
+		if(mspecs.timeout){//only hide if timer is running and active
+
 			setTimeout(target+".attr('class','joe-message-container active ')",(mspecs.timeout*1000)+transition_time-250);
 			setTimeout(target+".attr('class','joe-message-container active right')",(mspecs.timeout*1000)+transition_time);
 			setTimeout(target+".attr('class','joe-message-container')",(mspecs.timeout*1000)+(2*transition_time)+50);
@@ -2520,6 +2526,39 @@ this.renderSorterField = function(prop){
 ANALYSIS, IMPORT AND MERGE
  <--------------------------------------------------------------------*/
     this.analyzeImportMerge = function(newArr,oldArr,idprop,specs){
+            self.showMessage('Beginning Merge Analysis of '+(newArr.length + oldArr.length),{timeout:0});
+        if(_webworkers){
+            _joeworker = new Worker("../JsonObjectEditor/js/joe-worker.js");
+
+            _joeworker.onmessage = function(e){
+                //logit(e.data);
+                if(!e.data.worker_update) {
+                    self.showMessage('Analysis Completed in '+e.data.time+' secs',{timeout:0});
+                    var analysisOK = confirm('Run Merge? \n' + JSON.stringify(e.data.results, null, '\n'));
+                    if (analysisOK) {
+                        specs.callback(e.data);
+                    }else{
+                        self.showMessage('next step cancelled');
+                    }
+                }else{
+                    self.showMessage('Merged '+e.data.worker_update.current+'/'+e.data.worker_update.total+' in '+e.data.worker_update.time+' secs',{timeout:0});
+                    logit('Merged '+e.data.worker_update.current+'/'+e.data.worker_update.total+' in '+e.data.worker_update.time+' secs');
+                }
+            };
+            var safespecs = $.extend({},specs);
+            delete safespecs.icallback;
+            delete safespecs.callback;
+            _joeworker.postMessage({action:'analyzeMerge',data:{
+                newArr:newArr,
+                oldArr:oldArr,
+                idprop:idprop,
+                specs:safespecs
+            }});
+
+            return;
+        }
+
+
         var aimBM = new Benchmarker();
         var idprop = idprop || '_id';
         var defs = {
@@ -2535,8 +2574,43 @@ ANALYSIS, IMPORT AND MERGE
             same:[],
             delete:[]
         };
+        var oldArr = oldArr.sortBy(idprop);
+        var newArr = newArr.sortBy(idprop);
 
-        var newObj, oldObj,matchObj, i = 0,query={};
+        var newObj, oldObj,matchObj,testObj, i = 0,query={};
+        var oldIDs = [];
+        var newIDs = [];
+//create an array of old object ids
+        oldArr.map(function(s){oldIDs.push(s[idprop]);});
+        newArr.map(function(s){newIDs.push(s[idprop]);});
+
+        var query = {};
+        query[idprop] = {$nin:oldIDs};
+        //adds
+        data.add = newArr.where(query);
+
+        //updates||same
+        query[idprop] = {$in:newIDs};
+        var existing = oldArr.where(query);
+
+        //for one-to-one, new items in the old array
+        query[idprop] = {$in:oldIDs};
+        var onetoone = newArr.where(query);
+
+
+        for(var i = 0, len = existing.length; i < len; i++ ){
+            newObj = onetoone[i], oldObj = existing[i];
+
+            if(specs.dateProp && newObj[specs.dateProp] == oldObj[specs.dateProp]) {
+                data.same.push(newObj);
+
+            }else {
+                data.update.push(newObj);
+            }
+
+        }
+
+/*        var newObj, oldObj,matchObj, i = 0,query={};
         while(newObj = newArr[i++]){
             matchObj = oldArr.where(newObj);//is it currently in there in the same form
 
@@ -2562,7 +2636,7 @@ ANALYSIS, IMPORT AND MERGE
             if(specs.icallback){
                 specs.icallback(i);
             }
-        }/*if(specs.dateProp){
+        }*//*if(specs.dateProp){
             query[specs.dateProp] = newObj[specs.dateProp];
         }*/
         data.results = {
@@ -2579,9 +2653,6 @@ ANALYSIS, IMPORT AND MERGE
             specs.callback(data);
         }
         function printResults(data){
-
-
-
             self.showMiniJoe({title:'Merge results',props:JSON.stringify(data.results,null,'\n'),mode:'text',menu:[]})
         }
     };
