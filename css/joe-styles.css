@@ -621,6 +621,7 @@ input.joe-boolean-field {
 .joe-object-field input[type=text] {
     padding: 4px;
     width: 300px;
+    font-size:14px;
 }
 .joe-object-field input[type=text].joe-url-field {
     width: 75%;
@@ -656,11 +657,11 @@ input.joe-boolean-field {
 /*    margin-left: 1%;*/
 }
 
-/* Rendering */
+/* Rendering |Textarea */
 .joe-object-field.rendering-field {
     min-height: 100px;
+    font-size: 14px;
 }
-
 
 textarea.joe-rendering-field{
     margin-top: 10px;
@@ -963,7 +964,7 @@ display:block !important;
     height:300px;
 }
 .ace_editor{
-
+    font-size: 13px;
     height:100%;
 }
 

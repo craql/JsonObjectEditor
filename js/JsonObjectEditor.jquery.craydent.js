@@ -634,6 +634,7 @@ function JsonObjectEditor(specs){
             alert('error scrolling for more content: \n'+e);
         }
     };
+
 /*--
      //OBJECT
  --*/
@@ -666,35 +667,7 @@ function JsonObjectEditor(specs){
 			(specs.schema.fields||[]).map(function(prop){
 
 				fields += self.renderObjectPropFieldUI(prop,specs);
-				//prop is the property name
 
-		/*		if($.type(prop) == "string") {
-                    fieldProp = self.fields[prop] || {};
-                    //merge all the items
-                    propObj = $.extend(
-                        {
-                            name: prop,
-                            type: 'text'
-                        },
-                        {
-                            onblur: specs.schema.onblur,
-                            onchange: specs.schema.onchange,
-                            onkeypress: specs.schema.onkeypress,
-                            onkeyup: specs.schema.onkeyup
-
-                        },
-                        fieldProp,
-                        //overwrite with value
-                        {value: object[prop]}
-                    );
-
-                    fields += self.renderObjectField(propObj);
-                } else if($.type(prop) == "object"){
-                    if(prop.label){
-                        fields += self.renderContentLabel(prop);
-                    }
-                }
-		*/
 			}); //end map
 			
 		}
