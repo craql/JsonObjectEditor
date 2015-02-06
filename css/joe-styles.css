@@ -121,9 +121,11 @@
     cursor: pointer;
     transition: .2s;
     color: #444;
+    background-repeat:no-repeat;
+    background-position: center center;
 }
 .joe-button:hover{
-    background-color: #f0f0f0;
+    background-color:#ddd;
 }
 
 .joe-button.center{text-align:center;}
@@ -141,19 +143,29 @@
 .joe-red-button{background-color:#Bb6655;}
 .joe-red-button:hover{background-color:#ff7755}
 
-.joe-right-button,
 .joe-footer-button {
     float: right;
+    height: 40px;
+    line-height: 40px;
+    padding: 0 16px;
+    min-width: 8px;
+    margin: 4px 5px;
 }
 
-.joe-left-button,
-.joe-delete-button {
+
+.joe-right-button {  float: right;  }
+
+
+.joe-left-button{
     float: left;
 }
+.joe-history-button{background-image: url("../img/btns/history.png");  }
+.joe-object-button{background-image: url("../img/btns/object.png");  }
+.joe-delete-button{background-image: url("../img/btns/delete.png");  }
 
 .joe-block-button {
     position: absolute;
-    background: rgba(0,0,0,.5);
+    background-color: rgba(0,0,0,.5);
     width: 40px;
     text-align: center;
     position: absolute;
@@ -568,6 +580,34 @@ input.joe-boolean-field {
     clear: both;
     /*font-size: 1.1em;*/
     /* padding: 0 10px; */
+}
+
+/*-------------------------
+	Section
+-------------------------*/
+.joe-content-section{
+
+}
+.joe-content-section.no-section{
+display:none;
+}
+
+.joe-content-section.collapsed .joe-content-section-content{
+    display:none;
+}
+
+.joe-content-section-label {
+    background-color: rgba(0,40,80,.5);
+    padding: 10px 10px;
+    margin: 15px 0 15px 0px;
+    font-weight: bold;
+    clear: both;
+    font-size: 1.1em;
+    color: #fff;
+    cursor:pointer;
+}
+.joe-content-section-label:hover{
+    background-color: rgba(0,40,80,.6);
 }
 /*-------------------------
 	Field Tooltip
@@ -1086,9 +1126,9 @@ screen and (max-height:400px) and (orientation:landscape){
         margin: 0px;
     }
 
-    .joe-button {
+/*    .joe-button {
         padding: 8px 8px !important;
         min-width: 40px;
         text-align: center;
-    }
+    }*/
 }

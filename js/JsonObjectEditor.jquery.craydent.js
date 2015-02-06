@@ -645,6 +645,7 @@ function JsonObjectEditor(specs){
 		var fields = '';
 		var propObj;
 		var fieldProp;
+        self.current.sections = {};
 		if(!specs.schema || !specs.schema.fields){//no schema use items as own schema
 			for( var prop in object){
 				if(object.hasOwnProperty(prop)){
@@ -715,6 +716,12 @@ function JsonObjectEditor(specs){
 			if(prop.label){
 				fields += self.renderContentLabel(prop);
 			}
+            if(prop.section_start){
+                fields += self.renderPropSectionStart(prop);
+            }
+            if(prop.section_end){
+                fields += self.renderPropSectionEnd(prop);
+            }
 		}
 
 		return fields;
@@ -726,7 +733,35 @@ function JsonObjectEditor(specs){
         return html;
     };
 
-
+//prop sections
+    self.renderPropSectionStart = function(prop){
+        var show = '';
+        if(prop.condition && !prop.condition(self.current.object)){
+            show =  ' no-section ';
+        }
+        var secname = fillTemplate((prop.section_label||prop.section_start),self.current.object);
+        var secID = prop.section_start;
+        if(!secname || !secID){
+         return '';
+        }
+        var collapsed = (prop.collapsed)?'collapsed':'';
+        var toggle_action = "onclick='$(this).parent().toggleClass(\"collapsed\")'";
+        var section_html = '<div class="joe-content-section '+show+' '+collapsed+'" data-section="'+secID+'">' +
+            '<div class="joe-content-section-label" '+toggle_action+'>'+secname+'</div>'+
+            '<div class="joe-content-section-content">';
+        //add to current sections
+        self.current.sections[secID]={open:true};
+        return section_html;
+    };
+    self.renderPropSectionEnd = function(prop){
+        var secID = prop.section_end;
+        if(!secID || !(self.current.sections[secID] && self.current.sections[secID].open)){
+            return '';
+        }
+        var section_html = '</div></div>';
+        self.current.sections[secID]={open:false};
+        return section_html;
+    };
 
 
 /*----------------------------->
@@ -784,7 +819,7 @@ function JsonObjectEditor(specs){
         };
 		display = m.label || m.name;
 		action = m.action || 'alert(\''+display+'\')';
-		html+= '<div class="joe-button joe-footer-button '+(m.css ||'')+'" onclick="'+action+'" data-btnid="'+m.name+'" >'+display+'</div>';
+		html+= '<div class="joe-button joe-footer-button '+(m.css ||'')+'" onclick="'+action+'" data-btnid="'+m.name+'" title="'+ (m.title||'')+'">'+display+'</div>';
 		return html;
 	};
 /*-------------------------------------------------------------------->
@@ -939,7 +974,9 @@ function JsonObjectEditor(specs){
 			case 'tags':
 				html+= self.renderTagsField(prop);
 				break;
-
+            case 'color':
+                html+= self.renderColorField(prop);
+                break;
 			default:
 				html+= self.renderTextField(prop);
 				break;
@@ -1604,8 +1641,30 @@ this.renderSorterField = function(prop){
         var url = $(dom).siblings('.joe-url-field').val();
         window.open(url);
     };
+/*----------------------------->
+ N | Color
+ <-----------------------------*/
+    this.renderColorField = function(prop){
+
+        var html=
+            '<input class="joe-color-field joe-field" type="text"  name="'+prop.name+'" value="'+(prop.value || '')+'" '
+            +self.renderFieldAttributes(prop)
+            +' />'+
 
 
+        //add onblur: hide panel
+        '<script>' +
+            '_joe._colorFieldListener($(\'input.joe-color-field[name='+prop.name+']\')[0]);'+
+        '$(\'input.joe-color-field[name='+prop.name+']\').keyup(_joe._colorFieldListener);' +
+        '</script>';
+        return html;
+    };
+    this._colorFieldListener = function(e){
+        var field = e.delegateTarget||e;
+        var color = field.value;
+        $(field).parents('.joe-object-field').css('background-color',color);
+
+    };
 /*----------------------------->
  O | Object List Field
  <-----------------------------*/
