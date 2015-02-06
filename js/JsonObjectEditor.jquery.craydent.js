@@ -2641,8 +2641,8 @@ ANALYSIS, IMPORT AND MERGE
     this.analyzeImportMerge = function(newArr,oldArr,idprop,specs){
             self.showMessage('Beginning Merge Analysis of '+(newArr.length + oldArr.length),{timeout:0});
         if(_webworkers){
-            _joeworker = new Worker("../JsonObjectEditor/js/joe-worker.js");
-
+            //_joeworker = new Worker("../JsonObjectEditor/js/joe-worker.js");
+            _joeworker = new Worker(joe_web_dir+"js/joe-worker.js");
             _joeworker.onmessage = function(e){
                 //logit(e.data);
                 if(!e.data.worker_update) {

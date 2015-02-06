@@ -5,6 +5,7 @@ last updated: CH March 2014
 var includes = "",
 web_dir = "//webapps-cdn.esri.com/tools/JOE/",
 projectName = 'JsonObjectEditor';
+
 if(location && location.hostname){//fix for devices
 	switch(location.hostname){
 		case 'webapps-cdn-stg.esri.com':
@@ -16,7 +17,7 @@ if(location && location.hostname){//fix for devices
 
         //NODE DEV
         case 'ec2-23-23-199-244.compute-1.amazonaws.com':
-            web_dir = "//ec2-23-23-199-244.compute-1.amazonaws.com/"+"/"+projectName+'/';
+            web_dir = "//ec2-23-23-199-244.compute-1.amazonaws.com/"+projectName+'/';
         break;
 
 		case 'localhost':
@@ -37,6 +38,7 @@ if(location && location.origin == 'file://'){
 	web_dir = location.href.slice(0,location.href.lastIndexOf('/')+1);
 }
 var
+    joe_web_dir = web_dir,
 scripts_dir = web_dir+"js/",
 scripts = [];
 if (typeof jQuery == 'undefined') {  
