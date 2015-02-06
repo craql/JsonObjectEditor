@@ -422,6 +422,7 @@ function JsonObjectEditor(specs){
 	this.cleanUp = function(){
 
         self.shiftSelecting = false;
+        self.allSelected = false;
 		for (var p in _joe.ace_editors){
 			_joe.ace_editors[p].destroy();
 		}
@@ -1825,7 +1826,7 @@ this.renderSorterField = function(prop){
 			self.current.specs
 		);
 		
-		var idprop = self.getIDProp() // listSchema._listID;
+		var idprop = self.getIDProp();// listSchema._listID;
 		var id = listItem[idprop] || null;
 		//var action = 'onclick="_joe.editObjectFromList(\''+id+'\');"';
 		var action = 'onclick="getJoe('+self.joe_index+').listItemClickHandler({dom:this,id:\''+id+'\'});"';
@@ -1855,7 +1856,7 @@ this.renderSorterField = function(prop){
             var listItemIcon = (listSchema._icon && renderIcon(listSchema._icon,listItem)) || '';
             //list item content
             title="<div class='joe-panel-content-option-content' "+action+">"+title+"<div class='clear'></div></div>";
-			var html = '<div class="joe-panel-content-option joe-no-select '+((stripeColor && 'striped')||'')+'"  data-id="'+id+'" >'
+			var html = '<div class="'+(self.allSelected && 'selected' ||'')+' joe-panel-content-option joe-no-select '+((stripeColor && 'striped')||'')+'"  data-id="'+id+'" >'
 
                 +'<div class="joe-panel-content-option-bg" '+bgHTML+'></div>'
                 +'<div class="joe-panel-content-option-stripe" '+stripeHTML+'></div>'
@@ -2331,6 +2332,7 @@ this.renderSorterField = function(prop){
 		var mhtml = '<div class="joe-message-container left"></div>';
 		return mhtml;
 	};
+    var messageTimeouts = Array(4);
 	this.showMessage = function(message,specs){
 		var mspecs = $.extend({
 			timeout:3,
@@ -2340,20 +2342,26 @@ this.renderSorterField = function(prop){
 		var attr = 'class';
 		var transition_time = 400;
         if(self.overlay.find('.joe-message-container').hasClass('active')){
-            self.overlay.find('.joe-message-container').html('<div class="joe-message-content">'+message+'</div>').attr('class','joe-message-container');
+            self.overlay.find('.joe-message-container')
+                .html('<div class="joe-message-content">'+message+'</div>').attr('class','joe-message-container active show-message');
         }else{
-            self.overlay.find('.joe-message-container').html('<div class="joe-message-content">'+message+'</div>').attr('class','joe-message-container active left');
+            self.overlay.find('.joe-message-container')
+                .html('<div class="joe-message-content">'+message+'</div>').attr('class','joe-message-container active left');
         }
             //TODO: don't toggle hidden class if no timeout.
 		var target = "getJoe("+self.joe_index+").overlay.find('.joe-message-container')";
 
-		setTimeout(target+".attr('class','joe-message-container active')",50);
-		setTimeout(target+".attr('class','joe-message-container active show-message')",transition_time);
+		//setTimeout(target+".attr('class','joe-message-container active')",50);
+        clearTimeout(messageTimeouts[0]);
+        clearTimeout(messageTimeouts[1]);
+        clearTimeout(messageTimeouts[2]);
+        clearTimeout(messageTimeouts[3]);
+        messageTimeouts[0] = setTimeout(target+".attr('class','joe-message-container active show-message')",transition_time);
 		if(mspecs.timeout){//only hide if timer is running and active
 
-			setTimeout(target+".attr('class','joe-message-container active ')",(mspecs.timeout*1000)+transition_time-250);
-			setTimeout(target+".attr('class','joe-message-container active right')",(mspecs.timeout*1000)+transition_time);
-			setTimeout(target+".attr('class','joe-message-container')",(mspecs.timeout*1000)+(2*transition_time)+50);
+            messageTimeouts[1] = setTimeout(target+".attr('class','joe-message-container active ')",(mspecs.timeout*1000)+transition_time-250);
+            messageTimeouts[2] = setTimeout(target+".attr('class','joe-message-container active right')",(mspecs.timeout*1000)+transition_time);
+            messageTimeouts[3] = setTimeout(target+".attr('class','joe-message-container')",(mspecs.timeout*1000)+(2*transition_time)+50);
 
 		}
 
@@ -2619,9 +2627,16 @@ this.renderSorterField = function(prop){
 		self.hide();
 		callback(obj);
 	};
-	
 	this.selectAllItems = function(){
         self.current.selectedListItems = [];
+        var currentItemIDs =
+            currentListItems.map(function(item){return item[self.getIDProp()]})
+        self.overlay.addClass('multi-edit');
+        self.current.selectedListItems =  currentItemIDs;
+        self.overlay.find('.joe-panel-content-option').addClass('selected');
+        self.allSelected = true;
+/*
+
         var itemsRendered = self.panel.find('.joe-panel-content-option').length;
         self.panel.find('.joe-panel-content').append(self.renderListItems(currentListItems,itemsRendered,currentListItems.length));
         //self.renderListItems(currentListItems.length-1);
@@ -2630,7 +2645,8 @@ this.renderSorterField = function(prop){
 		self.overlay.find('.joe-panel-content-option.selected')
             .map(function(i,listitem){
 			    self.current.selectedListItems.push($(listitem).data('id'));
-		})
+		});
+*/
         self.updateSelectionVisuals();
 
 	};
