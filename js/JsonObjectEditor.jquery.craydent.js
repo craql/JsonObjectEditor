@@ -1048,8 +1048,9 @@ function JsonObjectEditor(specs){
 		}
 
 		//TODO: Use jquery ui autocomplete
+        var disabled = (prop.locked &&'disabled')||'';
 		var html=
-		'<input class="joe-text-field joe-field" type="text"  name="'+prop.name+'" value="'+(prop.value || '')+'" '
+		'<input class="joe-text-field joe-field" type="text"  '+disabled+' name="'+prop.name+'" value="'+(prop.value || '')+'" '
 			+self.renderFieldAttributes(prop)
 			+((autocomplete && 
 				' onblur="getJoe('+self.joe_index+').hideTextFieldAutoComplete($(this));"'
@@ -2323,7 +2324,9 @@ this.renderSorterField = function(prop){
 
         });
 
-        self.overlay.find('.joe-submenu-search-field').focus();
+        if($(window).height() > 700) {
+            self.overlay.find('.joe-submenu-search-field').focus();
+        }
     };
 /*-------------------------------------------------------------------->
  J | MESSAGING

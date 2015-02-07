@@ -159,9 +159,18 @@
 .joe-left-button{
     float: left;
 }
+
+
+.joe-iconed-button{
+    padding-left: 42px;
+    background-position-x: 0;
+}
+
+
 .joe-history-button{background-image: url("../img/btns/history.png");  }
 .joe-object-button{background-image: url("../img/btns/object.png");  }
 .joe-delete-button{background-image: url("../img/btns/delete.png");  }
+.joe-add-button{background-image: url("../img/btns/add.png");  }
 
 .joe-block-button {
     position: absolute;
@@ -1124,6 +1133,19 @@ screen and (max-height:400px) and (orientation:landscape){
 
     .joe-overlay-panel {
         margin: 0px;
+    }
+
+    .joe-iconed-button {
+        width: 40px;
+        padding: 0;
+        font-size: 0;
+    }
+
+    .joe-panel-content {
+        left: 0;
+        right: 0;
+        border-left: 0px;
+        border-right: 0px;
     }
 
 /*    .joe-button {
