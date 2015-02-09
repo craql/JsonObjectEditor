@@ -9,6 +9,7 @@
 <script src="js/JsonObjectEditor.jquery.craydent.js"></script>-->
 <script src="_joeinclude.js"></script>
 <style>
+
 #testEditableRegion{
 	margin:5px;
 	padding:5px;
@@ -23,14 +24,27 @@
 width: 100%;
 height: 300px;
 }
+
+.page-panel{
+ width:50%;
+    float:left;
+    margin:0;
+    padding:0;
+    box-sizing: border-box;
+    border:1px solid #ddd;
+}
+
+#embeddedJoe {
+    height: 400px;
+    position:relative
+}
 </style>
 </head>
 
 <body>
 <div>Json Object Editor Demo Page</div>
-
-<h2></h2>
-<div>
+<div id="panelWrapper">
+<div class="page-panel" >
 <h3>Animal Objects</h3>
 <a href="javascript:_joe.show();">Show JOE</a><br/>
 
@@ -69,6 +83,13 @@ height: 300px;
 
 
 
+</div>
+<div class="page-panel" id="embeddedJoe">
+    This is where joe goes. This container should be positioned relative/absolute.
+    in the instantiation of joe, the container was set to this dom elements id.
+    <div class="joe-button" onClick="JOE3.show('')">Show Joe</div>
+
+</div>
 </div>
 <script>
 Craydent.DEBUG_MODE =true;
@@ -246,7 +267,9 @@ var objectListSchema =
 	
 	var JOE2 = new JsonObjectEditor({compact:true});
 	JOE2.init();
-	
+
+var JOE3 = new JsonObjectEditor({container:'#embeddedJoe'});
+JOE3.init();
 	
 function keyboardTracker(evt){
 	logit(evt);
