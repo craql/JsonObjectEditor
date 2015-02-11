@@ -527,7 +527,10 @@ function JsonObjectEditor(specs){
 			case 'object':
 				content = self.renderObjectContent(specs);
 			break;
-	
+
+            default:
+            content = content || '';
+            break;
 			
 		}
         var submenu = (self.current.submenu)?' with-submenu ':'';
@@ -573,7 +576,7 @@ function JsonObjectEditor(specs){
         var filteredList;
         if(self.current.sorter &&(($.type(self.current.sorter) != 'array') || self.current.sorter.length) ){
             list = list.sortBy(self.current.sorter);
-        };
+        }
         //list = list.sortBy(self.current.sorter);
 		logit('list sort complete in '+wBM.stop()+' seconds');
 		var numItemsToRender;
@@ -605,7 +608,7 @@ function JsonObjectEditor(specs){
         for(var i=start;i <stop;i++){
             listItem = items[i];
             if(listItem) {
-                html += self.renderListItem(listItem);
+                html += self.renderListItem(listItem,false,i+1);
             }
         }
 
@@ -843,7 +846,10 @@ function JsonObjectEditor(specs){
 				prop.value= prop.value;
 			}
 		}
-		var hidden = (prop.hidden)?'hidden':'';
+		var hidden = '';
+        if(prop.hidden && (typeof prop.hidden != 'function' && prop.hidden) || (typeof prop.hidden == 'function' && prop.hidden())){
+            hidden = 'hidden';
+        }
 		
 		var html ='';
 		
@@ -1118,10 +1124,10 @@ function JsonObjectEditor(specs){
 	//bluraction	
 		//var bluraction =  (prop.onblur)? ' '+self.functionName(prop.onblur)+'(this); ' : '' ;
 		//var bluraction = 'onblur=" '+self.getActionString('onblur',prop)+' "';
-		
+        var disabled = (prop.locked &&'disabled')||'';
 		var html=/*
 		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
-		'<input class="joe-number-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+
+		'<input class="joe-number-field joe-field" type="text" '+disabled+' name="'+prop.name+'" value="'+(prop.value || '')+'"  '+
 			self.renderFieldAttributes(prop,{onblur:'getJoe('+self.joe_index+').returnNumber(this);'})+
 		' />';
 		return html;
@@ -1158,7 +1164,7 @@ function JsonObjectEditor(specs){
 	C | Select
 <-----------------------------*/	
 	this.renderSelectField = function(prop){
-		
+        var disabled = (prop.locked &&'disabled')||'';
 		var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values || [prop.value];
 		var valObjs = [];
 		if($.type(values[0]) != 'object'){
@@ -1185,7 +1191,7 @@ function JsonObjectEditor(specs){
 		}
 		var html=/*
 		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
-		'<select class="joe-select-field joe-field" name="'+prop.name+'" value="'+(prop.value || '')+'" size="'+selectSize+'"'+
+		'<select '+disabled+' class="joe-select-field joe-field" name="'+prop.name+'" value="'+(prop.value || '')+'" size="'+selectSize+'"'+
 			self.renderFieldAttributes(prop)+
 			multiple+
 		' >';
@@ -1817,7 +1823,7 @@ this.renderSorterField = function(prop){
 /*-------------------------------------------------------------------->
 	4 | OBJECT LISTS
 <--------------------------------------------------------------------*/
-	this.renderListItem = function(listItem,quick){
+	this.renderListItem = function(listItem,quick,index){
 		var listSchema  = $.extend(
 			{
 				_listID:'id',
@@ -1851,16 +1857,21 @@ this.renderSorterField = function(prop){
             var quicktitle = listSchema._listTemplate || listSchema._listTitle || '';
             return fillTemplate(quicktitle,listItem);
         }
+        var numberHTML = '';
+        if(index){
+            numberHTML = index;
+        }
         if(!listSchema._listTemplate){
 			var title = listSchema._listTitle || listItem.name || id || 'untitled';
             var listItemButtons = '';//<div class="joe-panel-content-option-button fleft">#</div><div class="joe-panel-content-option-button fright">#</div>';
             var listItemIcon = (listSchema._icon && renderIcon(listSchema._icon,listItem)) || '';
             //list item content
-            title="<div class='joe-panel-content-option-content' "+action+">"+title+"<div class='clear'></div></div>";
-			var html = '<div class="'+(self.allSelected && 'selected' ||'')+' joe-panel-content-option joe-no-select '+((stripeColor && 'striped')||'')+'"  data-id="'+id+'" >'
+            title="<div class='joe-panel-content-option-content ' "+action+">"+title+"<div class='clear'></div></div>";
+			var html = '<div class="'+(self.allSelected && 'selected' ||'')+' joe-panel-content-option '+((numberHTML && 'numbered') || '' )+' joe-no-select '+((stripeColor && 'striped')||'')+'"  data-id="'+id+'" >'
 
                 +'<div class="joe-panel-content-option-bg" '+bgHTML+'></div>'
                 +'<div class="joe-panel-content-option-stripe" '+stripeHTML+'></div>'
+                +'<div class="joe-panel-content-option-number" >'+numberHTML+'</div>'
                     +listItemIcon
                 +listItemButtons
                 +fillTemplate(title,listItem)
@@ -2061,7 +2072,10 @@ this.renderSorterField = function(prop){
 			subsets = subsets();
 		}
 		function renderOption(opt){
-			var html='<div class="selector-option" onclick="getJoe('+self.joe_index+').selectSubset(\''+(opt.id||opt.name||'')+'\');">'+opt.name+'</div>';
+            var html = '';
+            if(!opt.condition || (typeof opt.condition == 'function' && opt.condition(self.current.object)) || (typeof opt.condition != 'function' && opt.condition)) {
+                var html = '<div class="selector-option" onclick="getJoe(' + self.joe_index + ').selectSubset(\'' + (opt.id || opt.name || '') + '\');">' + opt.name + '</div>';
+            }
 			return html;
 		}
 		if(self.current.specs.subset){
@@ -2132,26 +2146,31 @@ this.renderSorterField = function(prop){
 <-------------------------------------------------------------------*/
 	this.showMiniJoe = function(specs){
 		var mini = {};
-		if(!(specs && (specs.props || specs.object))){
+        specs = specs || {};
+        var object =specs.props || specs.object ||specs.list||specs.content;
+		if(!object){
 			return;
 		}
-        var object =specs.props || specs.object;
+
 		var title=specs.title || 'Object Focus';
 		//mini.name=specs.prop.name||specs.prop.id || specs.prop._id;
 		mini.id = cuid();
 		
 		//var html = '<div class="joe-mini-panel joe-panel">';
 
-		var html = 
-			self.renderEditorHeader({title:title,action:'onclick="getJoe('+self.joe_index+').hideMini()"'})
-			//+'<div class="joe-panel-content joe-inset">'
-				//+self.renderObjectContent({object:specs.props})
-                +self.renderEditorContent({object:specs.props,mode:specs.mode||'object'})
-			//	+JSON.stringify(specs.props)
-			//+'</div>'
-			+self.renderEditorFooter({minimenu:specs.menu});
-			
+        var html =
+            self.renderEditorHeader({title: title, action: 'onclick="getJoe(' + self.joe_index + ').hideMini()"'});
+
+            html += self.renderEditorContent({object: object, mode: specs.mode || 'object'})
+            html += self.renderEditorFooter({minimenu: specs.menu});
+
 		$('.joe-mini-panel').addClass('active').html(html);
+        if(!$('.joe-mini-panel .joe-panel-footer').find('.joe-button:visible').length){
+            $('.joe-mini-panel').addClass('no-footer-menu');
+        }
+        if(specs.height){
+            $('.joe-mini-panel').css('height',specs.height);
+        }
 		
 		self.minis[mini.id] = mini;
 	};
@@ -2386,14 +2405,15 @@ this.renderSorterField = function(prop){
 		goJoe({},{schema:self.current.schema});
 	};
 
-	this.updateObject = function(dom,callback,stayOnItem){
+	this.updateObject = function(dom,callback,stayOnItem,overwrites){
 		function defaultCallback(data){
 			self.showMessage(data.name +' updated successfully');
 		}
 		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || defaultCallback; //logit;
 		var newObj = self.constructObjectFromFields(self.joe_index);
 		newObj.joeUpdated = new Date();
-		var obj = $.extend(self.current.object,newObj);
+        overwrites = overwrites || {};
+		var obj = $.extend(self.current.object,newObj,overwrites);
 
 
     //update object list
@@ -2938,23 +2958,91 @@ function _COUNT(array){
 	return 0;
 };
 
+
+
+/*-------------------------------------------------------------------->
+ CRAYDENT UPDATES
+ <--------------------------------------------------------------------*/
+
+/*
+ * object.watch polyfill
+ *
+ * 2012-04-03
+ *
+ * By Eli Grey, http://eligrey.com
+ * Public Domain.
+ * NO WARRANTY EXPRESSED OR IMPLIED. USE AT YOUR OWN RISK.
+ */
+
+// object.watch
+if (!Object.prototype.observeProp) {
+    Object.defineProperty(Object.prototype, "watch", {
+        enumerable: false
+        , configurable: true
+        , writable: false
+        , value: function (prop, handler) {
+            var
+                oldval = this[prop]
+                , newval = oldval
+                , getter = function () {
+                    return newval;
+                }
+                , setter = function (val) {
+                    oldval = newval;
+                    handler = handler || logit;
+                    var specs = {object:this, prop:prop, oldval:oldval, val:val};
+                    handler(specs);
+                    return newval = val;
+                    //return
+                }
+                ;
+
+            if (delete this[prop]) { // can't watch constants
+                Object.defineProperty(this, prop, {
+                    get: getter
+                    , set: setter
+                    , enumerable: true
+                    , configurable: true
+                });
+            }
+        }
+    });
+}
+
+// object.unwatch
+if (!Object.prototype.observeProp) {
+    Object.defineProperty(Object.prototype, "unwatch", {
+        enumerable: false
+        , configurable: true
+        , writable: false
+        , value: function (prop) {
+            var val = this[prop];
+            delete this[prop]; // remove accessors
+            this[prop] = val;
+        }
+    });
+}
 /*-------------------------------------------------------------------->
 CRAYDENT UPDATES
  <--------------------------------------------------------------------*/
 
 //UNTIL VERBOSE IS REMOVED
+
 function logit(){
     try {
- /*       var location = "\t\t\t\t    " + (new Error()).stack.split('\n')[2];
+
+/*      var location = "\t\t\t\t    " + (new Error()).stack.split('\n')[2];
         for (var i = 0, len = arguments.length; i < len; i++) {
             arguments[i] = arguments[i] + location;
         }*/
+
         cout.apply(this, arguments);
         //cout.apply(arguments[0])
     } catch (e) {
         error('logit', e);
     }
 }
+
 
 //until sortBy is updated
 _ext(Array, 'sortBy', function(props, rev, primer, lookup, options){

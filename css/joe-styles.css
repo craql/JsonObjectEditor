@@ -128,11 +128,15 @@
     background-color:#ddd;
 }
 
+
+
 .joe-button.center{text-align:center;}
 .joe-button.right{text-align:right;}
+.joe-button.light{color:#eee;}
 
-.joe-confirm-button,.joe-green-button{background:#6BB476;}
-.joe-confirm-button:hover, .joe-green-button:hover{background:#5BD16D;}
+
+.joe-confirm-button,.joe-green-button{background-color:#6BB476;}
+.joe-confirm-button:hover, .joe-green-button:hover{background-color:#5BD16D;}
 
 .joe-orange-button{background-color:#ff8804;}
 .joe-orange-button:hover{background-color:#F93}
@@ -171,7 +175,9 @@
 .joe-object-button{background-image: url("../img/btns/object.png");  }
 .joe-delete-button{background-image: url("../img/btns/delete.png");  }
 .joe-add-button{background-image: url("../img/btns/add.png");  }
-
+.joe-submit-button{background-image: url("../img/btns/submit.png");  }
+.joe-thumbs_up-button{background-image: url("../img/btns/thumbs-up.png");  }
+.joe-thumbs_down-button{background-image: url("../img/btns/thumbs-down.png");  }
 .joe-block-button {
     position: absolute;
     background-color: rgba(0,0,0,.5);
@@ -383,6 +389,10 @@ Subset Selector
     border:1px solid #efefef;
 }
 
+.no-footer-menu .joe-panel-content{
+bottom:5px;
+}
+
 /*---------------------------------------
 	Panel Submenu
 ---------------------------------------*/
@@ -459,6 +469,24 @@ input.joe-submenu-search-field {
     -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
     filter: alpha(opacity=20);
 }
+
+/*-------------------------
+	Numbering
+-------------------------*/
+.numbered .joe-panel-content-option-content {
+    padding-left: 40px;
+}
+
+.numbered .joe-panel-content-option-icon{
+    margin-left:40px;
+}
+
+.joe-panel-content-option-number {
+    position: absolute;
+    left: 10px;
+    padding-top: 10px;
+    font-size:12px;
+}
 /*-------------------------
 	List Option content
 -------------------------*/
@@ -466,6 +494,7 @@ input.joe-submenu-search-field {
     padding: 10px 10px 10px 10px;
     position:relative;
 }
+
 .joe-panel-content-option-content:hover {
     background-color: rgba(0,0,0,.1) !important;
 }
@@ -474,6 +503,9 @@ input.joe-submenu-search-field {
     min-height:50px; text-align:center; min-width:50px;
     background-position:center center;
     background-repeat:no-repeat;
+    margin: 10px;
+    margin-bottom: 0;
+    border:1px solid #f2f2f2;
 }
 .joe-panel-content-option-icon img{
     padding:5px;
