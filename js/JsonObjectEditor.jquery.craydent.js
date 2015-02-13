@@ -2409,7 +2409,7 @@ this.renderSorterField = function(prop){
 		function defaultCallback(data){
 			self.showMessage(data.name +' updated successfully');
 		}
-		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || defaultCallback; //logit;
+		var callback = callback || self.current.callback || (self.current.schema && self.current.schema.callback) || defaultCallback; //logit;
 		var newObj = self.constructObjectFromFields(self.joe_index);
 		newObj.joeUpdated = new Date();
         overwrites = overwrites || {};
@@ -2932,7 +2932,7 @@ ANALYSIS, IMPORT AND MERGE
 var __clearDiv__ = '<div class="clear"></div>';
 
 var __createBtn__ = {name:'create',label:'Create', action:'_joe.createObject();', css:'joe-orange-button'};
-var __quicksaveBtn__ = {name:'quicksave',label:'QuickSave', action:'_joe.updateObject(this,null,true);', css:'joe-save-button joe-confirm-button'};
+var __quicksaveBtn__ = {name:'quicksave',label:'QuickSave', action:'_joe.updateObject(this,null,true);', css:'joe-quicksave-button joe-confirm-button'};
 var __saveBtn__ = {name:'save',label:'Save', action:'_joe.updateObject(this);', css:'joe-save-button joe-confirm-button'};
 var __deleteBtn__ = {name:'delete',label:'Delete',action:'_joe.deleteObject(this);', css:'joe-delete-button', condition:function(){return (self.isNewItem && !self.isNewItem());}};
 var __multisaveBtn__ = {name:'save_multi',label:'Multi Save', action:'_joe.updateMultipleObjects(this);', css:'joe-save-button joe-confirm-button joe-multi-only'};
