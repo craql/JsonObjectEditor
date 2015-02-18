@@ -3,7 +3,7 @@ last updated: CH March 2014
 */
 
 var includes = "",
-web_dir = "//webapps-cdn.esri.com/tools/JOE/",
+web_dir = (location.protocol||'http:')+"//webapps-cdn.esri.com/tools/JOE/",
 projectName = 'JsonObjectEditor';
 
 if(location && location.hostname){//fix for devices
