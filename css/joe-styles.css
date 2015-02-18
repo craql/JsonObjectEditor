@@ -295,7 +295,7 @@
     box-shadow: 0 0 2px 0 rgba(0,0,0,.3);
 }
 
-.joe-panel-close{
+.joe-panel-header-button{
     position: absolute;
     top: 0;
     right: 0;
@@ -305,14 +305,26 @@
     text-align: center;
     cursor: pointer;
     height: 28px;
-    background: url(../img/close-x.png) center center no-repeat;
+    background-image: url(../img/joe-sprite.png);
     background-color: #DDD;
     background-color: rgba(0, 0, 0, 0.1);
+    background-repeat:no-repeat;
     margin: 5px;
     border: 1px solid #AAA;
 }
-.joe-panel-close:hover{
+.joe-panel-header-button:hover{
     background-color: #ccc;
+}
+.joe-panel-close{
+    right: 0;
+
+    background-position: -110px -11px;
+}
+
+
+.joe-panel-reload{
+    right: 40px;
+    background-position: -159px -11px;
 }
 
 .joe-panel-title{
@@ -347,7 +359,7 @@ Subset Selector
     cursor: pointer;
     z-index: 10;
     position: absolute;
-    right: 35px;
+    right: 75px;
     min-width: 100px;
 }
 

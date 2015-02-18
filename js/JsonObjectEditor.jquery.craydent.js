@@ -371,8 +371,8 @@ function JsonObjectEditor(specs){
         self.current.title = specs.title || 'Json Object Editor';
 		var title = fillTemplate(self.current.title,titleObj);
 
-		action = specs.action||'onclick="getJoe('+self.joe_index+').closeButtonAction()"';
-		
+		var close_action = specs.close_action||'onclick="getJoe('+self.joe_index+').closeButtonAction()"';
+        var reload_action = specs.reload_action||'onclick="getJoe('+self.joe_index+').reload()"';
 		function renderHeaderBackButton(){
 			var html = '';
 			if(self.history.length > 1){
@@ -388,7 +388,8 @@ function JsonObjectEditor(specs){
 			'<div class="joe-panel-title">'+
 				(('<div>'+title+'</div>').toDomElement().innerText || title || 'Json Object Editor')+
 			'</div>'+
-			'<div class="joe-panel-close" '+action+'></div>'+	
+        '<div class="joe-panel-reload joe-panel-header-button" '+reload_action+'></div>'+
+        '<div class="joe-panel-close joe-panel-header-button" '+close_action+'></div>'+
 			'<div class="clear"></div>'+
 		'</div>';
 		return html;
@@ -694,29 +695,22 @@ function JsonObjectEditor(specs){
 			//var fieldProp = self.fields[prop] || {};
 			var fieldProp = $.extend({},self.fields[prop] || {});
 			//merge all the items
-			var propObj = $.extend(
-				{
-					name: prop,
-					type: 'text'
-				},
-				{
-					onblur: schemaspec.onblur,
-					onchange: schemaspec.onchange,
-					onkeypress: schemaspec.onkeypress,
-					onkeyup: schemaspec.onkeyup
-
-				},
-				fieldProp,
-				//overwrite with value
-				{value: self.current.object[prop]}
-			);
+			var propObj =extendField();
 
 			if(self.constructObjectFromFields()[prop] !== undefined){
 
 				fieldProp.value = self.constructObjectFromFields()[prop]
 			}
 			fields += self.renderObjectField(propObj);
-		}else if($.type(prop) == "object"){
+		}else if(prop && prop.extend){
+            var fieldProp = $.extend({},self.fields[prop.extend] || {},prop.specs||{});
+            var propObj =extendField(prop.extend);
+            if(self.constructObjectFromFields()[prop.extend] !== undefined){
+                fieldProp.value = self.constructObjectFromFields()[prop.extend]
+            }
+            fields += self.renderObjectField(propObj);
+        }else if($.type(prop) == "object"){
+
 			if(prop.label){
 				fields += self.renderContentLabel(prop);
 			}
@@ -728,6 +722,25 @@ function JsonObjectEditor(specs){
             }
 		}
 
+        function extendField(propname){
+            var propname = propname || prop;
+            return $.extend(
+                {
+                    name: propname,
+                    type: 'text'
+                },
+                {
+                    onblur: schemaspec.onblur,
+                    onchange: schemaspec.onchange,
+                    onkeypress: schemaspec.onkeypress,
+                    onkeyup: schemaspec.onkeyup
+
+                },
+                fieldProp,
+                //overwrite with value
+                {value: self.current.object[propname]}
+            );
+        }
 		return fields;
 
 	};
@@ -1641,7 +1654,9 @@ this.renderSorterField = function(prop){
             var disabled = (prop.locked &&'disabled')||'';
         var html=
             '<div class="joe-button" onclick="_joe.gotoFieldURL(this);">view</div>'
-            +'<input class="joe-url-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+disabled+' />'
+            +'<input class="joe-url-field joe-field" type="text" ' +
+            self.renderFieldAttributes(prop)+
+            'name="'+prop.name+'" value="'+(prop.value || '')+'"  '+disabled+' />'
        + __clearDiv__;
         return html;
     };
@@ -2271,7 +2286,13 @@ this.renderSorterField = function(prop){
             //self.overlay.removeClass('fade-out');
         },timeout);
 	};
-	
+
+    this.reload = function(hideMessage){
+        var reloadBM = new Benchmarker();
+        var info = self.history.pop();
+        self.show(info.data,info.specs);
+        if(!hideMessage){self.showMessage('reloaded in '+reloadBM.stop()+' secs');}
+    };
 	this.compactMode = function(compact){
 		if(compact === true){self.overlay.addClass('compact');}
 		if(compact === false){self.overlay.removeClass('compact');}
@@ -2809,34 +2830,34 @@ ANALYSIS, IMPORT AND MERGE
         }
     };
 
-        this.analyzeClassObject = function(object,ref){
-            var data ={
-                functions:[],
-                properties:[]
-            };
-            var pReg = /function[\s*]\(([_a-z,A-Z0-9]*)\)/;
-            var curProp;
-            var params
-            for(var p in object){
-                curProp = object[p];
-                try {
-                    if ($.type(curProp) == "function") {
-                        params = pReg.exec(object[p])[1] || 'none';
-                        data.functions.push({
-                            code: object[p],
-                            name: p,
-                            global_function: false,
-                            ref: ref,
-                            parameters:params
-                        })
-                    }
-                }catch(e){
-                    logit(e);
-                }
-            }
-
-            return data;
+    this.analyzeClassObject = function(object,ref){
+        var data ={
+            functions:[],
+            properties:[]
         };
+        var pReg = /function[\s*]\(([_a-z,A-Z0-9]*)\)/;
+        var curProp;
+        var params
+        for(var p in object){
+            curProp = object[p];
+            try {
+                if ($.type(curProp) == "function") {
+                    params = pReg.exec(object[p])[1] || 'none';
+                    data.functions.push({
+                        code: object[p],
+                        name: p,
+                        global_function: false,
+                        ref: ref,
+                        parameters:params
+                    })
+                }
+            }catch(e){
+                logit(e);
+            }
+        }
+
+        return data;
+    };
 
 /*-------------------------------------------------------------------->
 	H | HELPERS

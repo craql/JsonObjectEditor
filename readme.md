@@ -169,6 +169,9 @@ an array of menu buttons
 - joe-left-button
 - joe-right-button
 
+##FIELDS
+
+    {extend:'name',specs:{display:'Request Title'}},//extends the field 'name' with the specs provided.
 ##usage
 ### a | adding a new object
 
