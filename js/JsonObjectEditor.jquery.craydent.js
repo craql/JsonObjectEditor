@@ -98,13 +98,18 @@ function JsonObjectEditor(specs){
         self.panel = self.overlay.find('.joe-overlay-panel');
         if (self.specs.useBackButton) {
             window.onkeydown = function (e) {
+                var code = e.keyCode
                 var nonBackElements = ['input','select','textarea'];
-                if (e.keyCode == 8) {
+                if (code == 8) {
                     if(self.history.length) {
                         //if in editor fields, don't go back
                         if (nonBackElements.indexOf(e.target.tagName.toLowerCase()) != -1) {
                             //logit('t');
                             //return false;
+                            if(e.target.className.indexOf('joe-submenu-search-field') != -1){
+                                //self.goBack();
+                                //return false;
+                            }
                         } else {
                             //otherwise, go back.
                             self.goBack();
@@ -115,6 +120,49 @@ function JsonObjectEditor(specs){
                         if(!leavePage){
                             return false;
                         }
+                    }
+                }else if([38,40,13].indexOf(code) == -1){//set focus for other keys
+                    var inSearchfield = false;
+                    if ($(document.activeElement)[0] != $('.joe-submenu-search-field')[0]) {
+                        self.overlay.find('.joe-submenu-search-field').focus();
+                        inSearchfield = true;
+                        $('.joe-panel-content-option.keyboard-selected').removeClass('keyboard-selected');
+                    }
+                }else{
+                    var keyboardSelectedIndex = ($('.joe-panel-content-option.keyboard-selected').length)?
+                        $('.joe-panel-content-option.keyboard-selected').index():-1;
+                    logit(keyboardSelectedIndex);
+
+                    switch(code){
+                        case 38://up
+                            keyboardSelectedIndex--;
+                            if(keyboardSelectedIndex > -1) {
+                                keyboardSelectOption();
+                            }
+                        break;
+                        case 40://down
+                            keyboardSelectedIndex++;
+                            if(keyboardSelectedIndex < currentListItems.length) {
+                                keyboardSelectOption();
+                            }
+                        break;
+                        case 13://enter
+                            if(keyboardSelectedIndex != -1){
+                                $('.joe-panel-content-option.keyboard-selected').find('.joe-panel-content-option-content').click();
+                            }
+                        break;
+                    }
+                    function keyboardSelectOption(){
+                        $('.joe-panel-content-option.keyboard-selected').toggleClass('keyboard-selected');
+                        var el = $('.joe-panel-content-option').eq(keyboardSelectedIndex);
+                        el.addClass('keyboard-selected');
+                        self.overlay.find('.joe-submenu-search-field').blur();
+                       // $('.joe-panel-content').scrollTop($('.joe-panel-content-option.keyboard-selected').offset().top);
+                        el[0].scrollIntoView(true);
+                        //var panel_content = self.overlay.find('.joe-panel-content');
+                        //panel_content.animate({ scrollTop: panel_content.scrollTop()-10 });
+
+                        //panel_content.scrollTop(panel_content.scrollTop()-10);
                     }
                 }
             }
@@ -376,7 +424,7 @@ function JsonObjectEditor(specs){
 		function renderHeaderBackButton(){
 			var html = '';
 			if(self.history.length > 1){
-				html+= '<div class="joe-header-back-btn" onclick="getJoe('+self.joe_index+').goBack();"> < </div>';
+				html+= '<div class="joe-header-back-btn joe-panel-header-button" onclick="getJoe('+self.joe_index+').goBack();" title="go back">&nbsp;</div>';
 			}
 			return html;
 		}
@@ -388,8 +436,8 @@ function JsonObjectEditor(specs){
 			'<div class="joe-panel-title">'+
 				(('<div>'+title+'</div>').toDomElement().innerText || title || 'Json Object Editor')+
 			'</div>'+
-        '<div class="joe-panel-reload joe-panel-header-button" '+reload_action+'></div>'+
-        '<div class="joe-panel-close joe-panel-header-button" '+close_action+'></div>'+
+        '<div class="joe-panel-reload joe-panel-header-button" title="reload" '+reload_action+'></div>'+
+        '<div class="joe-panel-close joe-panel-header-button" title="close" '+close_action+'></div>'+
 			'<div class="clear"></div>'+
 		'</div>';
 		return html;
@@ -401,12 +449,18 @@ function JsonObjectEditor(specs){
 
         self.clearAuxiliaryData();
 	};
+    var goingBackFromID;
 	this.goBack = function(){
+        //go back to last item and highlight
+        var gobackItem = self.current.object[self.getIDProp()]
+        if(gobackItem){
+            goingBackFromID = gobackItem;
+        }
+        //clearTimeout(self.searchTimeout );
 		self.history.pop();
 		var joespecs = self.history.pop();
 		if(!joespecs){
-			self.hide();
-            self.clearAuxiliaryData();
+            self.closeButtonAction();
 			return;
 		}
 		//[self.history.length];
@@ -444,13 +498,16 @@ function JsonObjectEditor(specs){
             return '';
         }
         var subSpecs = {
-            search:true
+            search:true,
+            itemcount:true
         };
         var userSubmenu = ($.type(self.current.submenu) != 'object')?{}:self.current.submenu;
         $.extend(subSpecs,userSubmenu);
 
         var submenu =
         '<div class="joe-panel-submenu">'
+
+            +((subSpecs.itemcount && self.renderSubmenuItemcount(subSpecs.itemcount))||'')
             +((subSpecs.search && self.renderSubmenuSearch(subSpecs.search))||'')
         +'</div>';
         return submenu;
@@ -463,6 +520,12 @@ function JsonObjectEditor(specs){
             +'<input class="joe-submenu-search-field" '+action+' placeholder="find" />'
             +"</div>";
         return submenusearch;
+    };
+    this.renderSubmenuItemcount = function(s){
+
+        var submenuitem =
+            "<div class='joe-submenu-itemcount'>items</div>";
+        return submenuitem;
     };
     this.searchTimeout;
     this.filterListFromSubmenu = function(dom){
@@ -2325,6 +2388,11 @@ this.renderSorterField = function(prop){
 	this.onPanelShow = function(){
 		//init datepicker
 		self.overlay.find('.joe-date-field').Zebra_DatePicker({offset:[5,20],format:'m/d/Y'});
+
+        //itemcount
+        if(currentListItems){
+            self.overlay.find('.joe-submenu-itemcount').html(currentListItems.length+' item'+((currentListItems.length > 1 &&'s') ||''));
+        }
         try {
             self.overlay.find('.joe-multisorter-bin').sortable({connectWith: '.joe-multisorter-bin'});
             self.overlay.find('.joe-buckets-bin').sortable({
@@ -2364,9 +2432,23 @@ this.renderSorterField = function(prop){
 
         });
 
-        if($(window).height() > 700) {
-            self.overlay.find('.joe-submenu-search-field').focus();
+        //go back to previous item
+        if(goingBackFromID){
+            try {
+                self.overlay.find('.joe-panel-content-option[data-id=' + goingBackFromID + ']')
+                    .addClass('keyboard-selected')[0].scrollIntoView(true);
+            }catch(e){
+                logit('go back to item not ready yet:'+goingBackFromID);
+                //TODO:'render all necessary items to go back'
+            }
+            //self.overlay.find('.joe-panel-content').scrollTop(self.overlay.find('.joe-panel-content').scrollTop()-20);
+            //$('.joe-panel-content').scrollTop($('.joe-panel-content-option.keyboard-selected').offset().top);[0].scrollIntoView(true);
+
+            goingBackFromID = null;
         }
+/*        if($(window).height() > 700) {
+            self.overlay.find('.joe-submenu-search-field').focus();
+        }*/
     };
 /*-------------------------------------------------------------------->
  J | MESSAGING
@@ -2879,7 +2961,7 @@ ANALYSIS, IMPORT AND MERGE
     this.renderHashlink = function(){
         var hlink = fillTemplate();
     };
-
+    var hash_delimiter = '/';
     this.updateHashLink = function(){
         if(!specs.useHashlink){
             return;
@@ -2894,7 +2976,7 @@ ANALYSIS, IMPORT AND MERGE
             hashInfo.object_id = (self.current.object && self.current.object[self.getIDProp()])||'';
         }
 
-        var hashtemplate = ($.type(specs.useHashlink) == 'string')?specs.useHashlink:'${schema_name}:::${object_id}';
+        var hashtemplate = ($.type(specs.useHashlink) == 'string')?specs.useHashlink:'${schema_name}'+hash_delimiter+'${object_id}';
         //$SET({'@!':fillTemplate(hashtemplate,hashInfo)},{noHistory:true});
         $SET({'@!':fillTemplate(hashtemplate,hashInfo)});
     };
@@ -2905,7 +2987,7 @@ ANALYSIS, IMPORT AND MERGE
             if (!useHash || self.joe_index != 0) {
                 return;
             }
-            var hashBreakdown = useHash.split(':::');
+            var hashBreakdown = useHash.split(hash_delimiter);
             var hashSchema = self.schemas[hashBreakdown[0]];
             var hashItemID = hashBreakdown[1];
             if (hashSchema && (hashSchema.dataset || (!$.isEmptyObject(NPC.Data) && NPC.Data[hashSchema.__schemaname]))) {
@@ -2953,9 +3035,9 @@ ANALYSIS, IMPORT AND MERGE
 var __clearDiv__ = '<div class="clear"></div>';
 
 var __createBtn__ = {name:'create',label:'Create', action:'_joe.createObject();', css:'joe-orange-button'};
-var __quicksaveBtn__ = {name:'quicksave',label:'QuickSave', action:'_joe.updateObject(this,null,true);', css:'joe-quicksave-button joe-confirm-button'};
-var __saveBtn__ = {name:'save',label:'Save', action:'_joe.updateObject(this);', css:'joe-save-button joe-confirm-button'};
-var __deleteBtn__ = {name:'delete',label:'Delete',action:'_joe.deleteObject(this);', css:'joe-delete-button', condition:function(){return (self.isNewItem && !self.isNewItem());}};
+var __quicksaveBtn__ = {name:'quicksave',label:'QuickSave', action:'_joe.updateObject(this,null,true);', css:'joe-quicksave-button joe-confirm-button joe-iconed-button'};
+var __saveBtn__ = {name:'save',label:'Save', action:'_joe.updateObject(this);', css:'joe-save-button joe-confirm-button joe-iconed-button'};
+var __deleteBtn__ = {name:'delete',label:'Delete',action:'_joe.deleteObject(this);', css:'joe-delete-button joe-iconed-button', condition:function(){return (self.isNewItem && !self.isNewItem());}};
 var __multisaveBtn__ = {name:'save_multi',label:'Multi Save', action:'_joe.updateMultipleObjects(this);', css:'joe-save-button joe-confirm-button joe-multi-only'};
 var __multideleteBtn__ = {name:'delete_multi',label:'Multi Delete',action:'_joe.deleteMultipleObjects(this);', css:'joe-delete-button joe-multi-only'};
 var __selectAllBtn__ = {name:'select_all',label:'select all',action:'_joe.selectAllItems();', css:'joe-left-button joe-multi-always'};

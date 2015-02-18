@@ -335,20 +335,14 @@
 }
 
 .joe-header-back-btn{
+    background-position: -261px -11px;
     float: left;
-    width: 40px;
-    cursor: pointer;
-    text-align: center;
-    line-height: 30px;
-    border-right: 1px solid #bbb;
-    margin: 5px 0;
-    padding-right: 5px;
+
     margin-right: 10px;
     color: #888;
+    position:relative;
 }
-.joe-header-back-btn:hover{
-    background:#bbb;
-}
+
 /*-------------------------
 Subset Selector
 -------------------------*/
@@ -432,6 +426,14 @@ input.joe-submenu-search-field {
     min-width: 200px;
 }
 
+
+.joe-submenu-itemcount {
+    float: right;
+    padding-right: 1px;
+    padding-top: 9px;
+    font-size: 12px;
+    color:#999;
+}
 /*-------------------------
 	List Options
 -------------------------*/
@@ -511,7 +513,8 @@ input.joe-submenu-search-field {
     position:relative;
 }
 
-.joe-panel-content-option-content:hover {
+.joe-panel-content-option-content:hover,
+.joe-panel-content-option.keyboard-selected .joe-panel-content-option-content{
     background-color: rgba(0,0,0,.1) !important;
 }
 .joe-panel-content-option-icon{
