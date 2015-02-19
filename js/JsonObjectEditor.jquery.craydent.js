@@ -452,9 +452,11 @@ function JsonObjectEditor(specs){
     var goingBackFromID;
 	this.goBack = function(){
         //go back to last item and highlight
-        var gobackItem = self.current.object[self.getIDProp()]
-        if(gobackItem){
-            goingBackFromID = gobackItem;
+        if(self.current.object) {
+            var gobackItem = self.current.object[self.getIDProp()];
+            if (gobackItem) {
+                goingBackFromID = gobackItem;
+            }
         }
         //clearTimeout(self.searchTimeout );
 		self.history.pop();
