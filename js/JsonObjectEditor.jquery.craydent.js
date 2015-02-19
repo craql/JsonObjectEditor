@@ -2961,7 +2961,11 @@ ANALYSIS, IMPORT AND MERGE
     this.renderHashlink = function(){
         var hlink = fillTemplate();
     };
+
     var hash_delimiter = '/';
+    if(location.href && location.href.indexOf(':::') != -1){
+        hash_delimiter = ':::';
+    }
     this.updateHashLink = function(){
         if(!specs.useHashlink){
             return;
