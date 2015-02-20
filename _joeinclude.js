@@ -66,7 +66,8 @@ styles =[
    "esri-leaflet-geocoder.css",
    "joe-styles.css",
    //"jquery-ui-1.10.4.custom.min.css",
-	"jquery-ui.min.css"
+	"jquery-ui.min.css",
+    "jif/style.css"
 ],
 script,style,sc,st,
 sc_len = scripts.length,st_len = styles.length;

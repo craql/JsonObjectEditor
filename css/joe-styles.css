@@ -315,9 +315,29 @@
 .joe-panel-header-button:hover{
     background-color: #ccc;
 }
+.jif-panel-header-button{
+    position: absolute;
+    top: 0;
+    right: 0;
+    line-height: 40px !important;
+    font-size: 14px;
+    width: 40px;
+    text-align: center;
+    cursor: pointer;
+    height: 40px;
+    background-color: #DDD;
+    background-color: rgba(0, 0, 0, 0.1);
+
+    font-size: 32px;
+    color:#444;
+    transition: .1s;
+}
+.jif-panel-header-button:hover{
+    background-color: #ccc;
+    color:#007ac2
+}
 .joe-panel-close{
     right: 0;
-
     background-position: -110px -11px;
 }
 
@@ -342,7 +362,14 @@
     color: #888;
     position:relative;
 }
+.jif-header-back-btn{
+    float: left;
 
+    margin-right: 10px;
+    color:#444;
+    position:relative;
+    font-size:16px;
+}
 /*-------------------------
 Subset Selector
 -------------------------*/

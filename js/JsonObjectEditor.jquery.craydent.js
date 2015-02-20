@@ -281,7 +281,7 @@ function JsonObjectEditor(specs){
             }else{
                 //select deaulf subset if it exists
                 self.current.subset =
-                    (self.current.subsets &&  self.current.subsets.where({default:true})[0])||null;
+                    (self.current.subsets &&  self.current.subsets.where({'default':true})[0])||null;
             }
 
 
@@ -424,7 +424,8 @@ function JsonObjectEditor(specs){
 		function renderHeaderBackButton(){
 			var html = '';
 			if(self.history.length > 1){
-				html+= '<div class="joe-header-back-btn joe-panel-header-button" onclick="getJoe('+self.joe_index+').goBack();" title="go back">&nbsp;</div>';
+				//html+= '<div class="joe-header-back-btn joe-panel-header-button" onclick="getJoe('+self.joe_index+').goBack();" title="go back">&nbsp;</div>';
+                html+= '<div class="jif-header-back-btn jif-panel-header-button" onclick="getJoe('+self.joe_index+').goBack();" title="go back"><span class="jif-arrow-left"></span></div>';
 			}
 			return html;
 		}
@@ -436,8 +437,11 @@ function JsonObjectEditor(specs){
 			'<div class="joe-panel-title">'+
 				(('<div>'+title+'</div>').toDomElement().innerText || title || 'Json Object Editor')+
 			'</div>'+
-        '<div class="joe-panel-reload joe-panel-header-button" title="reload" '+reload_action+'></div>'+
-        '<div class="joe-panel-close joe-panel-header-button" title="close" '+close_action+'></div>'+
+        //'<div class="joe-panel-reload joe-panel-header-button" title="reload" '+reload_action+'></div>'+
+        '<div class="jif-panel-header-button joe-panel-reload" title="reload" '+reload_action+'><span class="jif-reload"></span></div>'+
+        '<div class="jif-panel-header-button joe-panel-close" title="close" '+close_action+'>' +//joe-panel-close
+        '<span class="jif-close"></span>'+
+        '</div>'+
 			'<div class="clear"></div>'+
 		'</div>';
 		return html;
@@ -913,8 +917,8 @@ function JsonObjectEditor(specs){
 		//field requires {name,type}
 
 		//set default value
-		if(prop.value == undefined && prop.default != undefined){
-			prop.value = prop.default;
+		if(prop.value == undefined && prop['default'] != undefined){
+			prop.value = prop['default'];
 		}
         if($.type(prop.value) == "function"){
 			try {
@@ -2829,7 +2833,7 @@ ANALYSIS, IMPORT AND MERGE
             add:[],
             update:[],
             same:[],
-            delete:[]
+            'delete':[]
         };
         var oldArr = oldArr.sortBy(idprop);
         var newArr = newArr.sortBy(idprop);
@@ -3084,7 +3088,7 @@ function _COUNT(array){
  */
 
 // object.watch
-if (!Object.prototype.observeProp) {
+if (!Object.prototype.observeProp && Object.defineProperty) {
     Object.defineProperty(Object.prototype, "watch", {
         enumerable: false
         , configurable: true
@@ -3119,7 +3123,7 @@ if (!Object.prototype.observeProp) {
 }
 
 // object.unwatch
-if (!Object.prototype.observeProp) {
+if (!Object.prototype.observeProp && Object.defineProperty) {
     Object.defineProperty(Object.prototype, "unwatch", {
         enumerable: false
         , configurable: true
