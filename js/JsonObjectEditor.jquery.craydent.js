@@ -454,6 +454,7 @@ function JsonObjectEditor(specs){
         self.clearAuxiliaryData();
 	};
     var goingBackFromID;
+    var goingBackQuery;
 	this.goBack = function(){
         //go back to last item and highlight
         if(self.current.object) {
@@ -468,7 +469,11 @@ function JsonObjectEditor(specs){
 		if(!joespecs){
             self.closeButtonAction();
 			return;
-		}
+		}else{
+            if(joespecs.keyword){
+                goingBackQuery = joespecs.keyword;
+            }
+        }
 		//[self.history.length];
 		self.show(joespecs.data,joespecs.specs);
 	};
@@ -534,14 +539,22 @@ function JsonObjectEditor(specs){
         return submenuitem;
     };
     this.searchTimeout;
-    this.filterListFromSubmenu = function(dom){
+    this.filterListFromSubmenu = function(dom,now){
 
         clearTimeout(self.searchTimeout );
         self.overlay.removeClass('.multi-edit');
-        self.searchTimeout = setTimeout(function(){searchFilter(dom);},400);
+        if(!now) {
+            self.searchTimeout = setTimeout(function () {
+                searchFilter(dom);
+            }, 300);
+        }else{
+            searchFilter(dom);
+        }
         function searchFilter(dom){
             var searchBM = new Benchmarker();
             var value=dom.value.toLowerCase();
+
+            _joe.history[_joe.history.length-1].keyword = value;
 
             var testable;
             var listables = (self.current.subset)?self.current.list.where(self.current.subset.filter):self.current.list;
@@ -560,7 +573,7 @@ function JsonObjectEditor(specs){
 
 
             });
-
+            self.overlay.find('.joe-submenu-itemcount').html(currentListItems.length+' item'+((currentListItems.length > 1 &&'s') ||''));
             logit('search filter in '+searchBM.stop()+' seconds');
             self.panel.find('.joe-panel-content').html(self.renderListItems(currentListItems,0,self.specs.dynamicDisplay));
             var titleObj = $.extend({},self.current.object,{_listCount:currentListItems.length||'0'});
@@ -2397,7 +2410,13 @@ this.renderSorterField = function(prop){
 
         //itemcount
         if(currentListItems){
+            if(goingBackQuery){
+                self.overlay.find('.joe-submenu-search-field').val(goingBackQuery);
+                self.filterListFromSubmenu(self.overlay.find('.joe-submenu-search-field')[0],true);
+                goingBackQuery = '';
+            }
             self.overlay.find('.joe-submenu-itemcount').html(currentListItems.length+' item'+((currentListItems.length > 1 &&'s') ||''));
+
         }
         try {
             self.overlay.find('.joe-multisorter-bin').sortable({connectWith: '.joe-multisorter-bin'});
