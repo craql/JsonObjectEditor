@@ -461,6 +461,7 @@ function JsonObjectEditor(specs){
             var gobackItem = self.current.object[self.getIDProp()];
             if (gobackItem) {
                 goingBackFromID = gobackItem;
+               // logit(goingBackFromID);
             }
         }
         //clearTimeout(self.searchTimeout );
@@ -573,8 +574,9 @@ function JsonObjectEditor(specs){
 
 
             });
-            self.overlay.find('.joe-submenu-itemcount').html(currentListItems.length+' item'+((currentListItems.length > 1 &&'s') ||''));
+
             logit('search filter in '+searchBM.stop()+' seconds');
+            self.overlay.find('.joe-submenu-itemcount').html(currentListItems.length+' item'+((currentListItems.length > 1 &&'s') ||''));
             self.panel.find('.joe-panel-content').html(self.renderListItems(currentListItems,0,self.specs.dynamicDisplay));
             var titleObj = $.extend({},self.current.object,{_listCount:currentListItems.length||'0'});
             self.panel.find('.joe-panel-title').html(fillTemplate(self.current.title,titleObj));
@@ -1992,7 +1994,13 @@ this.renderSorterField = function(prop){
 		return html;
 	};
 	this.shiftSelecting = false;
+    var goBackListIndex;
 	this.listItemClickHandler=function(specs){
+        goBackListIndex = null;
+        if(specs && specs.dom){//store index
+            goBackListIndex = $(specs.dom).parents('.joe-panel-content-option').index();
+            //logit('clicked index: '+goBackListIndex);
+        }
 		self.current.selectedListItems = [];
 		if(!window.event){//firefox fix
 			self.editObjectFromList(specs);
@@ -2415,6 +2423,7 @@ this.renderSorterField = function(prop){
                 self.filterListFromSubmenu(self.overlay.find('.joe-submenu-search-field')[0],true);
                 goingBackQuery = '';
             }
+
             self.overlay.find('.joe-submenu-itemcount').html(currentListItems.length+' item'+((currentListItems.length > 1 &&'s') ||''));
 
         }
@@ -2459,8 +2468,17 @@ this.renderSorterField = function(prop){
 
         //go back to previous item
         if(goingBackFromID){
+            if(goBackListIndex != null){
+                //logit('rendering until '+goBackListIndex);
+
+                //self.overlay.find('.joe-submenu-itemcount').html(currentListItems.length+' item'+((currentListItems.length > 1 &&'s') ||''));
+                if(goBackListIndex > self.specs.dynamicDisplay) {
+                    self.panel.find('.joe-panel-content').html(self.renderListItems(currentListItems, 0, goBackListIndex+1));
+                }
+                goBackListIndex = null;
+            }
             try {
-                self.overlay.find('.joe-panel-content-option[data-id=' + goingBackFromID + ']')
+                self.overlay.find('.joe-panel-content-option[data-id="' + goingBackFromID + '"]')
                     .addClass('keyboard-selected')[0].scrollIntoView(true);
             }catch(e){
                 logit('go back to item not ready yet:'+goingBackFromID);
@@ -2471,6 +2489,7 @@ this.renderSorterField = function(prop){
 
             goingBackFromID = null;
         }
+        self._currentListItems = currentListItems;
 /*        if($(window).height() > 700) {
             self.overlay.find('.joe-submenu-search-field').focus();
         }*/
