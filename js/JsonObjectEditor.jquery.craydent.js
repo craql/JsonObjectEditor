@@ -123,7 +123,7 @@ function JsonObjectEditor(specs){
                     }
                 }else if([38,40,13].indexOf(code) == -1){//set focus for other keys
                     var inSearchfield = false;
-                    if ($(document.activeElement)[0] != $('.joe-submenu-search-field')[0]) {
+                    if ($(document.activeElement) && $(document.activeElement)[0] != $('.joe-submenu-search-field')[0]) {
                         self.overlay.find('.joe-submenu-search-field').focus();
                         inSearchfield = true;
                         $('.joe-panel-content-option.keyboard-selected').removeClass('keyboard-selected');
