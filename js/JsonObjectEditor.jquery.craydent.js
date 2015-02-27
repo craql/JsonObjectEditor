@@ -3109,7 +3109,9 @@ function _COUNT(array){
 	return 0;
 };
 
-
+function _bmResponse(benchmarker,message){
+    logit(message +' in '+benchmarker.stop()+' secs');
+}
 
 /*-------------------------------------------------------------------->
  CRAYDENT UPDATES
