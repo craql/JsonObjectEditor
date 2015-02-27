@@ -511,7 +511,8 @@ function JsonObjectEditor(specs){
         }
         var subSpecs = {
             search:true,
-            itemcount:true
+            itemcount:true,
+            filters:false
         };
         var userSubmenu = ($.type(self.current.submenu) != 'object')?{}:self.current.submenu;
         $.extend(subSpecs,userSubmenu);
@@ -520,25 +521,38 @@ function JsonObjectEditor(specs){
         '<div class="joe-panel-submenu">'
 
             +((subSpecs.itemcount && self.renderSubmenuItemcount(subSpecs.itemcount))||'')
+            +((subSpecs.filters && self.renderSubmenuFilters(subSpecs.filter))||'')
             +((subSpecs.search && self.renderSubmenuSearch(subSpecs.search))||'')
         +'</div>';
         return submenu;
     };
+/*------------------>
+    Filter
+<------------------*/
+    this.renderSubmenuFilters = function(s){
+        var action =' onclick="_joe.toggleFiltersMenu();" ';
+        var html =
+            "<div class='jif-panel-submenu-button joe-filters-toggle ' "+action+">"
+           // +'<span class="jif-arrow-left"></span>'
+            +"</div>";
+        return html;
+    };
+    this.toggleFiltersMenu = function(){
+        self.panel.toggleClass('show-filters');
+    };
+/*------------------>
+ Search
+ <------------------*/
 
     this.renderSubmenuSearch = function(s){
         var action =' onkeyup="_joe.filterListFromSubmenu(this);" ';
         var submenusearch =
-            "<div class='joe-submenu-search'>"
+            "<div class='joe-submenu-search '>"
             +'<input class="joe-submenu-search-field" '+action+' placeholder="find" />'
             +"</div>";
         return submenusearch;
     };
-    this.renderSubmenuItemcount = function(s){
 
-        var submenuitem =
-            "<div class='joe-submenu-itemcount'>items</div>";
-        return submenuitem;
-    };
     this.searchTimeout;
     this.filterListFromSubmenu = function(dom,now){
 
@@ -583,6 +597,18 @@ function JsonObjectEditor(specs){
 
         }
 
+    };
+
+
+/*------------------>
+ Count
+ <------------------*/
+
+    this.renderSubmenuItemcount = function(s){
+
+        var submenuitem =
+            "<div class='joe-submenu-itemcount'>items</div>";
+        return submenuitem;
     };
 /*----------------------------->
 	C | Content

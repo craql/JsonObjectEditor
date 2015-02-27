@@ -68,8 +68,9 @@ var demo_config = {
 
          {name:'delete',label:'Delete', action:'NPC.deleteJoeItem();', css:'joe-left-button'}*/
     ],
+    //filters:true,
     useBackButton:true,
-    listSubMenu:true,
+    listSubMenu:{filters:true},
     //useHashlink:true,
     _title:'${itemtype} | ${name}'
 
