@@ -779,7 +779,8 @@ display:none;
 }
 
 .joe-select-field {
-    min-width: 280px;
+/*    min-width: 280px;*/
+    min-width:220px;
     padding: 4px;
 /*    margin-left: 1%;*/
 }
@@ -991,7 +992,7 @@ table.joe-objectlist-table {
 <-----------------------------*/
 .joe-field-container{
     float:left;
-    min-width:320px;
+    min-width:260px;
 }
 
 /*-------------------------

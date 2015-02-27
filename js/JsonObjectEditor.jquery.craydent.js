@@ -1565,14 +1565,14 @@ this.renderSorterField = function(prop){
 		});
 		
 		var selectionsHtml = selectionsArray.join('');
-		
+		var height = (prop.height && "style='max-height:"+prop.height+";'")||'';
 		var html=
-		'<div class="joe-multisorter-field joe-field" name="'+prop.name+'" data-ftype="multisorter" data-multiple="'+(prop.allowMultiple||'false')+'">'+
+		'<div class="joe-multisorter-field joe-field"  name="'+prop.name+'" data-ftype="multisorter" data-multiple="'+(prop.allowMultiple||'false')+'">'+
 
 			'<div class="joe-filter-field-holder"><input type="text"class="" onkeyup="_joe.filterSorterOptions(this);"/></div>'+
 			'<p class="joe-tooltip"> double click or drag item to switch columns.</p>'+
-			'<ul class="joe-multisorter-bin options-bin">'+optionsHtml+'</ul>'+
-			'<ul class="joe-multisorter-bin selections-bin">'+selectionsHtml+'</ul>'+
+			'<ul class="joe-multisorter-bin options-bin" '+height+'>'+optionsHtml+'</ul>'+
+			'<ul class="joe-multisorter-bin selections-bin" '+height+'>'+selectionsHtml+'</ul>'+
 			__clearDiv__
 	
 		+'</div>';
