@@ -2840,7 +2840,11 @@ ANALYSIS, IMPORT AND MERGE
                         self.showMessage('next step cancelled');
                     }
                 }else{
-                    self.showMessage('Merged '+e.data.worker_update.current+'/'+e.data.worker_update.total+' in '+e.data.worker_update.time+' secs',{timeout:0});
+                    if(e.data.worker_update.message){
+                        self.showMessage(e.data.worker_update.message, {timeout: 0});
+                    }else {
+                        self.showMessage('Merged ' + e.data.worker_update.current + '/' + e.data.worker_update.total + ' in ' + e.data.worker_update.time + ' secs', {timeout: 0});
+                    }
                     logit('Merged '+e.data.worker_update.current+'/'+e.data.worker_update.total+' in '+e.data.worker_update.time+' secs');
                 }
             };

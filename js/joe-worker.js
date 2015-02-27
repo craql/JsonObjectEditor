@@ -1,7 +1,7 @@
 /**
  * Created by core6924 on 1/28/2015.
  */
-importScripts('libs/craydent-1.7.35.js');
+importScripts('libs/craydent-1.7.36.js');
 //importScripts('libs/jquery-1.11.0.min.js');
 var action;
 var data;
@@ -60,30 +60,37 @@ function analyzeImportMerge(newArr,oldArr,idprop,specs){
             newIDs.push(s[idprop]);
         });
 
+        postMessage({worker_update:{message:'Finished part 1/4'}});
         var query = {};
         query[idprop] = {$nin: oldIDs};
         //adds
         data.add = newArr.where(query);
 
+        //deletes
+        query[idprop] = {$nin: newIDs};
+        data.deletes = oldArr.where(query);
+        postMessage({worker_update:{message:'Finished part 2/4'}});
+
         //updates||same
         query[idprop] = {$in: newIDs};
         var existing = oldArr.where(query).sortBy(idprop);
 
+
         //for one-to-one, new items in the old array
         query[idprop] = {$in: oldIDs};
         var onetoone = newArr.where(query).sortBy(idprop);
-
+        postMessage({worker_update:{message:'Finished part 3/4'}});
 
         for (var i = 0, len = existing.length; i < len; i++) {
             newObj = onetoone[i], oldObj = existing[i];
             if (!newObj) {
-                data.same.push(oldObj);
+                data.same.push(oldObj);//same
             } else {
                 if (specs.dateProp && newObj[specs.dateProp] == oldObj[specs.dateProp]) {
-                    data.same.push(newObj);
+                    data.same.push(newObj);//same
 
                 } else {
-                    data.update.push(newObj);
+                    data.update.push(newObj);//update
                 }
             }
 
@@ -93,7 +100,8 @@ function analyzeImportMerge(newArr,oldArr,idprop,specs){
         data.results = {
             add: data.add.length,
             update: data.update.length,
-            same: data.same.length
+            same: data.same.length,
+            deletes:data.deletes.length
 
         };
         data.time = aimBM.stop();
