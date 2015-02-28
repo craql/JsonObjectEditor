@@ -172,6 +172,7 @@
 
 
 .joe-history-button{background-image: url("../img/btns/history.png");  }
+.joe-comments-button{background-image: url("../img/btns/comment.png");  }
 .joe-object-button{background-image: url("../img/btns/object.png");  }
 .joe-delete-button{background-image: url("../img/btns/delete.png");  }
 .joe-add-button{background-image: url("../img/btns/add.png");  }
@@ -472,8 +473,28 @@ bottom:5px;
 
 .jif-panel-submenu-button.joe-filters-toggle {
     margin-right: 5px;
+    background-repeat:no-repeat;
+    background-position: center center;
+    background-image: url("../img/btns/filter.png");
+
+}
+.joe-filters-holder {
+    background: #fff;
+    position: absolute;
+    left: 0;
+    top: 40px;
+    bottom: 50px;
+    min-height: 300px;
+    width: 254px;
+    border-left: 1px solid #ccc;
+    display:none;
+}
+
+.joe-overlay-panel.show-filters .joe-filters-holder{
+    display:block;
 }
 /*
+
 
 input.joe-submenu-search-field {
     padding: 4px;

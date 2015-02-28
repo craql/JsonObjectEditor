@@ -533,10 +533,24 @@ function JsonObjectEditor(specs){
         var action =' onclick="_joe.toggleFiltersMenu();" ';
         var html =
             "<div class='jif-panel-submenu-button joe-filters-toggle ' "+action+">"
+                +"<div class='joe-filters-holder'>"
+                +renderSubsetsDiv()
            // +'<span class="jif-arrow-left"></span>'
-            +"</div>";
+            +"</div></div>";
+
+
+        function renderSubsetsDiv(){
+            var sh = '<div>'
+            +fillTemplate('${name}',_joe.current.subsets.map)
+            +'</div>';
+            return sh;
+        }
+        function renderFiltersDiv(){
+
+        }
         return html;
     };
+    this.renderSchema
     this.toggleFiltersMenu = function(){
         self.panel.toggleClass('show-filters');
     };
@@ -2450,7 +2464,7 @@ this.renderSorterField = function(prop){
                 goingBackQuery = '';
             }
 
-            self.overlay.find('.joe-submenu-itemcount').html(currentListItems.length+' item'+((currentListItems.length > 1 &&'s') ||''));
+            self.overlay.find('.joe-submenu-itemcount').html(currentListItems.length+' item'+((currentListItems.length != 1 &&'s') ||''));
 
         }
         try {
