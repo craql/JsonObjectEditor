@@ -86,7 +86,7 @@
 }
 .joe-fright{  float:right;  }
 .joe-fleft{  float:left;  }
-
+.joe-nofloat{  float:none;  }
 /*-------------------------
 	JOE Button
 -------------------------*/
@@ -251,6 +251,9 @@
     position:relative;
 }
 
+/*-------------------------
+	Mini Panel
+-------------------------*/
 .joe-mini-panel {
     margin: 100px auto;
     box-shadow: 0 5px 10px 0px rgba(0,0,0,.5);
@@ -471,6 +474,10 @@ bottom:5px;
     line-height: 30px;
 }
 
+
+/*-------------------------
+	Filters
+-------------------------*/
 .jif-panel-submenu-button.joe-filters-toggle {
     margin-right: 5px;
     background-repeat:no-repeat;
@@ -481,10 +488,9 @@ bottom:5px;
 .joe-filters-holder {
     background: #fff;
     position: absolute;
-    left: 0;
-    top: 40px;
+    left: 5px;
+    top: 80px;
     bottom: 50px;
-    min-height: 300px;
     width: 254px;
     border-left: 1px solid #ccc;
     display:none;
@@ -492,6 +498,19 @@ bottom:5px;
 
 .joe-overlay-panel.show-filters .joe-filters-holder{
     display:block;
+}
+
+
+.joe-subset-option{
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+.joe-subset-option:hover{
+    background-color:#ddd;
+}
+.joe-subset-option.active{
+    background-color:#bbb;
 }
 /*
 
@@ -711,9 +730,21 @@ input.joe-boolean-field {
 .joe-object-field{
     margin: 10px 5px;
     border: 1px solid #f2f2f2;
-    padding: 8px 6px;
+    padding: 10px 6px;
     position: relative;
-    padding-top: 15px;
+/*    padding-top: 15px;*/
+}
+/*-------------------------
+	Required
+-------------------------*/
+.joe-object-field.joe-required {
+    border-color: #bbb;
+    border-color: rgb(218, 141, 1);
+}
+.joe-overlay-panel.show-required .joe-object-field.joe-required {
+ border-color: #DA8D01;
+    border-color: rgb(218, 141, 1);
+    background: rgba(218, 141, 1,.2);
 }
 /*-------------------------
 	Label
@@ -1050,9 +1081,10 @@ table.joe-objectlist-table {
 	Field Container
 <-----------------------------*/
 .joe-field-container{
-    float:left;
     min-width:260px;
+    padding: 1px 0;
 }
+
 
 /*-------------------------
 	 Filter Field
@@ -1285,7 +1317,9 @@ screen and (max-height:400px) and (orientation:landscape){
         border-left: 0px;
         border-right: 0px;
     }
-
+    .joe-field-container.joe-fleft {
+        width: 100% !important;
+    }
 /*    .joe-button {
         padding: 8px 8px !important;
         min-width: 40px;

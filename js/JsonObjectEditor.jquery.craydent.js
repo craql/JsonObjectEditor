@@ -4,7 +4,7 @@
     Dual licensed under the MIT or GPL Version 2 licenses.
 	(http://craydent.com/license)                       
 ---------------------------------------------------------/*/
-
+//render field - self.renderObjectPropFieldUI
 /*TODO:
 
 	-merge specs (profile,schema,object,call?)
@@ -484,10 +484,12 @@ function JsonObjectEditor(specs){
         self.current.list = null;
         self.current.subsets = null;
         self.current.subset = null;
+        self.current.fields = [];
 
     };
 	this.cleanUp = function(){
 
+        self.current.fields = [];
         self.shiftSelecting = false;
         self.allSelected = false;
 		for (var p in _joe.ace_editors){
@@ -523,31 +525,47 @@ function JsonObjectEditor(specs){
             +((subSpecs.itemcount && self.renderSubmenuItemcount(subSpecs.itemcount))||'')
             +((subSpecs.filters && self.renderSubmenuFilters(subSpecs.filter))||'')
             +((subSpecs.search && self.renderSubmenuSearch(subSpecs.search))||'')
-        +'</div>';
+        +'</div>'
+        +"<div class='joe-filters-holder'>"
+        +renderSubsetsDiv()
+            // +'<span class="jif-arrow-left"></span>'
+        +"</div>";
+
+        //TODO:move to subsets filter rendering function
+        function renderSubsetsDiv(){
+            var sh = '<div>';
+            var act;
+            [{name:'All',filter:{}}].concat(_joe.current.subsets||[]).map(function(opt){
+                if(!opt.condition || (typeof opt.condition == 'function' && opt.condition(self.current.object)) || (typeof opt.condition != 'function' && opt.condition)) {
+                    act = ((self.current.subset && self.current.subset.name == opt.name) || !self.current.subset && opt.name =="All") ? ' active ' : '';
+                    sh += '<div class="joe-subset-option ' + act + '" onclick="getJoe(' + self.joe_index + ').selectSubset(\'' + (opt.id || opt.name || '') + '\');">' + opt.name + '</div>'
+                }
+            });
+                //+fillTemplate('<div class="joe-filters-subset">${name}</div>',_joe.current.subsets||[])
+                sh+='</div>';
+            return sh;
+        }
+        function renderFiltersDiv(){
+
+        }
         return submenu;
     };
 /*------------------>
     Filter
 <------------------*/
     this.renderSubmenuFilters = function(s){
+
+        if(!(s || self.current.subsets)){
+           return '';
+        }
+
         var action =' onclick="_joe.toggleFiltersMenu();" ';
         var html =
             "<div class='jif-panel-submenu-button joe-filters-toggle ' "+action+">"
-                +"<div class='joe-filters-holder'>"
-                +renderSubsetsDiv()
-           // +'<span class="jif-arrow-left"></span>'
-            +"</div></div>";
+                +"</div>";
 
 
-        function renderSubsetsDiv(){
-            var sh = '<div>'
-            +fillTemplate('${name}',_joe.current.subsets.map)
-            +'</div>';
-            return sh;
-        }
-        function renderFiltersDiv(){
 
-        }
         return html;
     };
     this.renderSchema
@@ -774,6 +792,7 @@ function JsonObjectEditor(specs){
 		var fields = '';
 		var propObj;
 		var fieldProp;
+        self.current.fields = [];
         self.current.sections = {};
 		if(!specs.schema || !specs.schema.fields){//no schema use items as own schema
 			for( var prop in object){
@@ -788,13 +807,14 @@ function JsonObjectEditor(specs){
 					//overwrite with value
 					{value:object[prop]}
 					);
-					
+
 					fields += self.renderObjectField(propObj);
 				}
 			}
 		}
 		else{
 			(specs.schema.fields||[]).map(function(prop){
+
 
 				fields += self.renderObjectPropFieldUI(prop,specs);
 
@@ -970,7 +990,7 @@ function JsonObjectEditor(specs){
 	var prePropWidths = 0;
 	this.renderObjectField = function(prop){
 		//field requires {name,type}
-
+        self.current.fields.push(prop);
 		//set default value
 		if(prop.value == undefined && prop['default'] != undefined){
 			prop.value = prop['default'];
@@ -983,12 +1003,19 @@ function JsonObjectEditor(specs){
 				prop.value= prop.value;
 			}
 		}
+    //hidden
 		var hidden = '';
         if(prop.hidden && (typeof prop.hidden != 'function' && prop.hidden) || (typeof prop.hidden == 'function' && prop.hidden())){
             hidden = 'hidden';
         }
-		
-		var html ='';
+
+    //required
+        var required = '';
+        if(prop.required && (typeof prop.required != 'function' && prop.required) || (typeof prop.required == 'function' && prop.required())){
+            required = 'joe-required';
+        }
+
+        var html ='';
 		
 	//add clear div if the previous fields are floated.
 		if(preProp){
@@ -1000,11 +1027,13 @@ function JsonObjectEditor(specs){
 			}
 		}
 		if(prop.width){
-			html+='<div class="joe-field-container" style="width:'+prop.width+';">';
-		}
+			html+='<div class="joe-field-container joe-fleft" style="width:'+prop.width+';">';
+		}else{
+            html+='<div class="joe-field-container">';
+        }
 
 		html+=	
-			'<div class="joe-object-field '+hidden+' '+prop.type+'-field " data-type="'+prop.type+'" data-name="'+prop.name+'">'+
+			'<div class="joe-object-field '+hidden+' '+required+' '+prop.type+'-field " data-type="'+prop.type+'" data-name="'+prop.name+'">'+
 			'<label class="joe-field-label">'
                 +fillTemplate((prop.display||prop.label||prop.name),self.current.object)
 				+self.renderFieldTooltip(prop)
@@ -1019,9 +1048,10 @@ function JsonObjectEditor(specs){
 		html += self.selectAndRenderFieldType(prop);
 
 		html+='</div>';
-		if(prop.width){
+		//if(prop.width){
+        //close field container
 			html+='</div>';
-		}
+	//	}
 		
 		preProp = prop;
 		
@@ -2602,7 +2632,21 @@ this.renderSorterField = function(prop){
         overwrites = overwrites || {};
 		var obj = $.extend(self.current.object,newObj,overwrites);
 
+//check required fields()
+       var req_fields =  _joe.current.fields.where({required:true});
+        var required_passed = true;
+        req_fields.map(function(f){
+           if(!obj[f.name]){
+               self.showMessage("There are required fields currently missing.");
+               self.panel.addClass('show-required');
+               required_passed = false;
+               return false;
+           }
+        });
 
+        if(!required_passed){
+            return false;
+        }
     //update object list
         var index = (self.current.list && self.current.list.indexOf(obj));
         if(self.current.list && (index == -1 || index == undefined)){
@@ -2617,7 +2661,8 @@ this.renderSorterField = function(prop){
 		if(!stayOnItem){self.goBack();}
 		callback(obj);
 	};
-	
+
+
 	this.deleteObject = function(callback){
 		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || logit;
 		var obj = self.current.object;
