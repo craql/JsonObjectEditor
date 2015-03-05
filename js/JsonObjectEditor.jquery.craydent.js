@@ -2644,17 +2644,18 @@ this.renderSorterField = function(prop){
             return false;
         });
 
-        var required_passed = true;
+        var required_missed = [];
         req_fields.map(function(f){
            if(!obj[f.name]){
-               self.showMessage("There are required fields currently missing.");
-               self.panel.addClass('show-required');
-               required_passed = false;
+
+               required_missed.push(f.display|| f.label|| f.name);
                return false;
            }
         });
 
-        if(!required_passed){
+        if(required_missed.length){
+            self.showMessage("There are required fields currently missing.<br/>"+required_missed.join(', '));
+            self.panel.addClass('show-required');
             return false;
         }
     //update object list
