@@ -1011,7 +1011,7 @@ function JsonObjectEditor(specs){
 
     //required
         var required = '';
-        if(prop.required && (typeof prop.required != 'function' && prop.required) || (typeof prop.required == 'function' && prop.required())){
+        if(prop.required && (typeof prop.required != 'function' && prop.required) || (typeof prop.required == 'function' && prop.required(self.current.object))){
             required = 'joe-required';
         }
 
@@ -2633,7 +2633,17 @@ this.renderSorterField = function(prop){
 		var obj = $.extend(self.current.object,newObj,overwrites);
 
 //check required fields()
-       var req_fields =  _joe.current.fields.where({required:true});
+       var req_fields = [];
+
+        //_joe.current.fields.where({required:true});
+        req_fields =  _joe.current.fields.filter(function(prop){
+
+            if(prop.required && (typeof prop.required != 'function' && prop.required) || (typeof prop.required == 'function' && prop.required(self.current.object))) {
+            return true;
+            }
+            return false;
+        });
+
         var required_passed = true;
         req_fields.map(function(f){
            if(!obj[f.name]){

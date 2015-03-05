@@ -68,7 +68,7 @@ function analyzeImportMerge(newArr,oldArr,idprop,specs){
 
         //deletes
         query[idprop] = {$nin: newIDs};
-        data.deletes = oldArr.where(query);
+        data.delete = oldArr.where(query);
         postMessage({worker_update:{message:'Finished part 2/4'}});
 
         //updates||same
@@ -101,7 +101,7 @@ function analyzeImportMerge(newArr,oldArr,idprop,specs){
             add: data.add.length,
             update: data.update.length,
             same: data.same.length,
-            deletes:data.deletes.length
+            delete:data.delete.length
 
         };
         data.time = aimBM.stop();
