@@ -1013,6 +1013,39 @@ input.joe-image-field{
     display: block;
 }
 
+/*----------------------------->
+ P | Checkbox Group
+ <-----------------------------*/
+.joe-group-item {
+    cursor: pointer;
+    background: #eee;
+    margin: 2px 0;
+    padding-left:50px;
+    position: relative;
+}
+.joe-group-item:hover{
+   background-color:#ddd;
+}
+
+.joe-group-item-checkbox {
+    position: absolute;
+    left: 0;
+    top:0;
+    bottom:0;
+    width: 40px;
+    border-right: 1px solid #bbb;
+    padding: 10px 0 ;
+    text-align:center;
+    /* height: 100%; */
+}
+.joe-group-item-checkbox input {
+    float: none;
+    margin: auto;
+}
+.joe-group-item label {
+    display: block;
+    padding: 10px 0;
+}
 /*-------------------------
     Object List
 -------------------------*/

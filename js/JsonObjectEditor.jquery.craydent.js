@@ -1151,6 +1151,10 @@ function JsonObjectEditor(specs){
             case 'color':
                 html+= self.renderColorField(prop);
                 break;
+
+            case 'group':
+                html+= self.renderCheckboxGroupField(prop);
+                break;
 			default:
 				html+= self.renderTextField(prop);
 				break;
@@ -1932,9 +1936,39 @@ this.renderSorterField = function(prop){
 
         return html;
     };
+
+
 /*----------------------------->
- Q | Code Field
+ P | Render Checkbox Group
  <-----------------------------*/
+    this.renderCheckboxGroupField = function(prop){
+        //var profile = self.current.profile;
+        var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];
+        var html= '';
+        var checked;
+        var itemid;
+        var idprop = prop.idprop || '_id';
+        values.map(function(value){
+            if($.type(value) != 'object'){
+                var tempval = {name:value};
+                tempval[prop.idprop]=value;
+                value = tempval;
+            }
+            itemid = 'joe_checkbox-'+prop.name;
+            checked = (prop.value.indexOf(value[idprop]) != -1)?' checked ':'';
+            html+= '<div class="joe-group-item"><label >'
+            +'<div class="joe-group-item-checkbox"><input class="joe-field" type="checkbox" name="'+prop.name+'" '
+            +checked
+            +self.renderFieldAttributes(prop)
+            +'value="'+value[idprop]+'" /></div> '
+            +((prop.template && fillTemplate(prop.template,value))||value.label ||value.name || '') +'</label></div>';
+        });
+        return html;
+    };
+
+    /*----------------------------->
+     Q | Code Field
+     <-----------------------------*/
 	this.renderCodeField = function(prop){
 
 		var profile = self.current.profile;
@@ -2646,7 +2680,9 @@ this.renderSorterField = function(prop){
 
         var required_missed = [];
         req_fields.map(function(f){
-           if(!obj[f.name]){
+           if(!obj[f.name] ||
+               ($.type(obj[f.name] == "array") && obj[f.name].length == 0)
+           ){
 
                required_missed.push(f.display|| f.label|| f.name);
                return false;
@@ -2710,6 +2746,7 @@ this.renderSorterField = function(prop){
 	};
 	this.constructObjectFromFields = function(index){
 		var object = {joeUpdated:new Date()};
+        var groups = {};
 		var prop;
 		
 		//var parentFind = $('.joe-object-field');
@@ -2732,14 +2769,24 @@ this.renderSorterField = function(prop){
 			}
 			switch($(this).attr('type')){
 
-				case 'checkbox':
+                case 'checkbox':
+                    //IF multiple with same name, add them to array
 					prop = $(this).attr('name');
-					if($(this).is(':checked')){
-						object[prop] = true;
-					}else{
-						object[prop] = false;
-					
-					}
+                    if(groups[prop] || $('input[name='+prop+']').length > 1){//checkbox groups
+                        groups[prop] = groups[prop] || [];
+                        if ($(this).is(':checked')) {
+                            groups[prop].push($(this).val());
+
+                        }
+                        object[prop] = groups[prop];
+                    }else {//single checkboxes
+                        if ($(this).is(':checked')) {
+                            object[prop] = true;
+                        } else {
+                            object[prop] = false;
+
+                        }
+                    }
 				break;
 
 				case 'text':
