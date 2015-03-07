@@ -1852,7 +1852,7 @@ this.renderSorterField = function(prop){
 
     this.renderObjectListField = function(prop){
         var html ="<table class='joe-objectlist-table'>"
-            +self.renderObjectListProperties(prop)
+            +(!prop.hideHeadings && self.renderObjectListProperties(prop)||'')
             +self.renderObjectListObjects(prop)
         //render a (table/divs) of properties
         //cross reference with array properties.
@@ -1885,7 +1885,7 @@ this.renderSorterField = function(prop){
 
 //render objects
     this.renderObjectListObjects = function(prop){
-        var objects = self.current.object[prop.name] || [];
+        var objects = self.current.object[prop.name] || prop.default || [];
         var properties = prop.properties || self.objectlistdefaultproperties;
 
         var html = '<tbody id="joe-objectist-table">';
@@ -1951,7 +1951,7 @@ this.renderSorterField = function(prop){
         values.map(function(value){
             if($.type(value) != 'object'){
                 var tempval = {name:value};
-                tempval[prop.idprop]=value;
+                tempval[idprop]=value;
                 value = tempval;
             }
             itemid = 'joe_checkbox-'+prop.name;
