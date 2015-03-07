@@ -741,10 +741,14 @@ input.joe-boolean-field {
     border-color: #bbb;
     border-color: rgb(218, 141, 1);
 }
-.joe-overlay-panel.show-required .joe-object-field.joe-required {
+.joe-overlay-panel.show-required .joe-object-field.joe-required,
+.joe-highlighted{
  border-color: #DA8D01;
     border-color: rgb(218, 141, 1);
     background: rgba(218, 141, 1,.2);
+}
+.joe-highlighted .joe-field-label {
+    color: #DA8D01 !important;
 }
 /*-------------------------
 	Label
@@ -1055,6 +1059,9 @@ table.joe-objectlist-table {
 }
 .joe-objectlist-table thead {
     background-color: #eee;
+}
+.joe-objectlist-table.hidden-heading thead {
+    display:none;
 }
 .joe-objectlist-table th {
     padding: 10px 5px;

@@ -1851,8 +1851,9 @@ this.renderSorterField = function(prop){
  <-----------------------------*/
 
     this.renderObjectListField = function(prop){
-        var html ="<table class='joe-objectlist-table'>"
-            +(!prop.hideHeadings && self.renderObjectListProperties(prop)||'')
+        var hiddenHeading = (prop.hideHeadings)?" hidden-heading " :'';
+        var html ="<table class='joe-objectlist-table "+hiddenHeading+"'>"
+            +self.renderObjectListProperties(prop)
             +self.renderObjectListObjects(prop)
         //render a (table/divs) of properties
         //cross reference with array properties.
@@ -1866,6 +1867,7 @@ this.renderSorterField = function(prop){
         var properties = prop.properties || self.objectlistdefaultproperties;
         var property;
         var subprop;
+
         var html = '<thead><tr><th class="joe-objectlist-object-row-handle-header"></th>';
         for(var p = 0,tot = properties.length; p<tot;p++){
             subprop = properties[p];
@@ -2678,20 +2680,34 @@ this.renderSorterField = function(prop){
             return false;
         });
 
+        function olistVal(olistObj){
+            var vals = '';
+            for(var i in olistObj){
+                vals+=olistObj[i];
+            }
+            vals.replace(/ /g,'');
+            return vals;
+        }
         var required_missed = [];
         req_fields.map(function(f){
            if(!obj[f.name] ||
-               ($.type(obj[f.name] == "array") && obj[f.name].length == 0)
+               ($.type(obj[f.name] == "array") && f.type !="objectList" &&obj[f.name].length == 0 ) ||
+               (f.type == "objectList" && obj[f.name].filter(olistVal).length == 0)
            ){
 
-               required_missed.push(f.display|| f.label|| f.name);
+               required_missed.push(f);
                return false;
            }
         });
-
+        $('.joe-object-field').removeClass('joe-highlighted');
         if(required_missed.length){
-            self.showMessage("There are required fields currently missing.<br/>"+required_missed.join(', '));
-            self.panel.addClass('show-required');
+            //f.display|| f.label|| f.name
+
+            self.showMessage("There are <b>"+required_missed.length+"</b> required fields currently missing.");//<br/>"+required_missed.join(', ')
+            required_missed.map(function(of){
+                $('.joe-object-field[data-name='+of.name+']').addClass('joe-highlighted');
+            });
+           // self.panel.addClass('show-required');
             return false;
         }
     //update object list
