@@ -87,7 +87,7 @@ function JsonObjectEditor(specs){
 	1 | INIT
 <--------------------------------------------------------------------*/
 	this.init = function() {
-        self.current = {};
+        self.current = {filters:{}};
         var html = self.renderFramework(
                 self.renderEditorHeader() +
                 self.renderEditorContent() +
@@ -192,7 +192,7 @@ function JsonObjectEditor(specs){
 	this.populateFramework = function(data,setts){
 		self.overlay.removeClass('multi-edit');
 		var joePopulateBenchmarker = new Benchmarker();
-		joePopulateBenchmarker.start;
+
 		logit('------Beginning joe population');
 		var specs = setts || {};
 		self.current.specs = setts; 
@@ -382,9 +382,11 @@ function JsonObjectEditor(specs){
 		    self.overlay.find('.joe-overlay-panel').html(html);
 		//$('.joe-overlay-panel').html(html);
 	
-	//update history 2/2	
+	//update history 2/2	- add title
 		if(!self.current.specs.noHistory && self.history.length){
-			$.extend({_joeHistoryTitle:self.overlay.find('.joe-panel-title').html()},self.history[self.history.length-1]);
+			$.extend(self.history[self.history.length-1],
+                {_joeHistoryTitle:self.overlay.find('.joe-panel-title').html()}
+            );
 		}
 
 
@@ -493,6 +495,7 @@ function JsonObjectEditor(specs){
         self.current.list = null;
         self.current.subsets = null;
         self.current.subset = null;
+        self.current.filters = {};
         self.current.fields = [];
 
     };
@@ -560,9 +563,10 @@ function JsonObjectEditor(specs){
             var filters = self.current.schema.filters;
             filters = self.propAsFuncOrValue(filters);
             (filters||[]).map(function(opt){
+                var idval = opt.id || opt.name || '';
                 if(!opt.condition || self.propAsFuncOrValue(opt.condition)) {
-                    act = (self.current.filters && self.current.filters.list && self.current.filters.list.indexOf((opt.id||opt.name)))?'active':'';
-                    fh += '<div class="joe-filter-option ' + act + '" onclick="getJoe(' + self.joe_index + ').toggleFilter(\'' + (opt.id || opt.name || '') + '\');">' + opt.name + '</div>'
+                    act = (self.current.filters && self.current.filters[idval])?'active':'';
+                    fh += '<div class="joe-filter-option ' + act + '" onclick="getJoe(' + self.joe_index + ').toggleFilter(\'' + idval + '\');">' + opt.name + '</div>'
                 }
             });
             fh+='</div>';
@@ -1096,7 +1100,7 @@ function JsonObjectEditor(specs){
 
 	this.selectAndRenderFieldType = function(prop){
 		var joeFieldBenchmarker = new Benchmarker();
-		joeFieldBenchmarker.start;
+
 		var html = '';
 		switch(prop.type){
 			case 'select':
@@ -2330,12 +2334,24 @@ this.renderSorterField = function(prop){
 		//e.cancelBubble = true;
 		//if (e.stopPropagation) e.stopPropagation();
 		self.hide();
-		goJoe(self.current.list,$c.merge(self.current.userSpecs,{subset:subset}));
+		goJoe(self.current.list,
+    //        $c.merge(self.current.userSpecs,{subset:subset})
+            $.extend(self.current.userSpecs,{subset:subset})
+
+        );
 	};
-    this.selectFilter=function(filter){
-        //if (!e) var e = window.event;
-        //e.cancelBubble = true;
-        //if (e.stopPropagation) e.stopPropagation();
+    this.toggleFilter=function(filtername){
+        var filter = ((self.current.schema && self.propAsFuncOrValue(self.current.schema.filters))||[])
+                .where({name:filtername})[0] || false;
+        if(!filter){
+            logit('issue finding filter: '+filtername);
+            return;
+        }
+        if(self.current.filters[filtername]){
+            delete self.current.filters[filtername];
+        }else{
+            self.current.filters[filtername] =filter;
+        }
         self.reload();
         //self.hide();
         //goJoe(self.current.list,$c.merge(self.current.userSpecs,{subset:subset}));
