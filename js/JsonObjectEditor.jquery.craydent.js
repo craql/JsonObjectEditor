@@ -975,7 +975,7 @@ function JsonObjectEditor(specs){
             return '';
         }
 		var display,action,html='';
-        if(m.condition && !m.condition(m,self.current.object)){
+        if(m.condition && !m.condition(self.current.object,m)){
             return '';
         };
 		display = m.label || m.name;

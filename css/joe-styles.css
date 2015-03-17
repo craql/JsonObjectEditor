@@ -729,7 +729,7 @@ input.joe-boolean-field {
 }*/
 .joe-object-field{
     margin: 10px 5px;
-    border: 1px solid #f2f2f2;
+    border-top: 1px solid #f2f2f2;
     padding: 10px 6px;
     position: relative;
 /*    padding-top: 15px;*/
