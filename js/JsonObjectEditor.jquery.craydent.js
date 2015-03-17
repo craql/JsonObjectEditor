@@ -455,7 +455,7 @@ function JsonObjectEditor(specs){
 	};
     var goingBackFromID;
     var goingBackQuery;
-	this.goBack = function(){
+	this.goBack = function(obj){
         //go back to last item and highlight
         if(self.current.object) {
             var gobackItem = self.current.object[self.getIDProp()];
@@ -471,6 +471,15 @@ function JsonObjectEditor(specs){
             self.closeButtonAction();
 			return;
 		}else{
+            if(obj && $c.isArray(joespecs.data)){
+                var objid = obj[self.getIDProp()];
+                if(objid){
+                    var query = {};
+                    query[self.getIDProp()] = objid;
+                    var found = joespecs.data.where(query)
+                    found.length && $.extend(found[0],obj);
+                }
+            }
             if(joespecs.keyword){
                 goingBackQuery = joespecs.keyword;
             }
@@ -2739,9 +2748,9 @@ this.renderSorterField = function(prop){
     //run callback
 
 		logit('object updated');
+        callback(obj);
+		if(!stayOnItem){self.goBack(obj);}
 
-		if(!stayOnItem){self.goBack();}
-		callback(obj);
 	};
 
 
