@@ -527,13 +527,14 @@ function JsonObjectEditor(specs){
             +((subSpecs.search && self.renderSubmenuSearch(subSpecs.search))||'')
         +'</div>'
         +"<div class='joe-filters-holder'>"
-        +renderSubsetsDiv()
+            +renderSubsetsDiv()
+            +((self.propAsFuncOrValue(self.current.schema.filters) && renderFiltersDiv())||'')
             // +'<span class="jif-arrow-left"></span>'
         +"</div>";
 
         //TODO:move to subsets filter rendering function
         function renderSubsetsDiv(){
-            var sh = '<div>';
+            var sh = '<div><h4>Subsets</h4>';
             var act;
             [{name:'All',filter:{}}].concat(_joe.current.subsets||[]).map(function(opt){
                 if(!opt.condition || (typeof opt.condition == 'function' && opt.condition(self.current.object)) || (typeof opt.condition != 'function' && opt.condition)) {
@@ -546,7 +547,17 @@ function JsonObjectEditor(specs){
             return sh;
         }
         function renderFiltersDiv(){
-
+            var fh = '<div><h4>Filters</h4>';
+            var filters = self.current.schema.filters;
+            filters = self.propAsFuncOrValue(filters);
+            (filters||[]).map(function(opt){
+                if(!opt.condition || self.propAsFuncOrValue(opt.condition)) {
+                    act = (self.current.filters && self.current.filters.list && self.current.filters.list.indexOf((opt.id||opt.name)))?'active':'';
+                    fh += '<div class="joe-filter-option ' + act + '" onclick="getJoe(' + self.joe_index + ').toggleFilter(\'' + (opt.id || opt.name || '') + '\');">' + opt.name + '</div>'
+                }
+            });
+            fh+='</div>';
+            return fh;
         }
         return submenu;
     };
@@ -568,7 +579,7 @@ function JsonObjectEditor(specs){
 
         return html;
     };
-    this.renderSchema
+
     this.toggleFiltersMenu = function(){
         self.panel.toggleClass('show-filters');
     };
@@ -2312,6 +2323,14 @@ this.renderSorterField = function(prop){
 		self.hide();
 		goJoe(self.current.list,$c.merge(self.current.userSpecs,{subset:subset}));
 	};
+    this.selectFilter=function(filter){
+        //if (!e) var e = window.event;
+        //e.cancelBubble = true;
+        //if (e.stopPropagation) e.stopPropagation();
+        self.reload();
+        //self.hide();
+        //goJoe(self.current.list,$c.merge(self.current.userSpecs,{subset:subset}));
+    };
 	
 /*-------------------------------------------------------------------->
 	5 | HTML Renderings
@@ -3162,6 +3181,13 @@ ANALYSIS, IMPORT AND MERGE
 		return prop;
 	};
 
+    this.propAsFuncOrValue = function(prop, toPass){
+        var toPass = toPass || self.current.object;
+        if(prop && typeof prop == 'function'){
+            return prop(toPass);
+        }
+        return prop;
+    };
 /*-------------------------------------------------------------------->
  I | Hashlink
  <--------------------------------------------------------------------*/

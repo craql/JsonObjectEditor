@@ -501,15 +501,18 @@ bottom:5px;
 }
 
 
-.joe-subset-option{
+.joe-subset-option,
+.joe-filter-option{
     padding: 6px 10px;
     cursor: pointer;
 }
 
-.joe-subset-option:hover{
+.joe-subset-option:hover,
+.joe-filter-option:hover{
     background-color:#ddd;
 }
-.joe-subset-option.active{
+.joe-subset-option.active,
+.joe-filter-option.active{
     background-color:#bbb;
 }
 /*
