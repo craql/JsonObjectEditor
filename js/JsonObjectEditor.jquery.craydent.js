@@ -566,7 +566,7 @@ function JsonObjectEditor(specs){
                 var idval = opt.id || opt.name || '';
                 if(!opt.condition || self.propAsFuncOrValue(opt.condition)) {
                     act = (self.current.filters && self.current.filters[idval])?'active':'';
-                    fh += '<div class="joe-filter-option ' + act + '" onclick="getJoe(' + self.joe_index + ').toggleFilter(\'' + idval + '\');">' + opt.name + '</div>'
+                    fh += '<div class="joe-filter-option ' + act + '" onclick="getJoe(' + self.joe_index + ').toggleFilter(\'' + idval + '\',this);"><span class ="joe-option-checkbox"></span>' + opt.name + '</div>'
                 }
             });
             fh+='</div>';
@@ -596,12 +596,45 @@ function JsonObjectEditor(specs){
     this.toggleFiltersMenu = function(){
         self.panel.toggleClass('show-filters');
     };
+
+    this.generateFiltersQuery = function(){//comgine all active fitlers into a query
+        var query = {};
+        var filterobj;
+        //var qval, fval;
+        for(var f in self.current.filters){
+            filterobj = (
+            (self.propAsFuncOrValue(self.current.schema.filters)||[]).where({name:f})[0]|| {}).filter;
+            for(var ff in filterobj) {
+                if (query[ff]) {
+
+                    //TODO: do crazy smart stuff here.
+                    switch($.type(filterobj[ff])){
+                        case 'string':
+                            if($.type(query[ff]) == 'string'){
+                                query[ff]={
+                                    $in:[query[ff],filterobj[ff]]
+                                };
+                            }else if($.type(query[ff]) == 'object'){
+                                if(query[ff].hasOwnProperty('$in')){
+                                    query[ff]['$in'] = query[ff]['$in'].concat(filterobj[ff]);
+                                }
+                            }
+                            break;
+                    }
+                }else{//not there, add it
+                    query[ff] = filterobj[ff];
+
+                }
+            }
+        }
+        return query;
+    };
 /*------------------>
  Search
  <------------------*/
 
     this.renderSubmenuSearch = function(s){
-        var action =' onkeyup="_joe.filterListFromSubmenu(this);" ';
+        var action =' onkeyup="_joe.filterListFromSubmenu(this.value);" ';
         var submenusearch =
             "<div class='joe-submenu-search '>"
             +'<input class="joe-submenu-search-field" '+action+' placeholder="find" />'
@@ -610,28 +643,32 @@ function JsonObjectEditor(specs){
     };
 
     this.searchTimeout;
-    this.filterListFromSubmenu = function(dom,now){
+    this.filterListFromSubmenu = function(keyword,now){
 
         clearTimeout(self.searchTimeout );
         self.overlay.removeClass('.multi-edit');
         if(!now) {
             self.searchTimeout = setTimeout(function () {
-                searchFilter(dom);
+                searchFilter(keyword);
             }, 300);
         }else{
-            searchFilter(dom);
+            searchFilter(keyword);
         }
-        function searchFilter(dom){
+        function searchFilter(keyword){
             var searchBM = new Benchmarker();
-            var value=dom.value.toLowerCase();
+            keyword = keyword || $('.joe-submenu-search-field').val();
+            var value=keyword.toLowerCase();
+            var filters = self.generateFiltersQuery()
 
             _joe.history[_joe.history.length-1].keyword = value;
+            _joe.history[_joe.history.length-1].filters = filters;
+
 
             var testable;
             var listables = (self.current.subset)?self.current.list.where(self.current.subset.filter):self.current.list;
             var searchables = self.current.schema && self.current.schema.searchables;
             logit('search where in '+searchBM.stop()+' seconds');
-            currentListItems = listables.filter(function(i){
+            currentListItems = listables.where(filters).filter(function(i){
                 testable = '';
                 if(searchables){//use searchable array
                     searchables.map(function(s){
@@ -645,7 +682,7 @@ function JsonObjectEditor(specs){
 
             });
 
-            logit('search filter in '+searchBM.stop()+' seconds');
+            logit('search filter found '+currentListItems.length+' items in '+searchBM.stop()+' seconds');
             self.overlay.find('.joe-submenu-itemcount').html(currentListItems.length+' item'+((currentListItems.length > 1 &&'s') ||''));
             self.panel.find('.joe-panel-content').html(self.renderListItems(currentListItems,0,self.specs.dynamicDisplay));
             var titleObj = $.extend({},self.current.object,{_listCount:currentListItems.length||'0'});
@@ -2336,11 +2373,11 @@ this.renderSorterField = function(prop){
 		self.hide();
 		goJoe(self.current.list,
     //        $c.merge(self.current.userSpecs,{subset:subset})
-            $.extend(self.current.userSpecs,{subset:subset})
+            $.extend({},self.current.userSpecs,{subset:subset})
 
         );
 	};
-    this.toggleFilter=function(filtername){
+    this.toggleFilter=function(filtername,dom){
         var filter = ((self.current.schema && self.propAsFuncOrValue(self.current.schema.filters))||[])
                 .where({name:filtername})[0] || false;
         if(!filter){
@@ -2350,9 +2387,11 @@ this.renderSorterField = function(prop){
         if(self.current.filters[filtername]){
             delete self.current.filters[filtername];
         }else{
-            self.current.filters[filtername] =filter;
+            self.current.filters[filtername] = filter;
         }
-        self.reload();
+        if(dom){$(dom).toggleClass('active')}
+        self.filterListFromSubmenu(null,true);
+        //self.reload();
         //self.hide();
         //goJoe(self.current.list,$c.merge(self.current.userSpecs,{subset:subset}));
     };
@@ -2570,7 +2609,7 @@ this.renderSorterField = function(prop){
         if(currentListItems){
             if(goingBackQuery){
                 self.overlay.find('.joe-submenu-search-field').val(goingBackQuery);
-                self.filterListFromSubmenu(self.overlay.find('.joe-submenu-search-field')[0],true);
+                self.filterListFromSubmenu(self.overlay.find('.joe-submenu-search-field')[0].value,true);
                 goingBackQuery = '';
             }
 

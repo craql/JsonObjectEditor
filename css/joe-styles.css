@@ -507,12 +507,19 @@ bottom:5px;
     cursor: pointer;
 }
 
+
+
+.joe-filter-option {
+    padding: 6px 0;
+}
+
 .joe-subset-option:hover,
 .joe-filter-option:hover{
     background-color:#ddd;
 }
 .joe-subset-option.active,
-.joe-filter-option.active{
+.joe-filter-option.active .joe-option-checkbox,
+.active.joe-option-checkbox{
     background-color:#bbb;
 }
 /*
@@ -524,6 +531,16 @@ input.joe-submenu-search-field {
     min-width: 200px;
 }
 */
+
+.joe-option-checkbox {
+    background-color: #eee;
+    width: 10px;
+    height: 10px;
+    float: left;
+    margin: 5px;
+    border: 1px solid #bbb;
+}
+
 
 input.joe-submenu-search-field {
     padding: 0 5px;
