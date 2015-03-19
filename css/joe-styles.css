@@ -861,7 +861,9 @@ display:none;
 }
 .joe-object-field input[type=text] {
     padding: 4px;
-    width: 300px;
+/*    width: 300px;*/
+    min-width:300px;
+    width:70%;
     font-size:14px;
 }
 .joe-object-field input[type=text].joe-url-field {
@@ -1125,6 +1127,12 @@ table.joe-objectlist-table {
         position: relative;
     }
 
+/*-------------------------
+    V: Preview
+-------------------------*/
+iframe.joe-preview-iframe {
+    border: 1px solid #ccc;
+}
 /*----------------------------->
 	Text Input Button
 <-----------------------------*/
