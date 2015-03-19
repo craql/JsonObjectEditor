@@ -393,7 +393,8 @@ function JsonObjectEditor(specs){
 
     //update hashlink
         self.updateHashLink();
-		logit('Joe Populated in '+joePopulateBenchmarker.stop()+' seconds');
+		//logit('Joe Populated in '+joePopulateBenchmarker.stop()+' seconds');
+        _bmResponse(joePopulateBenchmarker,'----Joe Populated');
 		return html;
 	};
 /*-------------------------------------------------------------------->
@@ -2529,7 +2530,9 @@ this.renderSorterField = function(prop){
 	};
 	
 	//this.show = function(data,schema,profile,callback){
+
 	this.show = function(data,specs){
+        self.showBM = new Benchmarker();
         clearTimeout(self.hideTimeout);
     //handle transition animations.
 		/*self.overlay.removeClass('fade-out');
@@ -2682,6 +2685,8 @@ this.renderSorterField = function(prop){
 /*        if($(window).height() > 700) {
             self.overlay.find('.joe-submenu-search-field').focus();
         }*/
+
+        _bmResponse(self.showBM,'----Joe Shown')
     };
 /*-------------------------------------------------------------------->
  J | MESSAGING
