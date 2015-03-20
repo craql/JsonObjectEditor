@@ -866,6 +866,11 @@ display:none;
     width:70%;
     font-size:14px;
 }
+
+.joe-field-container.joe-fleft input[type=text] {
+    min-width: initial;
+}
+
 .joe-object-field input[type=text].joe-url-field {
     width: 75%;
     margin: 5px 0 0 0;
@@ -1149,7 +1154,7 @@ iframe.joe-preview-iframe {
 	Field Container
 <-----------------------------*/
 .joe-field-container{
-    min-width:260px;
+    min-width:240px;
     padding: 1px 0;
 }
 

@@ -2754,7 +2754,7 @@ this.renderSorterField = function(prop){
 		var newObj = self.constructObjectFromFields(self.joe_index);
 		newObj.joeUpdated = new Date();
         overwrites = overwrites || {};
-		var obj = $.extend(self.current.object,newObj,overwrites);
+		var obj = $.extend(newObj,overwrites);
 
 //check required fields()
        var req_fields = [];
@@ -2798,6 +2798,7 @@ this.renderSorterField = function(prop){
            // self.panel.addClass('show-required');
             return false;
         }
+        obj = $.extend(self.current.object,newObj);
     //update object list
         var index = (self.current.list && self.current.list.indexOf(obj));
         if(self.current.list && (index == -1 || index == undefined)){
