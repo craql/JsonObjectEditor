@@ -1067,13 +1067,15 @@ function JsonObjectEditor(specs){
 		}
     //hidden
 		var hidden = '';
-        if(prop.hidden && (typeof prop.hidden != 'function' && prop.hidden) || (typeof prop.hidden == 'function' && prop.hidden())){
+        //if(prop.hidden && (typeof prop.hidden != 'function' && prop.hidden) || (typeof prop.hidden == 'function' && prop.hidden())){
+        if(self.propAsFuncOrValue(prop.hidden)){
             hidden = 'hidden';
         }
 
     //required
         var required = '';
-        if(prop.required && (typeof prop.required != 'function' && prop.required) || (typeof prop.required == 'function' && prop.required(self.current.object))){
+        //if(prop.required && (typeof prop.required != 'function' && prop.required) || (typeof prop.required == 'function' && prop.required(self.current.object))){
+        if(self.propAsFuncOrValue(prop.required)){
             required = 'joe-required';
         }
 

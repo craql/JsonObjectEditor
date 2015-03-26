@@ -8,7 +8,7 @@
     <script>
         $(document).ready(function(){
             var content = $GET('content') || '<h1>Joe Preview</h1><p>No content selected.</p>';
-            $('body').html(content);
+            $('body').html(decodeURIComponent(content));
         });
     </script>
 </head>
