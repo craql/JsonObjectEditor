@@ -550,7 +550,8 @@ function JsonObjectEditor(specs){
             var sh = '<div><h4>Subsets</h4>';
             var act;
             [{name:'All',filter:{}}].concat(_joe.current.subsets||[]).map(function(opt){
-                if(!opt.condition || (typeof opt.condition == 'function' && opt.condition(self.current.object)) || (typeof opt.condition != 'function' && opt.condition)) {
+                //if(!opt.condition || (typeof opt.condition == 'function' && opt.condition(self.current.object)) || (typeof opt.condition != 'function' && opt.condition)) {
+                if(!opt.condition || self.propAsFuncOrValue(opt.condition)) {
                     act = ((self.current.subset && self.current.subset.name == opt.name) || !self.current.subset && opt.name =="All") ? ' active ' : '';
                     sh += '<div class="joe-subset-option ' + act + '" onclick="getJoe(' + self.joe_index + ').selectSubset(\'' + (opt.id || opt.name || '') + '\');">' + opt.name + '</div>'
                 }
@@ -2348,7 +2349,8 @@ this.renderSorterField = function(prop){
 		}
 		function renderOption(opt){
             var html = '';
-            if(!opt.condition || (typeof opt.condition == 'function' && opt.condition(self.current.object)) || (typeof opt.condition != 'function' && opt.condition)) {
+            //if(!opt.condition || (typeof opt.condition == 'function' && opt.condition(self.current.object)) || (typeof opt.condition != 'function' && opt.condition)) {
+                if(!opt.condition || self.propAsFuncOrValue(opt.condition)){
                 var html = '<div class="selector-option" onclick="getJoe(' + self.joe_index + ').selectSubset(\'' + (opt.id || opt.name || '') + '\');">' + opt.name + '</div>';
             }
 			return html;

@@ -499,18 +499,23 @@ bottom:5px;
 .joe-overlay-panel.show-filters .joe-filters-holder{
     display:block;
 }
+.joe-filters-holder h4 {
+    padding: 5px 6px;
+    padding-bottom: 0px;
+}
 
-
+/*subset option */
 .joe-subset-option,
 .joe-filter-option{
     padding: 6px 10px;
     cursor: pointer;
 }
 
-
+/*filter options */
 
 .joe-filter-option {
-    padding: 6px 0;
+    padding: 6px 4px;
+    cursor: pointer;
 }
 
 .joe-subset-option:hover,
@@ -522,15 +527,6 @@ bottom:5px;
 .active.joe-option-checkbox{
     background-color:#bbb;
 }
-/*
-
-
-input.joe-submenu-search-field {
-    padding: 4px;
-    width: 25%;
-    min-width: 200px;
-}
-*/
 
 .joe-option-checkbox {
     background-color: #eee;
@@ -538,6 +534,7 @@ input.joe-submenu-search-field {
     height: 10px;
     float: left;
     margin: 5px;
+    margin-left:10px;
     border: 1px solid #bbb;
 }
 

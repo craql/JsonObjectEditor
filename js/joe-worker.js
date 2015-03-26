@@ -1,7 +1,7 @@
 /**
  * Created by core6924 on 1/28/2015.
  */
-importScripts('libs/craydent-1.7.36.js');
+importScripts('libs/craydent-1.7.37.js');
 //importScripts('libs/jquery-1.11.0.min.js');
 var action;
 var data;
