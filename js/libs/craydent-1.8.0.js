@@ -1092,11 +1092,10 @@ if (__thisIsNewer) {
 //                            if (rtn) {
 //                                return isNIN?!rtn:rtn;
 //                            }
-
                             for (var k = 0, klen = query[fieldProp].length; k < klen; k++) {
-                                var isRegex = query[fieldProp][k] && query[fieldProp][k].constructor == RegExp; //array of values
-//                                if (isRegex && query[fieldProp][k].test(value)) {
-                                if (isRegex ? query[fieldProp][k].test(value) : value == query[fieldProp][k]) {
+                                var isRegex = query[fieldProp][k] && query[fieldProp][k].constructor == RegExp; //array of values  
+                                if (($c.isArray(value) && value.contains(query[fieldProp][k])) 
+                                || (isRegex ? query[fieldProp][k].test(value) : value == query[fieldProp][k])) {
                                     rtn = true;
                                     if (isNIN) {
                                         return !rtn;

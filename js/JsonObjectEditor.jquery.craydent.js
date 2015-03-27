@@ -122,6 +122,7 @@ function JsonObjectEditor(specs){
                         }
                     }
                 }else if([38,40,13].indexOf(code) == -1){//set focus for other keys
+                    if(!listMode)return;
                     var inSearchfield = false;
                     if ($(document.activeElement) && $(document.activeElement)[0] != $('.joe-submenu-search-field')[0]) {
                         self.overlay.find('.joe-submenu-search-field').focus();
@@ -129,6 +130,7 @@ function JsonObjectEditor(specs){
                         $('.joe-panel-content-option.keyboard-selected').removeClass('keyboard-selected');
                     }
                 }else{
+                    if(!listMode)return;
                     var keyboardSelectedIndex = ($('.joe-panel-content-option.keyboard-selected').length)?
                         $('.joe-panel-content-option.keyboard-selected').index():-1;
                     logit(keyboardSelectedIndex);
@@ -535,6 +537,7 @@ function JsonObjectEditor(specs){
         var submenu =
         '<div class="joe-panel-submenu">'
 
+            //+self.renderViewModeButtons(subSpecs)
             +((subSpecs.itemcount && self.renderSubmenuItemcount(subSpecs.itemcount))||'')
             +((subSpecs.filters && self.renderSubmenuFilters(subSpecs.filter))||'')
             +((subSpecs.search && self.renderSubmenuSearch(subSpecs.search))||'')
@@ -667,20 +670,24 @@ function JsonObjectEditor(specs){
 
 
             var testable;
+            var idprop = self.getIDProp();
+            var id;
             var listables = (self.current.subset)?self.current.list.where(self.current.subset.filter):self.current.list;
             var searchables = self.current.schema && self.current.schema.searchables;
             logit('search where in '+searchBM.stop()+' seconds');
             currentListItems = listables.where(filters).filter(function(i){
+                id = i[idprop];
                 testable = '';
                 if(searchables){//use searchable array
                     searchables.map(function(s){
                         testable+=i[s]+' ';
                     });
                     return (testable.toLowerCase().indexOf(value) != -1);
+                    //return (testable+' '+i[idprop].toLowerCase().indexOf(value) != -1);
                 }
                     testable = self.renderListItem(i,true);
-                    return (__removeTags(testable).toLowerCase().indexOf(value) != -1);
-
+                    //return (__removeTags(testable).toLowerCase().indexOf(value) != -1);
+                    return ((__removeTags(testable)+id).toLowerCase().indexOf(value) != -1);
 
             });
 
@@ -705,9 +712,22 @@ function JsonObjectEditor(specs){
             "<div class='joe-submenu-itemcount'>items</div>";
         return submenuitem;
     };
-/*----------------------------->
-	C | Content
-<-----------------------------*/
+
+/*------------------>
+View Mode Buttons
+<------------------*/
+
+    this.renderViewModeButtons = function(subspecs){
+        var gridspecs = self.current.schema && self.current.schema.grid || {};
+        var submenuitem =
+            "<div class='joe-submenu-viewmodes'>views</div>";
+        return submenuitem;
+    };
+
+
+    /*----------------------------->
+        C | Content
+    <-----------------------------*/
 	this.renderEditorContent = function(specs){
 		//specs = specs || {};
 		var content;
@@ -815,6 +835,7 @@ function JsonObjectEditor(specs){
             listItem = items[i];
             if(listItem) {
                 html += self.renderListItem(listItem,false,i+1);
+               // html += $GET('table')?self.renderGridItem(listItem,false,i+1):self.renderListItem(listItem,false,i+1);
             }
         }
 
@@ -2030,6 +2051,7 @@ this.renderSorterField = function(prop){
             +'value="'+value[idprop]+'" /></div> '
             +((prop.template && fillTemplate(prop.template,value))||value.label ||value.name || '') +'</label></div>';
         });
+        html+= __clearDiv__;
         return html;
     };
 
@@ -2093,7 +2115,12 @@ this.renderSorterField = function(prop){
 /*-------------------------------------------------------------------->
 	4 | OBJECT LISTS
 <--------------------------------------------------------------------*/
-	this.renderListItem = function(listItem,quick,index){
+    this.renderTableItem = function(listItem,quick,index) {
+        var ghtml = '<tr>';
+        ghtml +='</tr>';
+    return ghtml;
+    };
+    this.renderListItem = function(listItem,quick,index){
 		var listSchema  = $.extend(
 			{
 				_listID:'id',
