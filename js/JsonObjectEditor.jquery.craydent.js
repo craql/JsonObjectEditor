@@ -526,10 +526,15 @@ function JsonObjectEditor(specs){
         if(!self.current.submenu){
             return '';
         }
+        var showFilters =
+            $c.getProperty(self.current,'userSpecs.filters') ||
+            $c.getProperty(self.current,'schema.filters') ||
+            $c.getProperty(self.current,'schema.subsets')||
+            false;
         var subSpecs = {
             search:true,
             itemcount:true,
-            filters:false
+            filters:showFilters
         };
         var userSubmenu = ($.type(self.current.submenu) != 'object')?{}:self.current.submenu;
         $.extend(subSpecs,userSubmenu);
