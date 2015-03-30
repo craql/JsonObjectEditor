@@ -16,6 +16,7 @@
 .joe-overlay{
     font-family:Cambria, "Hoefler Text", "Liberation Serif", Times, "Times New Roman", serif;
     color: #068;
+    letter-spacing: .05em;
 }
 .joe-block,.joe-overlay{
     position:absolute;
