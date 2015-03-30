@@ -121,7 +121,7 @@ function JsonObjectEditor(specs){
                             return false;
                         }
                     }
-                }else if([38,40,13].indexOf(code) == -1){//set focus for other keys
+                }else if([38,40,13,16,17].indexOf(code) == -1){//set focus for alphanumeric keys
                     if(!listMode)return;
                     var inSearchfield = false;
                     if ($(document.activeElement) && $(document.activeElement)[0] != $('.joe-submenu-search-field')[0]) {
