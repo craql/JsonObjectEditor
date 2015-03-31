@@ -2783,6 +2783,7 @@ this.renderSorterField = function(prop){
 	};
 
 	this.updateObject = function(dom,callback,stayOnItem,overwrites){
+        var oldObj = $.extend({},self.current.object);
 		function defaultCallback(data){
 			self.showMessage(data.name +' updated successfully');
 		}
@@ -2845,7 +2846,7 @@ this.renderSorterField = function(prop){
     //run callback
 
 		logit('object updated');
-        callback(obj);
+        callback(obj,oldObj,oldObj.changes(obj));
 		if(!stayOnItem){self.goBack(obj);}
 
 	};
