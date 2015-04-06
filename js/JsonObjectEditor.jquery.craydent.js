@@ -1078,6 +1078,9 @@ View Mode Buttons
 	var preProp;
 	var prePropWidths = 0;
 	this.renderObjectField = function(prop){
+        if(prop.hasOwnProperty('condition') && !self.propAsFuncOrValue(prop.condition)){
+            return '';
+        }
 		//field requires {name,type}
         self.current.fields.push(prop);
 		//set default value
@@ -1298,7 +1301,10 @@ View Mode Buttons
 		return ' '+keyupaction+' '+keypressaction+' '+bluraction+' '+changeaction+' '+disabled+' ';
 	
 	};
-	
+
+    function _disableField(prop){
+        return ((prop.hasOwnProperty('locked') && self.propAsFuncOrValue(prop.locked)&&'disabled')||'');
+    }
 /*----------------------------->
 	A | Text Input
 <-----------------------------*/
@@ -1312,17 +1318,17 @@ View Mode Buttons
             if($.type(prop.values) != 'array'){
                 prop.values = [prop.values];
             }
-            autocomplete =true;
+            autocomplete =prop.autocomplete;
 		}
 
 		//TODO: Use jquery ui autocomplete
-        var disabled = (prop.locked &&'disabled')||'';
+        var disabled = _disableField(prop);//(prop.locked &&'disabled')||'';
 		var html=
 		'<input class="joe-text-field joe-field" type="text"  '+disabled+' name="'+prop.name+'" value="'+(prop.value || '')+'" '
 			+self.renderFieldAttributes(prop)
 			+((autocomplete && 
-				' onblur="getJoe('+self.joe_index+').hideTextFieldAutoComplete($(this));"'
-				+' onkeyup="getJoe('+self.joe_index+').showTextFieldAutoComplete($(this));"'
+				//' onblur="getJoe('+self.joe_index+').hideTextFieldAutoComplete($(this));"'
+				' onkeyup="getJoe('+self.joe_index+').showTextFieldAutoComplete($(this));"'
 				) 
 			||''
 			)
@@ -1331,13 +1337,17 @@ View Mode Buttons
 		if(autocomplete){
 			html+='<div class="joe-text-autocomplete">';
             var ac_opt;
+            var ac_template = autocomplete.template||'${name}';
+            var ac_id, ac_title;
 			for(var v = 0, len = prop.values.length; v < len; v++){
                 ac_opt = ($.type(prop.values[v]) == "object")?
                     prop.values[v]:
                     {id:prop.values[v],name:prop.values[v]};
+                ac_title = fillTemplate(ac_template,ac_opt);
+                ac_id = (autocomplete.idprop && ac_opt[autocomplete.idprop])||ac_opt._id||ac_opt.id||ac_opt.name;
 				html+='<div class="joe-text-autocomplete-option" '
 					+'onclick="getJoe('+self.joe_index+').autocompleteTextFieldOptionClick(this);" '
-                    +'data-value="'+(ac_opt._id||ac_opt.id||ac_opt.name)+'">'+ac_opt.name+'</div>';
+                    +'data-value="'+ac_id+'">'+ac_title+'</div>';
 			}
 			
 			html+='</div>';	
@@ -1346,9 +1356,17 @@ View Mode Buttons
 
 		return html;
 	};
-	
+	var textFieldAutocompleteHandler = function(e){
+        var dom = e.target;
+        //if($(e.target).parents('.joe-text-autocomplete'));
+        $('.joe-text-autocomplete').removeClass('active');
+        $('body').unbind( "click", textFieldAutocompleteHandler );
+    };
+
 	this.showTextFieldAutoComplete = function(dom){
-		var autocomplete = dom.next('.joe-text-autocomplete');
+        $('body').unbind( "click", textFieldAutocompleteHandler ).bind( "click", textFieldAutocompleteHandler );
+
+        var autocomplete = dom.next('.joe-text-autocomplete');
 		autocomplete.find('.joe-text-autocomplete-option').each(function(i,obj){
 			self.checkAutocompleteValue(dom.val(),obj.innerHTML,obj);
 		});
@@ -1386,7 +1404,7 @@ View Mode Buttons
 	//bluraction	
 		//var bluraction =  (prop.onblur)? ' '+self.functionName(prop.onblur)+'(this); ' : '' ;
 		//var bluraction = 'onblur=" '+self.getActionString('onblur',prop)+' "';
-        var disabled = (prop.locked &&'disabled')||'';
+        var disabled = _disableField(prop); //(prop.locked &&'disabled')||'';
 		var html=/*
 		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
 		'<input class="joe-number-field joe-field" type="text" '+disabled+' name="'+prop.name+'" value="'+(prop.value || '')+'"  '+
@@ -1426,7 +1444,8 @@ View Mode Buttons
 	C | Select
 <-----------------------------*/	
 	this.renderSelectField = function(prop){
-        var disabled = (prop.locked &&'disabled')||'';
+        var disabled = _disableField(prop);
+        //(prop.hasOwnProperty(prop.locked) && self.propAsFuncOrValue(prop.locked) &&'disabled')||'';
 		var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values || [prop.value];
 		var valObjs = [];
 		if($.type(values[0]) != 'object'){
@@ -1900,7 +1919,7 @@ this.renderSorterField = function(prop){
  <-----------------------------*/
     this.renderURLField = function(prop){
         var profile = self.current.profile;
-            var disabled = (prop.locked &&'disabled')||'';
+            var disabled = _disableField(prop);// (prop.locked &&'disabled')||'';
         var html=
             '<div class="joe-button" onclick="_joe.gotoFieldURL(this);">view</div>'
             +'<input class="joe-url-field joe-field" type="text" ' +
@@ -2105,11 +2124,11 @@ this.renderSorterField = function(prop){
 	this.renderTagsField = function(prop){
 		var profile = self.current.profile;
 		var height = (prop.height)?'style="height:'+prop.height+';"' : '';
-		var specs = $.extend({},prop,{onblur:'_joe.showMessage($(this).val());'})
+		var specs = $.extend({},prop,{autocomplete:true}); //,{onblur:'_joe.showMessage($(this).val());'})
 		var html= '<div class="joe-tags-container">'
 			+self.renderTextField(specs)
 			+'<div class="joe-text-input-button">add</div>'
-		+'</div>'
+		+'</div>';
 
 		return html;
 	};
@@ -2642,7 +2661,7 @@ this.renderSorterField = function(prop){
 	var sortable_index;
 	this.onPanelShow = function(){
 		//init datepicker
-		self.overlay.find('.joe-date-field').Zebra_DatePicker({offset:[5,20],format:'m/d/Y'});
+		self.overlay.find('.joe-date-field').Zebra_DatePicker({offset:[5,20],format:'m/d/Y',first_day_of_week:0});
 
         //itemcount
         if(currentListItems){
@@ -2782,7 +2801,7 @@ this.renderSorterField = function(prop){
 		goJoe({},{schema:self.current.schema});
 	};
 
-	this.updateObject = function(dom,callback,stayOnItem,overwrites){
+	this.updateObject = function(dom,callback,stayOnItem,overwrites,skipValidation){
         var oldObj = $.extend({},self.current.object);
 		function defaultCallback(data){
 			self.showMessage(data.name +' updated successfully');
@@ -2794,47 +2813,53 @@ this.renderSorterField = function(prop){
 		var obj = $.extend(newObj,overwrites);
 
 //check required fields()
-       var req_fields = [];
+        var skipVal = _joe.propAsFuncOrValue(skipValidation);
+        if(!skipVal) {
+            var req_fields = [];
 
-        //_joe.current.fields.where({required:true});
-        req_fields =  _joe.current.fields.filter(function(prop){
+            //_joe.current.fields.where({required:true});
+            req_fields = _joe.current.fields.filter(function (prop) {
 
-            if(prop.required && (typeof prop.required != 'function' && prop.required) || (typeof prop.required == 'function' && prop.required(self.current.object))) {
-            return true;
-            }
-            return false;
-        });
-
-        function olistVal(olistObj){
-            var vals = '';
-            for(var i in olistObj){
-                vals+=olistObj[i];
-            }
-            vals.replace(/ /g,'');
-            return vals;
-        }
-        var required_missed = [];
-        req_fields.map(function(f){
-           if(!obj[f.name] ||
-               ($.type(obj[f.name] == "array") && f.type !="objectList" &&obj[f.name].length == 0 ) ||
-               (f.type == "objectList" && obj[f.name].filter(olistVal).length == 0)
-           ){
-
-               required_missed.push(f);
-               return false;
-           }
-        });
-        $('.joe-object-field').removeClass('joe-highlighted');
-        if(required_missed.length){
-            //f.display|| f.label|| f.name
-
-            self.showMessage("There are <b>"+required_missed.length+"</b> required fields currently missing.");//<br/>"+required_missed.join(', ')
-            required_missed.map(function(of){
-                $('.joe-object-field[data-name='+of.name+']').addClass('joe-highlighted');
+                if (prop.required && (typeof prop.required != 'function' && prop.required) || (typeof prop.required == 'function' && prop.required(self.current.object))) {
+                    return true;
+                }
+                return false;
             });
-           // self.panel.addClass('show-required');
-            return false;
+
+            function olistVal(olistObj) {
+                var vals = '';
+                for (var i in olistObj) {
+                    vals += olistObj[i];
+                }
+                vals.replace(/ /g, '');
+                return vals;
+            }
+
+            var required_missed = [];
+            req_fields.map(function (f) {
+                if (!obj[f.name] ||
+                    ($.type(obj[f.name] == "array") && f.type != "objectList" && obj[f.name].length == 0 ) ||
+                    (f.type == "objectList" && obj[f.name].filter(olistVal).length == 0)
+                ) {
+
+                    required_missed.push(f);
+                    return false;
+                }
+            });
+            $('.joe-object-field').removeClass('joe-highlighted');
+            if (required_missed.length) {
+                //f.display|| f.label|| f.name
+
+                self.showMessage("There are <b>" + required_missed.length + "</b> required fields currently missing.");//<br/>"+required_missed.join(', ')
+                required_missed.map(function (of) {
+                    $('.joe-object-field[data-name=' + of.name + ']').addClass('joe-highlighted');
+                });
+                // self.panel.addClass('show-required');
+                return false;
+            }
         }
+    //end validation
+
         obj = $.extend(self.current.object,newObj);
     //update object list
         var index = (self.current.list && self.current.list.indexOf(obj));

@@ -63,8 +63,12 @@ onUpdate and onMultipleUpdate added to schema for callbacks to these functions/b
 			animal:animalschema,
 			thing:thingschema			
 		},
-		compact:true,
-		useHashlink:false
+		container:string ('body'),
+        compact:false,
+        useBackButton:true,
+        listSubMenu:{filters:{}},
+        useHashlink:true,
+        _title:'${itemtype} | ${display}'
 	}
 	var JOE = new JsonObjectEditor(specs);
 	JOE.init();
@@ -82,7 +86,9 @@ Properties for all Fields
 - `value`: default value if not one in object
 - `default`: default value for field || function(object)
 - `type`: what type of field should JOE show
-
+- `hidden`: boolean / function, value will be added (but unsees by user)
+- `locked`: boolean
+- `condition`: boolean
 - `width`: used for layout control.
 	- can use pixels or percentages (as string)
 
@@ -90,7 +96,7 @@ Properties for all Fields
 
 - `rendering`: for css html and js
 - `text`: default single line text.
-	- autocomplete: boolean
+	- autocomplete: boolean // obj of specs (template, idprop)
 		- values:array of possibilities
 - `int`: integer field
 - `number`: number (float) field
