@@ -1324,6 +1324,7 @@ View Mode Buttons
 		//TODO: Use jquery ui autocomplete
         var disabled = _disableField(prop);//(prop.locked &&'disabled')||'';
 		var html=
+            ((autocomplete && '<div class="joe-text-autocomplete-label"></div>')||'')+
 		'<input class="joe-text-field joe-field" type="text"  '+disabled+' name="'+prop.name+'" value="'+(prop.value || '')+'" '
 			+self.renderFieldAttributes(prop)
 			+((autocomplete && 
@@ -1378,14 +1379,15 @@ View Mode Buttons
 	};
 	
 	this.autocompleteTextFieldOptionClick = function(dom){
-		$(dom).parent().prev('.joe-text-field').val($(dom).html());
+        var value = ($(dom).data('value'));
+		$(dom).parent().prev('.joe-text-field').val(value);
 		$(dom).parent().removeClass('active');
 		//$(dom).previous('.joe-text-field').val($(dom).html());
 	};
 	
 	this.checkAutocompleteValue = function(needle,haystack,dom){
 		var d = $(dom);
-		if(haystack.indexOf(needle) != -1 || !needle){
+		if(haystack.toLowerCase().indexOf(needle) != -1 || !needle){
 			d.addClass('visible');
 		}else{
 			d.removeClass('visible');	
