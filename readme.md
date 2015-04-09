@@ -91,6 +91,8 @@ Properties for all Fields
 - `condition`: boolean
 - `width`: used for layout control.
 	- can use pixels or percentages (as string)
+- `comment`: a commentthat shows up at the beginning of the field
+- `tooltip`: hover/clickable tooltip that shows up next to name
 
 **field types:**
 
@@ -117,7 +119,13 @@ Properties for all Fields
     - template: html template for fillTmeplate(template,current_object);
 - `objectlist` : a table of objects with editable properties
     - properties: array of objects|strings for the object property names
-
+- `objectReference` : a list of object ids
+    -template
+    -idprop
+    -values
+    -max(0 unlimited)
+    -sortable(true)
+- `code` :
 
 **labels:**
 

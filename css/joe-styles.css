@@ -185,12 +185,11 @@
 
 
 .joe-block-button {
-    position: absolute;
     background-color: rgba(0,0,0,.1);
     width: 40px;
     text-align: center;
     position: absolute;
-    height: 100%;
+    bottom: 0;
     top: 0;
     right: 0;
     cursor: pointer;
@@ -200,6 +199,11 @@
     background-repeat:no-repeat;
     opacity:.4;
 }
+.joe-block-button.left{
+    left:0;
+    right:auto;
+}
+
 .joe-block-button:hover{
     opacity:.9;
 }
@@ -798,6 +802,8 @@ input.joe-boolean-field {
 /*-------------------------
 	Field Item
 -------------------------*/
+
+
 .joe-field-item{
     position:relative;
     min-height: 30px;
@@ -806,6 +812,25 @@ input.joe-boolean-field {
     border-bottom: 1px solid #fff;
 }
 
+
+.joe-object-references-holder {
+    padding: 10px 0;
+}
+.joe-object-references-holder .joe-field-item{
+    padding:5px 50px;
+}
+
+
+.joe-field-item-delete-button {
+    position: absolute;
+    left: 0;
+    width:40px;
+    top:0;
+    left:0;
+    bottom:0;
+    background-position:center center;
+    background-repeat: no-repeat;
+}
 /*-------------------------
 	Section
 -------------------------*/

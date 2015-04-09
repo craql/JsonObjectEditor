@@ -1239,6 +1239,10 @@ View Mode Buttons
 				html+= self.renderObjectListField(prop);
 				break;
 
+            case 'objectReference':
+                html+= self.renderObjectReferenceField(prop);
+                break;
+
 			case 'tags':
 				html+= self.renderTagsField(prop);
 				break;
@@ -1323,9 +1327,11 @@ View Mode Buttons
 
 		//TODO: Use jquery ui autocomplete
         var disabled = _disableField(prop);//(prop.locked &&'disabled')||'';
+        var fieldtype = (prop.ftype && "data-ftype='"+prop.ftype+"'")||'';
 		var html=
             ((autocomplete && '<div class="joe-text-autocomplete-label"></div>')||'')+
-		'<input class="joe-text-field joe-field" type="text"  '+disabled+' name="'+prop.name+'" value="'+(prop.value || '')+'" '
+		'<input class="joe-text-field joe-field '+((prop.skip && 'skip-prop')||'')+'" ' +
+            'type="text"  '+disabled+' name="'+prop.name+'" value="'+(prop.value || '')+'" '
 			+self.renderFieldAttributes(prop)
 			+((autocomplete && 
 				//' onblur="getJoe('+self.joe_index+').hideTextFieldAutoComplete($(this));"'
@@ -1333,8 +1339,8 @@ View Mode Buttons
 				) 
 			||''
 			)
-		+' />';
-		
+		+' '+fieldtype+'/>';
+
 		if(autocomplete){
 			html+='<div class="joe-text-autocomplete">';
             var ac_opt;
@@ -2081,9 +2087,9 @@ this.renderSorterField = function(prop){
         return html;
     };
 
-    /*----------------------------->
-     Q | Code Field
-     <-----------------------------*/
+/*----------------------------->
+ Q | Code Field
+ <-----------------------------*/
 	this.renderCodeField = function(prop){
 
 		var profile = self.current.profile;
@@ -2136,8 +2142,93 @@ this.renderSorterField = function(prop){
 	};
 
 
+/*----------------------------->
+ U | Object Reference
+ <-----------------------------*/
+    this.renderObjectReferenceField = function(prop){
+        var values = self.propAsFuncOrValue(prop.values) || [];
+        var value = self.current.object[prop.name] ||
+            prop.value ||
+            (!self.current.object.hasOwnProperty(prop.name) && prop.default) ||
+            [];
+        if($.type(value) != 'array'){
+            value = (value != null)?[value]:[];
+        }
+        var idprop =prop.idprop || self.getIDProp();
+        var template = "<div>${name}</div><span class='subtext'>${"+idprop+"}</span>";//prop.template ||
+        //var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];
+        var html = "Object Reference";
+        var specs = $.extend(
+            {},{
+                autocomplete:{idprop:prop.idprop,template:template},
+                values:values,
+                skip:true,
+                name:prop.name,
+                ftype:'objectReference'
 
+            }
+        ); //,{onblur:'_joe.showMessage($(this).val());'})
+        var sortable = true;
+        if(prop.hasOwnProperty('sortable')){sortable = prop.sortable;}
+        var html= '<div class="joe-tags-container">'
+            +self.renderTextField(specs)
+            +'<div class="joe-text-input-button " data-fieldname="'+prop.name+'"' +
+                'onclick="getJoe('+self.joe_index+').addObjectReferenceHandler(this);">add</div>'
+            +'</div>'
+            +'<div class ="joe-object-references-holder '+(sortable&&'sortable'||'')+'" data-field="'+prop.name+'">';
 
+        //html+= fillTemplate(template,values);
+       // html += self.createObjectReferenceItem(null,value,prop.name);
+        value.map(function(v){
+            html += self.createObjectReferenceItem(null,v,prop.name);
+        });
+        html +='</div>';
+        //html+= self.renderTextField(specs);
+        return html;
+    };
+
+    this.addObjectReferenceHandler = function(btn){
+        var id = $(btn).siblings('input').val()
+        var field = $(btn).data().fieldname;
+        $('.joe-object-references-holder[data-field='+field+']').append(self.createObjectReferenceItem(null,id,field));
+
+    };
+
+    this.createObjectReferenceItem = function(item,id,fieldname){
+        if(!item) {
+            logit('adding ' + id + ' from ' + fieldname);
+            var field = _getField(fieldname);
+            var values = self.propAsFuncOrValue(field.values);
+            var idprop = field.idprop||'_id';
+            var item;
+ /*           values.filter(function(i){
+                return
+            });*/
+            for(var i = 0,tot = values.length; i <tot; i++){
+                if(values[i][idprop] == id){
+                    item = values[i];
+                    break;
+                }
+            }
+        }
+        var deleteButton = '<div class="joe-delete-button joe-block-button left" ' +
+            'onclick="$(this).parent().remove();">&nbsp;</div>';
+        var template = field.template || "<div>${name}</div><span class='subtext'>"+id+"</span>";
+        return '<div class="joe-field-item" data-value="'+id+'">'+deleteButton+fillTemplate(template,item)+'</div>';
+    };
+
+    function _getField(fieldname){
+        var fieldobj;
+        for(var f = 0,tot= self.current.fields.length; f<tot; f++){
+            fieldobj = self.current.fields[f]
+            if(fieldobj.name == fieldname){
+                return fieldobj;
+            }
+        }
+        return false;
+
+    }
+    this.getField = _getField;
 /*-------------------------------------------------------------------->
 	4 | OBJECT LISTS
 <--------------------------------------------------------------------*/
@@ -2697,6 +2788,8 @@ this.renderSorterField = function(prop){
             logit('Error creating sortables:\n'+e);
         }
 		self.overlay.find('input.joe-image-field').each(function(){_joe.updateImageFieldImage(this);});
+        //object reference
+        self.overlay.find('.joe-object-references-holder.sortable').sortable();
 	    self.overlay.find('.joe-objectlist-table').each(function(){
             $(this).find('tbody').sortable(
                 {   axis:'y',
@@ -2962,42 +3055,52 @@ this.renderSorterField = function(prop){
 				default:
 					
 					prop = $(this).attr('name');
-					
-					switch($(this).data('ftype')){
-					//ace editor
-						case 'ace':
-							var editor = _joe.ace_editors[$(this).data('ace_id')];
-							//$(this).find('.ace_editor');
-							object[prop] = editor.getValue();
-							break;
+					if(prop && prop != 'undefined') {//make sure it's suppoesed to be a prop field
+                        switch ($(this).data('ftype')) {
+                            //ace editor
+                            case 'ace':
+                                var editor = _joe.ace_editors[$(this).data('ace_id')];
+                                //$(this).find('.ace_editor');
+                                object[prop] = editor.getValue();
+                                break;
 
 
-						case 'multisorter':
-							var vals = [];
-							$(this).find('.selections-bin').find('li').each(function(){
-								vals.push($(this).data('id'));
-							});
-							object[prop] = vals;
-						break;
-						case 'buckets':
-							var vals = [];
-							$(this).find('.selections-bin').each(function(){
-								vals.push([]);
-								$(this).find('li').each(function(){
-									vals[vals.length-1].push($(this).data('id'));
-								});
-							});
-							/*
-							$(this).find('.selections-bin').find('li').each(function(){
-								vals.push($(this).data('id'));
-							});*/
-							object[prop] = vals;
-						break;
-						default:
-						object[prop] = $(this).val();
-						break;
-					}
-				break;
+                            case 'multisorter':
+                                var vals = [];
+                                $(this).find('.selections-bin').find('li').each(function () {
+                                    vals.push($(this).data('id'));
+                                });
+                                object[prop] = vals;
+                                break;
+                            case 'buckets':
+                                var vals = [];
+                                $(this).find('.selections-bin').each(function () {
+                                    vals.push([]);
+                                    $(this).find('li').each(function () {
+                                        vals[vals.length - 1].push($(this).data('id'));
+                                    });
+                                });
+                                /*
+                                 $(this).find('.selections-bin').find('li').each(function(){
+                                 vals.push($(this).data('id'));
+                                 });*/
+                                object[prop] = vals;
+                                break;
+                            case 'objectReference':
+                                var vals = [];
+                                object[prop] = 'objectReference';
+                                $('.objectReference-field[data-name="'+prop+'"]').find('.joe-field-item')
+                                    .each(function(){
+                                        vals.push($(this).data().value);
+                                    });
+                                object[prop] = vals;
+                                break;
+                            default:
+                                object[prop] = $(this).val();
+                                break;
+                        }
+                        break;
+                    }
 			}
 		});
 
