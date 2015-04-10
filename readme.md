@@ -116,7 +116,7 @@ Properties for all Fields
 	- values(array of objects, [{value:"",name/display:""]), can be a function
 - `content` : show content on in the editor
     - run: function to be run(current_object,field_properties)
-    - template: html template for fillTmeplate(template,current_object);
+    - template: html template for fillTemplate(template,current_object);
 - `objectlist` : a table of objects with editable properties
     - properties: array of objects|strings for the object property names
 - `objectReference` : a list of object ids
