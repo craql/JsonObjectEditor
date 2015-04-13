@@ -1307,7 +1307,7 @@ View Mode Buttons
 	};
 
     function _disableField(prop){
-        return ((prop.hasOwnProperty('locked') && self.propAsFuncOrValue(prop.locked)&&'disabled')||'');
+        return ((prop.hasOwnProperty('locked') && self.propAsFuncOrValue(prop.locked)&&' disabled ')||'');
     }
 /*----------------------------->
 	A | Text Input
@@ -1513,8 +1513,9 @@ View Mode Buttons
 	D | Date Field
 <-----------------------------*/
 	this.renderDateField = function(prop){
+
 				var html=
-		'<input class="joe-date-field joe-field" type="text"  name="'+prop.name+'" value="'+(prop.value || '')+'" '+
+		'<input class="joe-date-field joe-field" type="text"  '+_disableField(prop)+' name="'+prop.name+'" value="'+(prop.value || '')+'" '+
 			self.renderFieldAttributes(prop)+
 		' />';
 		
@@ -1536,7 +1537,7 @@ View Mode Buttons
 			+'data-value="'+val+'" '
 			+'data-hideattribution="'+(prop.hideAttribution||'')+'" '
 			+'onload="getJoe('+self.joe_index+').initGeoMap(this);"></div>'
-		+'<input class="joe-geo-field joe-field" type="text" value="'+val+'" name="'+prop.name+'"/>'
+		+'<input class="joe-geo-field joe-field" type="text" value="'+val+'" name="'+prop.name+'" '+_disableField(prop)+'/>'
 		+'<script type="text/javascript">setTimeout(function(){getJoe('+self.joe_index+').initGeoMap("'+mapDiv+'");},100)</script>'
 		;
 		
@@ -1616,7 +1617,7 @@ View Mode Buttons
 		+'<input class="joe-boolean-field joe-field" type="checkbox" name="'+prop.name+'" id="joe_checkbox-'+prop.name+'" '
 			+(prop.value == true&&'checked' || '')
 			+self.renderFieldAttributes(prop)
-		+' /> <small>'
+		+' '+_disableField(prop)+'/> <small>'
             +(prop.label ||'') +'</small></label>';
 		return html;
 	};
@@ -1689,7 +1690,7 @@ this.renderSorterField = function(prop){
 		var html=
 		'<input class="joe-image-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'" '
 		+	self.renderFieldAttributes(prop)
-		+' onkeyup="_joe.updateImageFieldImage(this);"/>'
+		+' onkeyup="_joe.updateImageFieldImage(this);" '+_disableField(prop)+'/>'
 		+'<img class="joe-image-field-image" src="'+(prop.value||'')+'"/>'
 		+'<span class="joe-image-field-size"></span>';
 
@@ -2077,10 +2078,11 @@ this.renderSorterField = function(prop){
             itemid = 'joe_checkbox-'+prop.name;
             checked = (prop.value.indexOf(value[idprop]) != -1)?' checked ':'';
             html+= '<div class="joe-group-item"><label >'
-            +'<div class="joe-group-item-checkbox"><input class="joe-field" type="checkbox" name="'+prop.name+'" '
+            +'<div class="joe-group-item-checkbox">' +
+            '<input class="joe-field" type="checkbox" name="'+prop.name+'" '
             +checked
             +self.renderFieldAttributes(prop)
-            +'value="'+value[idprop]+'" /></div> '
+            +'value="'+value[idprop]+'" '+_disableField(prop)+'/></div> '
             +((prop.template && fillTemplate(prop.template,value))||value.label ||value.name || '') +'</label></div>';
         });
         html+= __clearDiv__;
@@ -2120,10 +2122,12 @@ this.renderSorterField = function(prop){
 	R | Rendering Field
 <-----------------------------*/
 	this.renderRenderingField = function(prop){
+        var locked = self.propAsFuncOrValue(prop.locked)?' disabled ':'';
 		var profile = self.current.profile;
         var height = (prop.height)?'style="height:'+prop.height+';"' : '';
 		var html=
-			'<textarea class="joe-rendering-field joe-field" '+height+' name="'+prop.name+'" >'+(prop.value || "")+'</textarea>';
+			'<textarea class="joe-rendering-field joe-field" '+height+' '+locked+'name="'+prop.name+'" >'
+            +(prop.value || "")+'</textarea>';
 		return html;
 	};
 /*----------------------------->
@@ -3418,8 +3422,12 @@ ANALYSIS, IMPORT AND MERGE
 		return prop;
 	};
 
-    this.propAsFuncOrValue = function(prop, toPass){
+    this.propAsFuncOrValue = function(prop, toPass, defaultTo){
         var toPass = toPass || self.current.object;
+
+/*        if(!toPass.hasOwnProperty(prop)){
+            return defaultTo || false;
+        }*/
         if(prop && typeof prop == 'function'){
             return prop(toPass);
         }
