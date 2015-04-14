@@ -619,8 +619,9 @@ function JsonObjectEditor(specs){
 
                     //TODO: do crazy smart stuff here.
                     switch($.type(filterobj[ff])){
+                        case 'number':
                         case 'string':
-                            if($.type(query[ff]) == 'string'){
+                            if($.type(query[ff]) == 'string' || $.type(query[ff]) == 'number'){
                                 query[ff]={
                                     $in:[query[ff],filterobj[ff]]
                                 };
