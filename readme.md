@@ -157,6 +157,7 @@ a list of schema objects that can configure the editor fields, these can be give
 		multipleCallback:function to be called after a multi-edit. passed list of edited items.
 		onUpdate: callback for after update. passed single edited items.
 		onMultipleUpdate:callback for after multi update.passed list of edited items.
+                filters: array of objects
 	}
 ###Pre-formating
 you can preformat at the joe call or schema level. The data item will be affected by the passed function (which should return the preformated item). 
