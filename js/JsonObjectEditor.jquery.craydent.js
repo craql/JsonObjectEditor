@@ -549,7 +549,7 @@ function JsonObjectEditor(specs){
         +'</div>'
         +"<div class='joe-filters-holder'>"
             +renderSubsetsDiv()
-            +((self.propAsFuncOrValue(self.current.schema.filters) && renderFiltersDiv())||'')
+            +(self.current.schema && (self.propAsFuncOrValue(self.current.schema.filters) && renderFiltersDiv())||'')
             // +'<span class="jif-arrow-left"></span>'
         +"</div>";
 
