@@ -2035,7 +2035,8 @@ this.renderSorterField = function(prop){
         var renderInput = {
          //   'text':renderTextInput,
             'text':self.renderTextField,
-            select:self.renderSelectField
+            select:self.renderSelectField,
+            'date':self.renderDateField
         };
 
         //show all properties
