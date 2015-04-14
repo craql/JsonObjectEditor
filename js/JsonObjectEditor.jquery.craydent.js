@@ -1172,7 +1172,7 @@ View Mode Buttons
 		var joeFieldBenchmarker = new Benchmarker();
 
 		var html = '';
-		switch(prop.type){
+		switch(prop.type.toLowerCase()){
 			case 'select':
 				html+= self.renderSelectField(prop);
 				break;
@@ -1235,7 +1235,7 @@ View Mode Buttons
 				html+= self.renderURLField(prop);
 				break;
 
-			case 'objectList':
+			case 'objectlist':
 				html+= self.renderObjectListField(prop);
 				break;
 
