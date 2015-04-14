@@ -82,7 +82,8 @@ onUpdate and onMultipleUpdate added to schema for callbacks to these functions/b
 ###fields
 Properties for all Fields
 
-- `label`: what the field should display as 
+- `label / display`: what the field should display as
+    *If the field type is boolean, label controls checkbox label
 - `value`: default value if not one in object
 - `default`: default value for field || function(object)
 - `type`: what type of field should JOE show
@@ -119,6 +120,7 @@ Properties for all Fields
     - template: html template for fillTemplate(template,current_object);
 - `objectlist` : a table of objects with editable properties
     - properties: array of objects|strings for the object property names
+    - hideHeadings: don't show table headings
 - `objectReference` : a list of object ids
     -template
     -idprop
