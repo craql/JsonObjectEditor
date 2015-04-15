@@ -272,21 +272,28 @@ function JsonObjectEditor(specs){
 /*-------------------------
  Subsets
  -------------------------*/
+            var currentSubsets;
 			//setup subsets
-			self.current.subsets = setts.subsets || (specs.schema && specs.schema.subsets)||null;
-			if(typeof self.current.subsets == 'function'){
-				self.current.subsets = self.current.subsets(); 
+            currentSubsets = setts.subsets || (specs.schema && specs.schema.subsets)||null;
+			if(typeof currentSubsets == 'function'){
+                currentSubsets = currentSubsets();
 			}
+
         //a current subset selected
-            if(self.current.specs.subset && self.current.subsets.where({name:specs.subset}).length){
-                    self.current.subset = self.current.subsets.where({name:specs.subset})[0]||false;
+            if(self.current.specs.subset && currentSubsets.where({name:specs.subset}).length){
+                    self.current.subset = currentSubsets.where({name:specs.subset})[0]||false;
             }else{
-                //select deaulf subset if it exists
-                self.current.subset =
-                    (self.current.subsets &&  self.current.subsets.where({'default':true})[0])||null;
+                //all selected
+                if(self.current.specs.subset == "All"){
+                    self.current.subset = {name:"All",filter:{}}
+                }else {
+                    //select default subset if it exists
+                    self.current.subset =
+                        (currentSubsets && currentSubsets.where({'default': true})[0]) || null;
+                }
             }
 
-
+            self.current.subsets = currentSubsets;
 
 /*-------------------------
  Sorting
