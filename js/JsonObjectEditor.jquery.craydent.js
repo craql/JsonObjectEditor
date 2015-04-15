@@ -374,11 +374,12 @@ function JsonObjectEditor(specs){
     /*-------------------------------------------------------------------->
      Framework Rendering
      <--------------------------------------------------------------------*/
-
+        var content =
+            self.renderEditorContent(specs);
 		var html = 
 			self.renderEditorHeader(specs)+
             self.renderEditorSubmenu(specs)+
-            self.renderEditorContent(specs)+
+            content
 			self.renderEditorFooter(specs)+
 			self.renderMessageContainer();
 		    self.overlay.find('.joe-overlay-panel').html(html);
@@ -523,7 +524,8 @@ function JsonObjectEditor(specs){
  B | SubMenu
  <-----------------------------*/
     this.renderEditorSubmenu = function(specs) {
-        if(!self.current.submenu){
+        var sectionAnchors =renderSectionAnchors();
+        if(!self.current.submenu && !sectionAnchors.count){
             return '';
         }
         var showFilters =
@@ -539,19 +541,33 @@ function JsonObjectEditor(specs){
         var userSubmenu = ($.type(self.current.submenu) != 'object')?{}:self.current.submenu;
         $.extend(subSpecs,userSubmenu);
 
-        var submenu =
-        '<div class="joe-panel-submenu">'
+        if(specs.mode == 'list') {
+            var submenu =
+                '<div class="joe-panel-submenu">'
 
-            //+self.renderViewModeButtons(subSpecs)
-            +((subSpecs.itemcount && self.renderSubmenuItemcount(subSpecs.itemcount))||'')
-            +((subSpecs.filters && self.renderSubmenuFilters(subSpecs.filter))||'')
-            +((subSpecs.search && self.renderSubmenuSearch(subSpecs.search))||'')
-        +'</div>'
-        +"<div class='joe-filters-holder'>"
-            +renderSubsetsDiv()
-            +(self.current.schema && (self.propAsFuncOrValue(self.current.schema.filters) && renderFiltersDiv())||'')
-            // +'<span class="jif-arrow-left"></span>'
-        +"</div>";
+                    //+self.renderViewModeButtons(subSpecs)
+                + ((subSpecs.itemcount && self.renderSubmenuItemcount(subSpecs.itemcount)) || '')
+                + ((subSpecs.filters && self.renderSubmenuFilters(subSpecs.filter)) || '')
+                + ((subSpecs.search && self.renderSubmenuSearch(subSpecs.search)) || '')
+
+                + '</div>'
+                + "<div class='joe-filters-holder'>"
+                + renderSubsetsDiv()
+                + (self.current.schema && (self.propAsFuncOrValue(self.current.schema.filters) && renderFiltersDiv()) || '')
+                    // +'<span class="jif-arrow-left"></span>'
+                + "</div>";
+        }else{
+            var submenu =
+                '<div class="joe-panel-submenu">'
+                    + ((sectionAnchors.count && sectionAnchors.code) || '')
+
+                + '</div>';/*
+                + "<div class='joe-filters-holder'>"
+               // + renderSubsetsDiv()
+                //+ (self.current.schema && (self.propAsFuncOrValue(self.current.schema.filters) && renderFiltersDiv()) || '')
+                    // +'<span class="jif-arrow-left"></span>'
+                + "</div>";*/
+        }
 
         //TODO:move to subsets filter rendering function
         function renderSubsetsDiv(){
@@ -584,6 +600,23 @@ function JsonObjectEditor(specs){
         }
         return submenu;
     };
+    function renderSectionAnchors(){
+        var anchorhtml = '<div class="joe-submenu-section-anchors">';
+        anchorhtml+='<div class="joe-submenu-section" onclick="$(\'.joe-overlay[data-joeindex='+self.joe_index+']\').find(\'.joe-panel-content\').scrollTop(0)">^ top</div>';
+        var scount = 0;
+        var template =
+            '<div class="joe-submenu-section" onclick="$(\'.joe-content-section[data-section=${id}]\')[0].scrollIntoView()">${name}</div>';
+        var section;
+        for(var secname in self.current.sections){
+            section = _getSection(secname);
+            if(!section.hidden) {
+                anchorhtml += fillTemplate(template, section);
+                scount++;
+            }
+        }
+        anchorhtml+="</div>";
+        return {count:scount,code:anchorhtml};
+    }
 /*------------------>
     Filter
 <------------------*/
@@ -765,8 +798,12 @@ View Mode Buttons
             break;
 			
 		}
-        var submenu = (self.current.submenu)?' with-submenu ':'';
-        var scroll = 'onscroll="getJoe('+self.joe_index+').onListContentScroll(this);"'
+        var submenu = '';
+        if(mode == 'list' && self.current.submenu){
+            submenu=' with-submenu ';
+        }
+        submenu=(self.current.submenu || renderSectionAnchors().count)?' with-submenu ':'';
+        var scroll = 'onscroll="getJoe('+self.joe_index+').onListContentScroll(this);"';
 		var html = 
 		'<div class="joe-panel-content joe-inset '+submenu+'" '+((listMode && scroll)||'')+'>'+
 			content+
@@ -945,15 +982,20 @@ View Mode Buttons
             fields += self.renderObjectField(propObj);
         }else if($.type(prop) == "object"){
 
-			if(prop.label){
+            if(prop.type){
+               //TODO:render field from custom object
+               // fields += self.renderContentLabel(prop);
+            }
+			else if(prop.label){
 				fields += self.renderContentLabel(prop);
 			}
-            if(prop.section_start){
+            else if(prop.section_start){
                 fields += self.renderPropSectionStart(prop);
             }
-            if(prop.section_end){
+            else if(prop.section_end){
                 fields += self.renderPropSectionEnd(prop);
             }
+
 		}
 
         function extendField(propname){
@@ -987,8 +1029,10 @@ View Mode Buttons
 //prop sections
     self.renderPropSectionStart = function(prop){
         var show = '';
+        var hidden = false;
         if(prop.condition && !prop.condition(self.current.object)){
             show =  ' no-section ';
+            hidden=true;
         }
         var secname = fillTemplate((prop.section_label||prop.section_start),self.current.object);
         var secID = prop.section_start;
@@ -1001,19 +1045,23 @@ View Mode Buttons
             '<div class="joe-content-section-label" '+toggle_action+'>'+secname+'</div>'+
             '<div class="joe-content-section-content">';
         //add to current sections
-        self.current.sections[secID]={open:true};
+        self.current.sections[secID]={open:true,name:secname,id:secID,hidden:hidden};
         return section_html;
     };
     self.renderPropSectionEnd = function(prop){
         var secID = prop.section_end;
-        if(!secID || !(self.current.sections[secID] && self.current.sections[secID].open)){
+        var section = _getSection(secID)
+        if(!secID || !(section && section.open)){
             return '';
         }
         var section_html = '</div></div>';
-        self.current.sections[secID]={open:false};
+        section.open = false;
         return section_html;
     };
 
+    function _getSection(secname){
+        return self.current.sections[secname];
+    }
 
 /*----------------------------->
 	D | Footer
@@ -1240,7 +1288,7 @@ View Mode Buttons
 				html+= self.renderObjectListField(prop);
 				break;
 
-            case 'objectReference':
+            case 'objectreference':
                 html+= self.renderObjectReferenceField(prop);
                 break;
 

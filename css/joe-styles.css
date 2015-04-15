@@ -405,12 +405,13 @@ Subset Selector
 }
 
 .joe-subset-selector .selector-option{
-    background: rgba(0,0,0,.2);
+    background-color: #ddd;
 
     padding: 0 7px;
 }
 .joe-subset-selector .selector-option:hover{
-    background: rgba(0,0,0,.4);
+ /*   background: rgba(0,0,0,.4);*/
+    background-color:#bbb;
 }
 .joe-subset-selector .selector-label{
     background: rgba(0,0,0,.2);
@@ -502,6 +503,7 @@ bottom:5px;
     width: 254px;
     border-left: 1px solid #ccc;
     display:none;
+    overflow:auto;
 }
 
 .joe-overlay-panel.show-filters .joe-filters-holder{
@@ -857,6 +859,21 @@ display:none;
 }
 .joe-content-section-label:hover{
     background-color: rgba(0,40,80,.6);
+}
+
+.joe-submenu-section-anchors {
+    height: 38px;
+    line-height: 38px;
+}
+
+.joe-submenu-section {
+    cursor: pointer;
+    height: 100%;
+    float: left;
+    padding: 0 8px;
+}
+.joe-submenu-section:hover{
+    background:rgba(0,0,0,.2);
 }
 /*-------------------------
 	Field Tooltip
