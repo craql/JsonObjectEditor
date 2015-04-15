@@ -379,7 +379,7 @@ function JsonObjectEditor(specs){
 		var html = 
 			self.renderEditorHeader(specs)+
             self.renderEditorSubmenu(specs)+
-            content
+            content+
 			self.renderEditorFooter(specs)+
 			self.renderMessageContainer();
 		    self.overlay.find('.joe-overlay-panel').html(html);
@@ -1424,7 +1424,7 @@ View Mode Buttons
 
         var autocomplete = dom.next('.joe-text-autocomplete');
 		autocomplete.find('.joe-text-autocomplete-option').each(function(i,obj){
-			self.checkAutocompleteValue(dom.val(),obj.innerHTML,obj);
+			self.checkAutocompleteValue(dom.val().toLowerCase(),obj.innerHTML,obj);
 		});
 		autocomplete.addClass('active');
 	};
@@ -3542,10 +3542,20 @@ ANALYSIS, IMPORT AND MERGE
                     }else {//SHOW LIST, NO item
                         goJoe(dataset, {schema: hashSchema});
                     }
+                    var section = $GET('section');
+                    $DEL('section');
+                    gotoSection(section);
+
+
                 }
             }
         }catch(e){
             logit('error reading hashlink:'+e);
+        }
+        function gotoSection(section){
+            if (section){
+                $('.joe-content-section[data-section='+section+']').removeClass('collapsed')[0].scrollIntoView();
+            }
         }
     };
 

@@ -136,6 +136,23 @@ Properties for all Fields
 
     {label:'Name of the following properties section'}
 
+##page sections
+    {section_start: 'SectionName',
+       section_label:'Section Name with Labels',
+       condition:function(item){
+           return item.show;}
+    },
+    {section_end: 'CreativeBrief'}
+
+- pass an object instead of a string to the fields array. these show up on the details view as anchors.
+
+
+- Object Properties
+    - `section_start`: name/id of section
+    - `'section_label`:use instead of section_start for display name
+    - `section_end`: name/id of section(str)
+    - template: html template for fillTemplate(template,current_object);
+
 ###defaultProfile
 overwrites the default profile
 
