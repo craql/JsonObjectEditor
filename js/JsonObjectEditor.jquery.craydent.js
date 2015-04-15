@@ -605,7 +605,7 @@ function JsonObjectEditor(specs){
         anchorhtml+='<div class="joe-submenu-section" onclick="$(\'.joe-overlay[data-joeindex='+self.joe_index+']\').find(\'.joe-panel-content\').scrollTop(0)">^ top</div>';
         var scount = 0;
         var template =
-            '<div class="joe-submenu-section" onclick="$(\'.joe-content-section[data-section=${id}]\')[0].scrollIntoView()">${name}</div>';
+            '<div class="joe-submenu-section" onclick="$(\'.joe-content-section[data-section=${id}]\').removeClass(\'collapsed\')[0].scrollIntoView()">${name}</div>';
         var section;
         for(var secname in self.current.sections){
             section = _getSection(secname);
