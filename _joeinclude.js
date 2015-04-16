@@ -15,7 +15,12 @@ if(location && location.hostname){//fix for devices
 			web_dir = "http://webapps-cdn.esri.com/tools/JOE/";
 		break;
 
+/*        case 'webnode.esri.com':
+            web_dir = "http://ec2-23-23-199-244.compute-1.amazonaws.com/JsonObjectEditor/";
+        break;*/
+
         //NODE TIERS
+        case 'webnode.esri.com':
         case 'ec2-23-23-199-244.compute-1.amazonaws.com'://dev
         case 'ec2-54-215-12-204.us-west-1.compute.amazonaws.com'://stg
         case 'ec2-23-23-237-78.compute-1.amazonaws.com'://prd
