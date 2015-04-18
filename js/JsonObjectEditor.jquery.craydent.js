@@ -3604,7 +3604,7 @@ function __removeTags(str){
 }
 
 function _COUNT(array){
-	if(typeof array == 'array') {
+	if(array.isArray()) {
 		return array.length;
 	}
 	return 0;

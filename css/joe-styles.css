@@ -837,7 +837,7 @@ input.joe-boolean-field {
 	Section
 -------------------------*/
 .joe-content-section{
-
+    clear: both;
 }
 .joe-content-section.no-section{
 display:none;
