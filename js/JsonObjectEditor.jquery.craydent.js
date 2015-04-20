@@ -1970,6 +1970,9 @@ this.renderSorterField = function(prop){
 		var constructedItem = self.constructObjectFromFields();
 		if(!self.current.object[idProp] ||(constructedItem[idProp] && constructedItem[idProp] == self.current.object[idProp])){
 			itemObj = constructedItem;
+            if(self.current.object[idProp] && constructedItem[idProp] == self.current.object[idProp]){
+                itemObj = $.extend({}, constructedItem, self.current.object);
+            }
 		}
         if(prop.run){
             html+= prop.run(itemObj,prop)||'';
