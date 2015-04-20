@@ -455,7 +455,8 @@ Subset Selector
 .joe-panel-content.joe-inset{
     background:#fff;
     box-shadow:inset 0 0 3px 0 rgba(0,0,0,.5);
-/*    border:1px solid #efefef;*/
+    border:1px solid #fefefe;
+    border-right:0px;
 }
 
 .no-footer-menu .joe-panel-content{
