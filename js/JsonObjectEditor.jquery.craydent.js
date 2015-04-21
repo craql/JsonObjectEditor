@@ -2,7 +2,7 @@
     Craydent LLC
 	Copyright 2014 (http://craydent.com/joe)
     Dual licensed under the MIT or GPL Version 2 licenses.
-	(http://craydent.com/license)                       
+	(http://craydent.com/license)
 ---------------------------------------------------------/*/
 //render field - self.renderObjectPropFieldUI
 /*TODO:
@@ -10,7 +10,7 @@
 	-merge specs (profile,schema,object,call?)
 	-required fields
 
-	
+
 */
 var _webworkers = false;
 var _joeworker;
@@ -27,16 +27,16 @@ function JsonObjectEditor(specs){
 	this.VERSION = '1.0.1';
 	window._joes = window._joes || [];
 	this.joe_index = window._joes.length;
-	if(!window._joes.length){window._joe = this;} 
-	 
-	window._joes.push(this);	
-	
+	if(!window._joes.length){window._joe = this;}
+
+	window._joes.push(this);
+
 	this.history = [];
 /*-------------------------------------------------------------------->
 	0 | CONFIG
 <--------------------------------------------------------------------*/
 	var defaults = {
-		
+
 		container:'body',
 		joeprofile:{
 			lockedFields:['joeUpdated'],
@@ -51,7 +51,7 @@ function JsonObjectEditor(specs){
 				//fields:['id','name','thingType','legs','species','weight','color','gender'],
 				//_listID:'id',
 				//_listTitle:'${name} ${species}'
-		
+
 		}},
 		compact:false,
 		useControlEnter:true,
@@ -60,9 +60,9 @@ function JsonObjectEditor(specs){
 
         listSubMenu:true
 	};
-	
+
 	this.specs = $.extend({},defaults,specs||{});
-	
+
 	this.current = {};
 	//TODO: check for class/id selector
 	this.container = $(this.specs.container);
@@ -178,31 +178,31 @@ function JsonObjectEditor(specs){
 	2 | FRAMEWORK START
 <--------------------------------------------------------------------*/
 	this.renderFramework = function(content){
-		var html = 
+		var html =
 		'<div class="joe-overlay '+((self.specs.compact && ' compact ') || '')+'" data-joeindex="'+this.joe_index+'">'+
 			'<div class="joe-overlay-panel">'+
 				(content || '')+
 			'</div>'+
-		//mini	
+		//mini
 			'<div class="joe-mini-panel">'+
 			'</div>'+
 		'</div>';
 		return html;
 	};
-	
-	
+
+
 	this.populateFramework = function(data,setts){
 		self.overlay.removeClass('multi-edit');
 		var joePopulateBenchmarker = new Benchmarker();
 
 		logit('------Beginning joe population');
 		var specs = setts || {};
-		self.current.specs = setts; 
+		self.current.specs = setts;
 		self.current.data = data;
 	//clean copy for later;
 		self.current.userSpecs = $.extend({},setts);
-	
-	//update history 1/2	
+
+	//update history 1/2
 		if(!self.current.specs.noHistory){
 			self.history.push({
 	/*			_joeHistoryTitle:self.overlay.find('.joe-panel-title').html(),
@@ -210,19 +210,19 @@ function JsonObjectEditor(specs){
 				data:self.current.data
 			});
 		}
-		
+
 		var schema = setts.schema || '';
 		var profile = setts.profile || null;
 		var callback = setts.callback || null;
 		var datatype = setts.datatype || '';
 		var title = setts.title || '';
-		
+
 		//callback
 		if(callback){self.current.callback = callback;}
 		else{self.current.callback = null;}
-	
-	
-	//setup schema 
+
+
+	//setup schema
 		specs.schema = this.setSchema(schema);
 	//	specs.schema = ($.type(schema) == 'object')? schema : self.schemas[schema] || null;
 	//	self.current.schema = specs.schema;
@@ -236,11 +236,11 @@ function JsonObjectEditor(specs){
         (specs.schema && specs.schema.preformat) ||
 		specs.preformat ||
 		function(d){return d;};
-	
-	data = specs.preformat(data);	
+
+	data = specs.preformat(data);
 /*-------------------------
 	Object
--------------------------*/	
+-------------------------*/
 	//when object passed in
 		if($.type(data) == 'object' || datatype =='object'){
 			specs.object = data;
@@ -248,7 +248,7 @@ function JsonObjectEditor(specs){
 
 			specs.mode="object";
 			self.current.object = data;
-			
+
 		}
 /*-------------------------
  MultiEdit (Arrays)
@@ -256,9 +256,9 @@ function JsonObjectEditor(specs){
         self.toggleMultiEditMode(specs,data);
 /*-------------------------
 	Lists (Arrays)
--------------------------*/			
-	
-	//when array passed in	
+-------------------------*/
+
+	//when array passed in
 		listMode = false;
 		if($.type(data) == 'array' || datatype =='array'){
 			listMode = true;
@@ -328,21 +328,21 @@ function JsonObjectEditor(specs){
 
 /*-------------------------
 	Rendering
--------------------------*/	
+-------------------------*/
 	//when rendering passed in
 		if($.type(data) == 'string' && datatype == 'rendering'){
 			specs.rendering = data;
-			
+
 			specs.menu = [__replaceBtn__];
 			specs.mode="rendering";
 			self.current.rendering = specs.rendering;
 			//specs.schema
-			
+
 		}
 
 /*-------------------------
 	String
--------------------------*/	
+-------------------------*/
 	//when string passed in
 		else if($.type(data) == 'string' || datatype == 'string'){
 			specs.text = data;
@@ -350,13 +350,13 @@ function JsonObjectEditor(specs){
 			//specs.menu = [{name:'save',label:'Save Object',action:'_joe.updateObject()'}];
 			specs.mode="text";
 			self.current.text = specs.text;
-			
+
 		}
 
 
-		
-	//setup window title	
-		//specs.title = title || (specs.schema)? specs.schema._title : "Viewing "+specs.mode.capitalize();	
+
+	//setup window title
+		//specs.title = title || (specs.schema)? specs.schema._title : "Viewing "+specs.mode.capitalize();
 		specs.listWindowTitle = (
             specs.list
             && (
@@ -365,14 +365,14 @@ function JsonObjectEditor(specs){
             )
             );
         specs.title =(
-			title 
+			title
 			|| specs.listWindowTitle
-			|| (specs.schema && specs.schema._title)  || "Viewing "+specs.mode.capitalize());		
+			|| (specs.schema && specs.schema._title)  || "Viewing "+specs.mode.capitalize());
 	//setup profile
-		specs.profile = (profile)? 
+		specs.profile = (profile)?
 			(self.specs.profiles[profile]||self.specs.joeprofile):
-			self.specs.joeprofile;	
-			
+			self.specs.joeprofile;
+
 		self.current.profile = specs.profile;
 
 
@@ -383,7 +383,7 @@ function JsonObjectEditor(specs){
      <--------------------------------------------------------------------*/
         var content =
             self.renderEditorContent(specs);
-		var html = 
+		var html =
 			self.renderEditorHeader(specs)+
             self.renderEditorSubmenu(specs)+
             content+
@@ -391,7 +391,7 @@ function JsonObjectEditor(specs){
 			self.renderMessageContainer();
 		    self.overlay.find('.joe-overlay-panel').html(html);
 		//$('.joe-overlay-panel').html(html);
-	
+
 	//update history 2/2	- add title
 		if(!self.current.specs.noHistory && self.history.length){
 			$.extend(self.history[self.history.length-1],
@@ -418,7 +418,7 @@ function JsonObjectEditor(specs){
 
 /*----------------------------->
 	A | Header
-<-----------------------------*/	
+<-----------------------------*/
 	this.renderEditorHeader = function(specs){
 		specs = specs || {};
 		var titleObj = self.current.object;
@@ -443,7 +443,7 @@ function JsonObjectEditor(specs){
 			return html;
 		}
 		//.replace(/(<([^>]+)>)/ig,"");
-		var html = 
+		var html =
 		'<div class="joe-panel-header">'+
 			((specs.schema && specs.schema.subsets && self.renderSubsetselector(specs.schema)) || (specs.subsets && self.renderSubsetselector(specs)) || '')+
 			renderHeaderBackButton()+
@@ -489,7 +489,7 @@ function JsonObjectEditor(specs){
                 if(objid){
                     var query = {};
                     query[self.getIDProp()] = objid;
-                    var found = joespecs.data.where(query)
+                    var found = joespecs.data.where(query);
                     found.length && $.extend(found[0],obj);
                 }
             }
@@ -497,8 +497,10 @@ function JsonObjectEditor(specs){
                 goingBackQuery = joespecs.keyword;
             }
         }
-		//[self.history.length];
-		self.show(joespecs.data,joespecs.specs);
+
+        var specs = $.extend({},joespecs.specs);
+        specs.filters = joespecs.filters;
+		self.show(joespecs.data,specs);
 	};
 
     this.clearAuxiliaryData = function(){
@@ -709,10 +711,10 @@ function JsonObjectEditor(specs){
             var searchBM = new Benchmarker();
             keyword = keyword || $('.joe-submenu-search-field').val();
             var value=keyword.toLowerCase();
-            var filters = self.generateFiltersQuery()
+            var filters = self.generateFiltersQuery();
 
             _joe.history[_joe.history.length-1].keyword = value;
-            _joe.history[_joe.history.length-1].filters = filters;
+            _joe.history[_joe.history.length-1].filters = self.current.filters;
 
 
             var testable;
@@ -785,7 +787,7 @@ View Mode Buttons
 			};
 		}
 		var mode = specs.mode;
-		
+
 		switch(mode){
 			case 'text':
 				content = self.renderTextContent(specs);
@@ -803,7 +805,7 @@ View Mode Buttons
             default:
             content = content || '';
             break;
-			
+
 		}
         var submenu = '';
         if(mode == 'list' && self.current.submenu){
@@ -811,7 +813,7 @@ View Mode Buttons
         }
         submenu=(self.current.submenu || renderSectionAnchors().count)?' with-submenu ':'';
         var scroll = 'onscroll="getJoe('+self.joe_index+').onListContentScroll(this);"';
-		var html = 
+		var html =
 		'<div class="joe-panel-content joe-inset '+submenu+'" '+((listMode && scroll)||'')+'>'+
 			content+
 		'</div>';
@@ -823,14 +825,14 @@ View Mode Buttons
 		var text = specs.text || specs.object || '';
 		var html = '<div class="joe-text-content">'+text+'</div>';
 		return html;
-		
+
 	};
-	
+
 	this.renderHTMLContent = function(specs){
 		specs = specs || {};
 		var html = '<textarea class="joe-rendering-field">'+(specs.rendering || '')+'</textarea>';
 		return html;
-		
+
 	};
 
 /*--
@@ -844,7 +846,7 @@ View Mode Buttons
         currentListItems = [];
 		self.current.selectedListItems=[];
 		self.current.anchorListItem=null;
-		
+
 		specs = specs || {};
 		var schema = specs.schema;
 		var list = specs.list || [];
@@ -871,7 +873,7 @@ View Mode Buttons
 
 		logit('list complete in '+wBM.stop()+' seconds');
 		return html;
-		
+
 	};
 
     this.renderListItems = function(items,start,stop){
@@ -935,9 +937,9 @@ View Mode Buttons
 						name:prop,
 						type:'text',
                         //type:($.type(object[prop]) == 'object')?'rendering':'text',
-						value:object[prop]	
+						value:object[prop]
 					},
-					self.fields[prop],				
+					self.fields[prop],
 					//overwrite with value
 					{value:object[prop]}
 					);
@@ -953,7 +955,7 @@ View Mode Buttons
 				fields += self.renderObjectPropFieldUI(prop,specs);
 
 			}); //end map
-			
+
 		}
 		var html = '<div class="joe-object-content">'+fields+'<div class="clear"></div></div>';
 		return html;
@@ -1072,7 +1074,7 @@ View Mode Buttons
 
 /*----------------------------->
 	D | Footer
-<-----------------------------*/	
+<-----------------------------*/
 	this.renderEditorFooter = function(specs){
         var fBM = new Benchmarker();
 		specs = specs || this.specs || {};
@@ -1084,36 +1086,36 @@ View Mode Buttons
 			menu = menu();
 		}
 
-		
-		var html = 
+
+		var html =
 		'<div class="joe-panel-footer">'+
 			'<div class="joe-panel-menu">';
 
 			menu.map(function(m){
 				html+= self.renderFooterMenuItem(m);
-			
+
 			},this);
         //add default list buttons.
 			if(!specs.minimenu && self.current.list && $.type(self.current.data) == 'array'){
 				html+= self.renderFooterMenuItem(__selectAllBtn__);
                 html+= '<div class="joe-selection-indicator"></div>';
 				html+= self.renderFooterMenuItem(
-				{	label:'Multi-Edit', 
-					name:'multiEdit', 
-					css:'joe-multi-only', 
+				{	label:'Multi-Edit',
+					name:'multiEdit',
+					css:'joe-multi-only',
 					action:'getJoe('+self.joe_index+').editMultiple()'}
 				);
 			}
-				
+
 		html+=
-			__clearDiv__+	
+			__clearDiv__+
 			'</div>'+
 		'</div>';
 
         logit('joe footer generated in '+fBM.stop()+' secs');
 		return html;
 	};
-	
+
 	this.renderFooterMenuItem=function(m){//passes a menu item
         if(!m){
             logit('error loading footer menu button');
@@ -1166,7 +1168,7 @@ View Mode Buttons
         }
 
         var html ='';
-		
+
 	//add clear div if the previous fields are floated.
 		if(preProp){
 		//TODO:deal with 50,50,50,50 four way float
@@ -1182,7 +1184,7 @@ View Mode Buttons
             html+='<div class="joe-field-container">';
         }
 
-		html+=	
+		html+=
 			'<div class="joe-object-field '+hidden+' '+required+' '+prop.type+'-field " data-type="'+prop.type+'" data-name="'+prop.name+'">'+
 			'<label class="joe-field-label">'
                 +fillTemplate((prop.display||prop.label||prop.name),self.current.object)
@@ -1192,7 +1194,7 @@ View Mode Buttons
         html+= self.renderFieldComment(prop);
         //add multi-edit checkbox
 		if(self.current.userSpecs.multiedit){
-			html+='<div class="joe-field-multiedit-toggle" onclick="$(this).parent().toggleClass(\'multi-selected\')"></div>';	
+			html+='<div class="joe-field-multiedit-toggle" onclick="$(this).parent().toggleClass(\'multi-selected\')"></div>';
 		}
 
 		html += self.selectAndRenderFieldType(prop);
@@ -1202,9 +1204,9 @@ View Mode Buttons
         //close field container
 			html+='</div>';
 	//	}
-		
+
 		preProp = prop;
-		
+
 		return html;
 	};
     this.renderFieldComment = function(prop){
@@ -1330,22 +1332,22 @@ View Mode Buttons
 		var str = (prop[evt])? ' '+self.functionName(prop[evt])+'(this); ' : '' ;
 		return str;
 	};
-	
-	
+
+
 	this.renderFieldAttributes = function(prop, evts){
 		evts = evts ||{};
 		var bluraction = '';
 		//var updateaction = '';
 		var changeaction = '';
-		
+
 		var keypressaction = '';
 		var keyupaction = '';
-		
+
 		var profile = self.current.profile;
-		
+
 		var disabled = (profile.lockedFields.indexOf(prop.name) == -1)?
 			'':'disabled';
-		
+
 		if(evts.onblur || prop.onblur){
 			bluraction = 'onblur="'+(evts.onblur||'')+' '+self.getActionString('onblur',prop)+'"';
 		}
@@ -1359,7 +1361,7 @@ View Mode Buttons
 			keyupaction = 'onkeyup="'+(evts.onkeyup||'')+' '+self.getActionString('onkeyup',prop)+'"';
 		}
 		return ' '+keyupaction+' '+keypressaction+' '+bluraction+' '+changeaction+' '+disabled+' ';
-	
+
 	};
 
     function _disableField(prop){
@@ -1389,10 +1391,10 @@ View Mode Buttons
 		'<input class="joe-text-field joe-field '+((prop.skip && 'skip-prop')||'')+'" ' +
             'type="text"  '+disabled+' name="'+prop.name+'" value="'+(prop.value || '')+'" '
 			+self.renderFieldAttributes(prop)
-			+((autocomplete && 
+			+((autocomplete &&
 				//' onblur="getJoe('+self.joe_index+').hideTextFieldAutoComplete($(this));"'
 				' onkeyup="getJoe('+self.joe_index+').showTextFieldAutoComplete($(this));"'
-				) 
+				)
 			||''
 			)
 		+' '+fieldtype+'/>';
@@ -1412,8 +1414,8 @@ View Mode Buttons
 					+'onclick="getJoe('+self.joe_index+').autocompleteTextFieldOptionClick(this);" '
                     +'data-value="'+ac_id+'">'+ac_title+'</div>';
 			}
-			
-			html+='</div>';	
+
+			html+='</div>';
 		}
 		//add onblur: hide panel
 
@@ -1439,33 +1441,33 @@ View Mode Buttons
 		var autocomplete = dom.next('.joe-text-autocomplete');
 		autocomplete.removeClass('active');
 	};
-	
+
 	this.autocompleteTextFieldOptionClick = function(dom){
         var value = ($(dom).data('value'));
 		$(dom).parent().prev('.joe-text-field').val(value);
 		$(dom).parent().removeClass('active');
 		//$(dom).previous('.joe-text-field').val($(dom).html());
 	};
-	
+
 	this.checkAutocompleteValue = function(needle,haystack,dom){
 		var d = $(dom);
 		if(haystack.toLowerCase().indexOf(needle) != -1 || !needle){
 			d.addClass('visible');
 		}else{
-			d.removeClass('visible');	
+			d.removeClass('visible');
 		}
 	};
-	
+
 
 /*----------------------------->
 	B | Number/Int Input
 <-----------------------------*/
 	this.renderNumberField = function(prop){
-		
+
 		/*var disabled = (profile.lockedFields.indexOf(prop.name) != -1 || prop.locked)?
 			'disabled':'';
 	*/
-	//bluraction	
+	//bluraction
 		//var bluraction =  (prop.onblur)? ' '+self.functionName(prop.onblur)+'(this); ' : '' ;
 		//var bluraction = 'onblur=" '+self.getActionString('onblur',prop)+' "';
         var disabled = _disableField(prop); //(prop.locked &&'disabled')||'';
@@ -1481,15 +1483,15 @@ View Mode Buttons
 		if(!$(dom).val()){return;}
 		$(dom).val(parseFloat($(dom).val()));
 	};
-		
+
 	this.renderIntegerField = function(prop){
-		
+
 		/*var disabled = (profile.lockedFields.indexOf(prop.name) != -1 || prop.locked)?
 			'disabled':'';
 	*/
 	//bluraction
 		//var bluraction = 'onblur="_joe.returnInt(this); '+self.getActionString('onblur',prop)+'"';
-		
+
 		var html=/*
 		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
 		'<input class="joe-int-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'"  '+
@@ -1497,16 +1499,16 @@ View Mode Buttons
 		' />';
 		return html;
 	};
-	
+
 	this.returnInt = function(dom){
 		if(!$(dom).val()){return;}
 		$(dom).val(parseInt($(dom).val()));
-	
+
 	};
 
 /*----------------------------->
 	C | Select
-<-----------------------------*/	
+<-----------------------------*/
 	this.renderSelectField = function(prop){
         var disabled = _disableField(prop);
         //(prop.hasOwnProperty(prop.locked) && self.propAsFuncOrValue(prop.locked) &&'disabled')||'';
@@ -1520,17 +1522,17 @@ View Mode Buttons
 		else{
 			valObjs = values;
 		}
-	
+
 	//bluraction
 //		var bluraction = 'onblur="'+self.getActionString('onblur',prop)+'"';
-/*		
+/*
 		var disabled = (profile.lockedFields.indexOf(prop.name) != -1 || prop.locked)?
 			'disabled':'';*/
-		
+
 		var selected;
 		var multiple =(prop.multiple)?' multiple ':'';
 		var selectSize = prop.size || ((valObjs.length*.5) > 10)? 10 : valObjs.length/2;
-		
+
 		if(!prop.size && !prop.multiple){
 			selectSize = 1;
 		}
@@ -1551,7 +1553,7 @@ View Mode Buttons
 				if($.type(prop.value) == 'array'){
 					selected = '';
 					selected = (prop.value.indexOf(val) != -1)?'selected':'';
-					
+
 					/*prop.value.map(function(pval){
 						if(pval.indexOf)
 					});*/
@@ -1560,7 +1562,7 @@ View Mode Buttons
 				}
 				html += '<option value="'+val+'" '+selected+'>'+optionVal+'</option>'
 			});
-			
+
 		html+='</select>';
 		return html;
 	};
@@ -1574,7 +1576,7 @@ View Mode Buttons
 		'<input class="joe-date-field joe-field" type="text"  '+_disableField(prop)+' name="'+prop.name+'" value="'+(prop.value || '')+'" '+
 			self.renderFieldAttributes(prop)+
 		' />';
-		
+
 		return html;
 	};
 /*----------------------------->
@@ -1583,7 +1585,7 @@ View Mode Buttons
 	this.renderGeoField = function(prop){
 		var center = (prop.value && eval(prop.value)) || prop.center || [40.513,-96.020];
 		var zoom = prop.zoom || 4;
-	//map.setView([37.85750715625203,-96.15234375],3)	
+	//map.setView([37.85750715625203,-96.15234375],3)
 	//var map = L.map('map').setView(center, zoom);
 	var mapDiv = 'joeGEO_'+prop.name;
 	var val = prop.value||'';
@@ -1596,10 +1598,10 @@ View Mode Buttons
 		+'<input class="joe-geo-field joe-field" type="text" value="'+val+'" name="'+prop.name+'" '+_disableField(prop)+'/>'
 		+'<script type="text/javascript">setTimeout(function(){getJoe('+self.joe_index+').initGeoMap("'+mapDiv+'");},100)</script>'
 		;
-		
+
 		return html;
 	};
-	
+
 	this.initGeoMap = function(id){
 
 		var mapspecs = $('#'+id).data();
@@ -1608,15 +1610,15 @@ View Mode Buttons
 		L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
    			//attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
 		}).addTo(map);
-	
-	//add geocoder	
+
+	//add geocoder
 		var searchControl = new L.esri.Controls.Geosearch().addTo(map);
-	
-	//hide leaflet and esri attribution	
+
+	//hide leaflet and esri attribution
 		if(mapspecs.hideattribution){
 			$('.leaflet-control-attribution').hide();
 		}
-		
+
 		map.on('click', self.onMapClick);
 		map.prop = $('#'+id).attr('name');
 		if(mapspecs.value){
@@ -1624,16 +1626,16 @@ View Mode Buttons
 			self.addMapIcon(map,mapspecs.value);
 		}
 	};
-	
+
 	this.onMapClick = function(e){
 		var map = (e.type=="click")?e.target : this.map;
-		
+
 		//map.setView(e.latlng);
 		var ll = (e && e.latlng) || this.getLatLng();
 		map.setView(ll);
-		
+
 		if(e.type=="dragend"){
-			
+
 		}else if(map.marker){
 			map.marker.setLatLng(ll);
 		}else{
@@ -1641,7 +1643,7 @@ View Mode Buttons
 		}
 		$('input[name='+map.prop+']').val('['+ll.lat+','+ll.lng+']');
 	};
-	
+
 	this.addMapIcon = function(map,latlng,specs){
 		specs = specs || {};
 		var myIcon = L.icon({
@@ -1666,7 +1668,7 @@ View Mode Buttons
 <-----------------------------*/
 	this.renderBooleanField = function(prop){
 		var profile = self.current.profile;
-		
+
 		var html=
 		//'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'
             '<label for="joe_checkbox-'+prop.name+'">'
@@ -1684,18 +1686,18 @@ View Mode Buttons
 <-----------------------------*/
 	this.renderGuidField = function(prop){
 		var profile = self.current.profile;
-		
+
 		var html=/*
 		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
 		'<input class="joe-guid-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || cuid())+'"  disabled />';
 		return html;
 	};
-	
+
 /*----------------------------->
 	H | Sorter
 <-----------------------------*/
 this.renderSorterField = function(prop){
-	/*	
+	/*
 		var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values || [prop.value];
 		var valObjs = [];
 		if($.type(values[0]) != 'object'){
@@ -1706,8 +1708,8 @@ this.renderSorterField = function(prop){
 		else{
 			valObjs = values;
 		}
-	
-		
+
+
 		var val;
 		var opt=[];
 		var sel = [];
@@ -1720,22 +1722,22 @@ this.renderSorterField = function(prop){
 				}else{
 					selected = (prop.value == val)?'selected':'';
 				}
-				html += '<option value="'+val+'" '+selected+'>'+(v.display||v.label||v.name)+'</option>'	
+				html += '<option value="'+val+'" '+selected+'>'+(v.display||v.label||v.name)+'</option>'
 			});
 		var selected;
-		
+
 		var html=
 		'<div class="joe-multisorter-field joe-field" name="'+prop.name+'">'+
 		'<ul class="joe-multisorter-bin options-bin"></ul>'+
 		'<ul class="joe-multisorter-bin selections-bin"></ul>'+
-		
+
 		'<ul class="joe-multisorter-field joe-field" name="'+prop.name+'" '+
 			//self.renderFieldAttributes(prop)+
 		' >';
 
-		
-		
-			
+
+
+
 		html+='</div>';
 		return html;*/
 	};
@@ -1752,49 +1754,49 @@ this.renderSorterField = function(prop){
 
 		return html;
 	};
-	
+
 	this.updateImageFieldImage = function(dom){
 		var src = $(dom).val();
 		//var img = $(dom).next('.joe-image-field-image');
 		var img = $(dom).parent().find('.joe-image-field-image');
 		img.attr('src',src);
 		$(dom).next('.joe-image-field-size').html(img.width() + 'w x '+img.height()+'h');
-		
+
 	};
-		
+
 /*----------------------------->
 	J | Multisorter
 <-----------------------------*/
 	this.renderMultisorterField = function(prop){
-		
+
 		var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];
 		var valObjs = [];
-		
-		
-	//sort values into selected or option	
+
+
+	//sort values into selected or option
 		var val;
 		var optionsHtml ='';
 		var selectionsHtml ='';
-		
-		
+
+
 		var idprop = prop['idprop'] ||'id'||'_id';
-		var template = prop.template || '${name} (${'+idprop+'})'; 
+		var template = prop.template || '${name} (${'+idprop+'})';
 		var value = prop.value || [];
 		var selectionsArray = Array(value.length);
 		var li;
-		
-		
+
+
 		function renderMultisorterOption(v){
 			var html = '<li data-id="'+v[idprop]+'" ondblclick="_joe.toggleMultisorterBin(this);">'+fillTemplate(template,v)+'</li>';
 			return html;
 		}
-		
+
 	//render selected list
 	/*	values.map(function(v){
 		//li = renderMultisorterOption(v);//'<li data-id="'+v[idprop]+'" onclick="_joe.toggleMultisorterBin(this);">'+fillTemplate(template,v)+'</li>';
 		selectionsHtml += renderMultisorterOption(v);
 		});*/
-		
+
 		var val_index;
 	//render options list
 		if(!values){
@@ -1812,7 +1814,7 @@ this.renderSorterField = function(prop){
 				optionsHtml += li;
 			}
 		});
-		
+
 		var selectionsHtml = selectionsArray.join('');
 		var height = (prop.height && "style='max-height:"+prop.height+";'")||'';
 		var html=
@@ -1823,7 +1825,7 @@ this.renderSorterField = function(prop){
 			'<ul class="joe-multisorter-bin options-bin" '+height+'>'+optionsHtml+'</ul>'+
 			'<ul class="joe-multisorter-bin selections-bin" '+height+'>'+selectionsHtml+'</ul>'+
 			__clearDiv__
-	
+
 		+'</div>';
 		return html;
 	};
@@ -1833,7 +1835,7 @@ this.renderSorterField = function(prop){
 		//$(dom).parent().next('.joe-multisorter-bin').find('li').each(function(){$(this).toggle($(this).html().toLowerCase().indexOf(query) != -1 );});
         $(dom).parents('.joe-field').find('.joe-multisorter-bin.options-bin').find('li').each(function(){$(this).toggle($(this).html().toLowerCase().indexOf(query) != -1 );});
         logit('found results for: '+query+' in '+sorterBM.stop()+' secs');
-		
+
 	};
 	this.toggleMultisorterBin = function(dom) {
         var id = $(dom).data('id');
@@ -1851,11 +1853,11 @@ this.renderSorterField = function(prop){
 		target.prepend(newDom);
 
 /*	//reset divs
-	var opts = $.unique($('.joe-multisorter-bin.options-bin').find('li'))	
+	var opts = $.unique($('.joe-multisorter-bin.options-bin').find('li'))
 	$('.joe-multisorter-bin.options-bin').empty();
 	$('.joe-multisorter-bin.options-bin').html(opts);*/
-	
-		
+
+
 	};
 /*----------------------------->
 	K | Buckets
@@ -1865,16 +1867,16 @@ this.renderSorterField = function(prop){
 
 		var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];
 		var valObjs = [];
-		
-	
 
-	//sort values into selected or option	
+
+
+	//sort values into selected or option
 		var val;
 		var bucketCount = (typeof prop.bucketCount =="function")?prop.bucketCount():prop.bucketCount || 3;
 		var optionsHtml ='';
 		var bucketsHtml =[];
 		var value = prop.value || [[],[],[]];
-	
+
 	//add arrays to values
 		for(var i = 0; i < bucketCount; i++){
 			bucketsHtml.push('');
@@ -1882,14 +1884,14 @@ this.renderSorterField = function(prop){
 				value.push([]);
 			}
 		}
-		
+
 		var idprop = prop[idprop] ||'id'||'_id';
-		var template = prop.template || '${name} <br/><small>(${'+idprop+'})</small>'; 
-		
-		
+		var template = prop.template || '${name} <br/><small>(${'+idprop+'})</small>';
+
+
 		var lihtml;
 		var selected;
-		
+
 		//populate selected buckets
 		var foundItem;
 		var bucketItem;
@@ -1914,7 +1916,7 @@ this.renderSorterField = function(prop){
 			values.map(function(v){
 				lihtml = '<li data-id="'+v[idprop]+'" >'+fillTemplate(template,v)+'<div class="joe-bucket-delete cui-block joe-icon" onclick="$(this).parent().remove()"></div></li>';
 				selected = false;
-			//loop over buckets	
+			//loop over buckets
 				/*if(!prop.allowMultiple){
 					for(var i = 0; i < bucketCount; i++){
 						if(value[i].indexOf(v[idprop]) != -1){//currently selected
@@ -1926,7 +1928,7 @@ this.renderSorterField = function(prop){
 					optionsHtml += lihtml;
 				}
 			});
-		
+
 		function renderBucket(id){
 			return '<ul class="joe-buckets-bin selections-bin">'+bucketsHtml[id]+'</ul>';
 		}
@@ -1942,13 +1944,13 @@ this.renderSorterField = function(prop){
 					html+=renderBucket(i);
 				});
 				//+'<ul class="joe-buckets-bin selections-bin">'+bucketsHtml+'</ul>'
-				
-			
+
+
 		html+=	__clearDiv__
 			+'</div>'//end buckets field holder
 			+__clearDiv__
 		+'</div>';
-		
+
 
 		return html;
 	};
@@ -1956,7 +1958,7 @@ this.renderSorterField = function(prop){
 		var query = $(dom).val().toLowerCase();
 		$(dom).parents('.joe-buckets-field').find('.options-bin').find('li').each(function(){$(this).toggle($(this).html().toLowerCase().indexOf(query) != -1 );});
 		logit(query);
-		
+
 	};
 
 
@@ -2310,7 +2312,7 @@ this.renderSorterField = function(prop){
 			self.current.schema,
 			self.current.specs
 		);
-		
+
 		var idprop = self.getIDProp();// listSchema._listID;
 		var id = listItem[idprop] || null;
 		//var action = 'onclick="_joe.editObjectFromList(\''+id+'\');"';
@@ -2401,7 +2403,7 @@ this.renderSorterField = function(prop){
         /*    if(!window.event.shiftKey){
                 self.shiftSelecting = false;
             }*/
-			
+
 		}else if(window.event.shiftKey){
             var shiftIndex;
             var domItem;
@@ -2462,22 +2464,22 @@ this.renderSorterField = function(prop){
             self.overlay.find('.joe-selection-indicator').html('');
         }
     };
-	
+
 	this.editObjectFromList = function(specs){
 		specs = specs || {};
-		
+
 		self.current.schema = specs.schema || self.current.schema || null;
 		var list = specs.list || self.current.list;
 		var id = specs.id;
 		var idprop = self.getIDProp();//(self.current.schema && self.current.schema._listID) || 'id';
-		
+
 		var object = list.filter(function(li){return li[idprop] == id;})[0]||false;
-		
+
 		if(!object){
 			alert('error finding object');
 			return;
 		}
-		
+
 		var setts ={schema:self.current.schema,callback:specs.callback};
 		/*self.populateFramework(object,setts);
 		self.overlay.addClass('active');*/
@@ -2485,17 +2487,17 @@ this.renderSorterField = function(prop){
 	};
 /*----------------------------->
 	List Multi Select
-<-----------------------------*/	
+<-----------------------------*/
 	this.editMultiple = function(){
 		//create object from shared properties of multiple
 		var haystack = self.current.list;
 		var idprop = self.getIDProp();
 		var needles = self.current.selectedListItems;
-		
+
 		var items = [];
 		var protoItem ={};
 		haystack.map(function(i){
-			
+
 			if(needles.indexOf(i[idprop]) == -1){//not selected
 				return;
 			}else{
@@ -2503,17 +2505,17 @@ this.renderSorterField = function(prop){
 				items.push(i);
 			}
 		});
-		
+
 		goJoe(protoItem,{title:'Multi-Edit '+(self.current.schema.__schemaname||'')+': '+items.length+' items',schema:(self.current.schema||null),multiedit:true});
 		//buttons
 			//delete multiple
 			//save multiple
-		
-		//combine object on save	
+
+		//combine object on save
 	};
 /*----------------------------->
 	List Filtering
-<-----------------------------*/	
+<-----------------------------*/
 	this.filterList = function(list,props,specs){
 		//var list = list || self.current.list;
 		specs = specs || {};
@@ -2534,11 +2536,11 @@ this.renderSorterField = function(prop){
 		}else{
 			return false;
 		}
-		
+
 	};
 /*----------------------------->
 	List Subsets
-<-----------------------------*/		
+<-----------------------------*/
 	this.renderSubsetselector = function(specs){
 		if(!listMode){
 			return '';
@@ -2549,7 +2551,7 @@ this.renderSorterField = function(prop){
 		+'</div>';
 		return html;
 	};
-	
+
 	this.renderSubsetSelectorOptions = function(specs){
 		var subsets = self.current.subsets;
 		if(typeof subsets == 'function'){
@@ -2578,7 +2580,7 @@ this.renderSorterField = function(prop){
 		html+='</div>';
 		return html;
 	};
-	
+
 	this.selectSubset=function(subset){
 		//if (!e) var e = window.event;
 		//e.cancelBubble = true;
@@ -2608,7 +2610,7 @@ this.renderSorterField = function(prop){
         //self.hide();
         //goJoe(self.current.list,$c.merge(self.current.userSpecs,{subset:subset}));
     };
-	
+
 /*-------------------------------------------------------------------->
 	5 | HTML Renderings
 <--------------------------------------------------------------------*/
@@ -2618,7 +2620,7 @@ this.renderSorterField = function(prop){
 		var specs = {datatype:'rendering', compact:false,dom:dom};
 		self.show(rendering,specs);
 	};
-	
+
 	this.updateRendering = function(dom, callback){
 		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || logit;
 		if(!self.current.specs.dom){
@@ -2639,12 +2641,12 @@ this.renderSorterField = function(prop){
 <--------------------------------------------------------------------*/
 	this.showPropertyEditor = function(prop){
 		self.current.mutant = prop;
-		
-		
+
+
 	};
-	
+
 	this.addPropertyToEditor = function(prop){
-		
+
 	};
 
 	this.minis = {};
@@ -2662,7 +2664,7 @@ this.renderSorterField = function(prop){
 		var title=specs.title || 'Object Focus';
 		//mini.name=specs.prop.name||specs.prop.id || specs.prop._id;
 		mini.id = cuid();
-		
+
 		//var html = '<div class="joe-mini-panel joe-panel">';
 
         var html =
@@ -2678,14 +2680,14 @@ this.renderSorterField = function(prop){
         if(specs.height){
             $('.joe-mini-panel').css('height',specs.height);
         }
-		
+
 		self.minis[mini.id] = mini;
 	};
-	
+
 	this.hideMini = function(){
 		$('.joe-mini-panel').removeClass('active')
 	};
-	
+
 	this.constructObjectFromMiniFields = function(){
 		var object = {};
 		var prop;
@@ -2698,7 +2700,7 @@ this.renderSorterField = function(prop){
 						object[prop] = true;
 					}else{
 						object[prop] = false;
-					
+
 					}
 				break;
 				case 'text':
@@ -2731,7 +2733,7 @@ this.renderSorterField = function(prop){
 			$.extend(self.current.object,newObj),
 			$c.merge(self.current.userSpecs,{noHistory:true,schema:self.setSchema(schemaName) || self.current.schema})
 		)
-		
+
 	};
 
 /*-------------------------------------------------------------------->
@@ -2740,7 +2742,7 @@ this.renderSorterField = function(prop){
 	this.toggleOverlay = function(dom){
 		$(dom).parents('.joe-overlay').toggleClass('active');
 	};
-	
+
 	//this.show = function(data,schema,profile,callback){
 
 	this.show = function(data,specs){
@@ -2762,7 +2764,7 @@ this.renderSorterField = function(prop){
 		self.panel.attr('class', 'joe-overlay-panel');
 		if(specs.compact === true){self.overlay.addClass('compact');}
 		if(specs.compact === false){self.overlay.removeClass('compact');}
-		
+
 		self.populateFramework(data,specs);
 
         self.overlay.removeClass('hidden');
@@ -2790,14 +2792,14 @@ this.renderSorterField = function(prop){
 	this.compactMode = function(compact){
 		if(compact === true){self.overlay.addClass('compact');}
 		if(compact === false){self.overlay.removeClass('compact');}
-	
-	
+
+
 	};
-	
+
 	this.printObject = function(obj){
 		goJoe('<pre>'+JSON.stringify(obj,'  ','    ')+'</pre>');
 	};
-	
+
 	if(self.joe_index == 0){
 		window.joeMini = this.showMiniJoe;
 		window.goJoe = this.show;
@@ -2822,7 +2824,7 @@ this.renderSorterField = function(prop){
 
         //itemcount
         if(currentListItems){
-            if(goingBackQuery){
+            if(goingBackQuery  || (!$c.isEmpty(self.current.userSpecs.filters) && listMode) ){
                 self.overlay.find('.joe-submenu-search-field').val(goingBackQuery);
                 self.filterListFromSubmenu(self.overlay.find('.joe-submenu-search-field')[0].value,true);
                 goingBackQuery = '';
@@ -3048,14 +3050,14 @@ this.renderSorterField = function(prop){
 			return;
 		}
 		var index = self.current.list.indexOf(obj);
-		
+
 		self.current.list.removeAt(index);
 		logit('object deleted');
 
         callback(obj);
 		self.goBack();
 	};
-	
+
 	this.duplicateObject = function(specs){
 		//takes fields to be deleted
 		specs = specs || {};
@@ -3066,7 +3068,7 @@ this.renderSorterField = function(prop){
 		deletes.map(function(d){
 			delete itemobj[d];
 		});
-		
+
 		self.goBack();
 		goJoe(itemobj,self.current.userSpecs);
 	};
@@ -3074,16 +3076,16 @@ this.renderSorterField = function(prop){
 		var object = {joeUpdated:new Date()};
         var groups = {};
 		var prop;
-		
+
 		//var parentFind = $('.joe-object-field');
 		var parentFind = $('.joe-overlay.active');
-		
+
 		if(index){
 		parentFind = self.overlay.find('.joe-object-field');
-		
+
 		}
 		//var parentFind = $('.joe-overlay.active');
-		
+
 		parentFind.find('.joe-field').each(function(){
             if($(this).parents('.objectList-field').length){
                 return true;
@@ -3117,7 +3119,7 @@ this.renderSorterField = function(prop){
 
 				case 'text':
 				default:
-					
+
 					prop = $(this).attr('name');
 					if(prop && prop != 'undefined') {//make sure it's suppoesed to be a prop field
                         switch ($(this).data('ftype')) {
@@ -3201,12 +3203,12 @@ this.renderSorterField = function(prop){
 
 		return object;
 	};
-	
+
 	this.exportJSON = function(object,specs){
 		var minify =specs.minify || null;
 		var objvar = specs.objvar || '';
 		var obobj = (minify)?JSON.stringify(object):JSON.stringify(object,'','    ');
-		
+
 		goJoe('<b>'+((objvar && 'var '+objvar +' = ')|| 'JSON Object')+'</b><br/><pre>'+obobj+'</pre>');
 		console.log(obobj);
 	};
@@ -3226,19 +3228,19 @@ this.renderSorterField = function(prop){
             return;
         }
 		//newObj.joeUpdated = new Date();
-	
-	//clear id from merged object	
+
+	//clear id from merged object
 		delete newObj[idprop];
 		delete newObj['id'];
 		delete newObj['_id'];
-		
+
 		var haystack = self.current.list;
 
 		var needles = self.current.selectedListItems;
 		//var items = [];
         var updatedItems = [];
 		haystack.map(function(i){
-			
+
 			if(needles.indexOf(i[idprop]) == -1){//not selected
 				return;
 			}else{//make updates to items
@@ -3258,7 +3260,7 @@ this.renderSorterField = function(prop){
 		self.goBack();
         self.showMessage(updatedItems.length +' item(s) updated');
 	};
-	
+
 	this.deleteMultipleObjects = function(callback){
 		var callback = self.current.callback || (self.current.schema && self.current.schema.callback) || logit;
 		var obj = self.current.object;
@@ -3266,11 +3268,11 @@ this.renderSorterField = function(prop){
 		//no list or no item
 			alert('object or list not found');
 			self.hide();
-			callback(obj);	
+			callback(obj);
 			return;
 		}
 		var index = self.current.list.indexOf(obj);
-		
+
 		self.current.list.removeAt(index);
 		logit('object deleted');
 		self.hide();
@@ -3476,7 +3478,7 @@ ANALYSIS, IMPORT AND MERGE
 		var reg=/function ([^\(]*)/;
 		return reg.exec(name)[1];
 	};
-	
+
 	this.getIDProp = function(){
 		var prop = (self.current.schema && (self.current.schema.idprop || self.current.schema._listID)) || 'id' || '_id';
 		return prop;
