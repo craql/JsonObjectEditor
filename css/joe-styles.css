@@ -168,8 +168,27 @@
 
 .joe-iconed-button{
     padding-left: 42px;
-    background-position-x: 0;
+    background-position: left center;
 }
+
+/*
+.joe-iconed-button {
+  padding-left: 0;
+  background-position: center center;
+  color: rgba(0,0,0,0);
+  width: 50px;
+  padding: 0;
+}
+
+.joe-iconed-button:hover {
+  padding-left: 42px;
+  width: auto;
+  padding-right: 10px;
+  color: rgba(0,0,0,1);
+  background-position: left center;
+}
+
+*/
 
 
 .joe-history-button{background-image: url("../img/btns/history.png");  }
