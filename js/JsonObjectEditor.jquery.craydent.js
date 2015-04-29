@@ -2032,18 +2032,24 @@ this.renderSorterField = function(prop){
 
     this.renderObjectListField = function(prop){
         var hiddenHeading = (prop.hideHeadings)?" hidden-heading " :'';
-        var html ="<table class='joe-objectlist-table "+hiddenHeading+"'>"
-            +self.renderObjectListProperties(prop)
+        var html ="<table class='joe-objectlist-table "+hiddenHeading+"' >"
+            +self.renderObjectListHeaderProperties(prop)
             +self.renderObjectListObjects(prop)
         //render a (table/divs) of properties
         //cross reference with array properties.
         //make sortable ?
         +"</table>";
+        var max = prop.max;
+
+        if(!max || !prop.value || (prop.value.length < max)){
+            var addaction = 'onclick="getJoe('+self.joe_index+').addObjectListItem(\''+prop.name+'\')"';
+            html+='<div><div class="joe-button" '+addaction+'> Add Another</div>'+__clearDiv__+'</div>'
+        }
         return html;
     };
     this.objectlistdefaultproperties = ['name','_id'];
 //render headers
-    this.renderObjectListProperties = function(prop){
+    this.renderObjectListHeaderProperties = function(prop){
         var properties = prop.properties || self.objectlistdefaultproperties;
         var property;
         var subprop;
@@ -2060,7 +2066,7 @@ this.renderSorterField = function(prop){
             html+="<th data-subprop='"+subprop.name+"'>"
                 +(subprop.label || subprop.name)+"</th>";
         }
-
+        html+="<th class='joe-objectlist-delete-header'></th>"
         html+="</tr></thead>";
         return html;
     };
@@ -2075,17 +2081,17 @@ this.renderSorterField = function(prop){
         var obj;
         for(var o = 0,objecttot = objects.length; o<objecttot;o++){
             obj = objects[o];
-            html+=self.renderObjectListObject(obj,properties);
+            html+=self.renderObjectListObject(obj,properties,o);
         //parse across properties
 
         }
         html+="</tbody>";
         return html;
     };
-    this.renderObjectListObject = function(object,objectListProperties){
+    this.renderObjectListObject = function(object,objectListProperties,index){
         var properties = objectListProperties || self.objectlistdefaultproperties;
         var prop,property;
-        var html = "<tr><td class='joe-objectlist-object-row-handle'>|||</td>";
+        var html = "<tr class='joe-object-list-row' data-index='"+index+"'><td class='joe-objectlist-object-row-handle'>|||</td>";
 
         function renderTextInput(prop){
             var html = '<input type="text" class="joe-objectlist-object-input" style="width:auto;" value="'+prop.value+'"/>';
@@ -2113,6 +2119,8 @@ this.renderSorterField = function(prop){
             html+="<td>"+renderInput[property.type](property)+"</td>";
 
         }
+        var delaction = "onclick='getJoe("+self.joe_index+")._oldeleteaction(this);'";
+        html+="<td ><div class='jif-panel-button joe-delete-button' "+delaction+">&nbsp;</div></td>";
         html+= '</tr>';
 
 
@@ -2120,6 +2128,19 @@ this.renderSorterField = function(prop){
         return html;
     };
 
+    this.addObjectListItem = function(fieldname,specs){
+        var fieldobj = self.getField(fieldname);
+        var index = $('.joe-object-field[data-name=module_fields]').find('.joe-object-list-row').length;
+        var content = self.renderObjectListObject({},fieldobj.properties,index);
+        $('.joe-object-field[data-name=module_fields]').find('tbody').append(content);
+    };
+    this._oldeleteaction = function(dom){
+        $(dom).parents('tr.joe-object-list-row').remove();
+    };
+    this.removeObjectListItem = function(fieldname,index){
+        var fieldobj = self.getField(fieldname);
+        $('.joe-object-field[data-name=module_fields]').find('tbody').append(content);
+    };
 
 /*----------------------------->
  P | Render Checkbox Group

@@ -348,7 +348,8 @@
     background-color: #ccc;
 }
 .jif-panel-header-button,
-.jif-panel-submenu-button{
+.jif-panel-submenu-button,
+.jif-panel-button{
 
     line-height: 40px !important;
     font-size: 14px;
@@ -364,7 +365,8 @@
     transition: .1s;
 }
 .jif-panel-header-button:hover,
-.jif-panel-submenu-button:hover{
+.jif-panel-submenu-button:hover,
+.jif-panel-button:hover{
     background-color: #ccc;
     color:#007ac2
 }
@@ -1201,8 +1203,11 @@ table.joe-objectlist-table {
     /*padding: 5px;*/
 }
 
-.joe-objectlist-object-row-handle-header{
+.joe-objectlist-object-row-handle-header,
+.joe-objectlist-delete-header
+{
     background: #fff;
+    width:30px;
 }
 .joe-objectlist-object-row-handle{
     cursor: ns-resize;
@@ -1217,13 +1222,14 @@ table.joe-objectlist-table {
 }
 
 .joe-objectlist-table select {
-    padding: 4px;
-    min-width: 80px;
+    padding: 5px;
+    min-width: 90px;
     width:98%;
     box-sizing: border-box;
 }
 .joe-objectlist-table input[type=text] {
     padding: 4px;
+    min-width: 90px;
     width: 98%;
     box-sizing: border-box;
 }
