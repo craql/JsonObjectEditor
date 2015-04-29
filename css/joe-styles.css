@@ -959,10 +959,17 @@ display:none;
 }
 
 .joe-object-field input[type=text].joe-url-field {
-    width: 75%;
+    width: 100%;
     margin: 5px 0 0 0;
+    padding-right: 75px;
+    box-sizing: border-box;
 }
 
+.url-field .joe-button {
+    position: absolute;
+    right: 5px;
+    top: 10px;
+}
 .joe-object-field input[type=text].joe-date-field {
     width:200px;
 }
