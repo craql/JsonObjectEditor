@@ -51,7 +51,7 @@ scripts = [];
 if (typeof jQuery == 'undefined') {  
 	scripts.push("libs/jquery-1.11.2.min.js");
 	scripts.push("libs/jquery-ui.min.js");
-	
+    scripts.push("libs/jquery.ui.touch-punch.min.js");
 }
 
 if (typeof Craydent == 'undefined' || (!Craydent.VERSION || Craydent.VERSION < '1.7.37')) {
