@@ -968,7 +968,7 @@ display:none;
 .url-field .joe-button {
     position: absolute;
     right: 5px;
-    top: 10px;
+    bottom: 8px;
 }
 .joe-object-field input[type=text].joe-date-field {
     width:200px;
