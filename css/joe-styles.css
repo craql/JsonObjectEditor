@@ -17,6 +17,12 @@
     font-family:Cambria, "Hoefler Text", "Liberation Serif", Times, "Times New Roman", serif;
     color: #068;
     letter-spacing: .05em;
+    background-color: rgba(0,0,0,.7);
+    z-index: 2000;
+    display:none;
+    position: fixed;
+    transition: .25s;
+    opacity:1;
 }
 .joe-block,.joe-overlay{
     position:absolute;
@@ -26,15 +32,9 @@
     left:0;
 }
 
-.joe-overlay{
-    background-color: rgba(0,0,0,.7);
-    z-index: 2000;
-    display:none;
-    position: fixed;
-    transition: .25s;
-    opacity:1;
+.joe-overlay.sans {
+    font-family: "Trebuchet MS", Helvetica, sans-serif;
 }
-
 @-webkit-keyframes fadeOut {
     0%   {background-color: rgba(0,0,0,.7);}
     100% {background-color: rgba(0,0,0,0);}

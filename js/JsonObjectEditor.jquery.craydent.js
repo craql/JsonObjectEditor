@@ -57,7 +57,7 @@ function JsonObjectEditor(specs){
 		useControlEnter:true,
 		autoInit:false,
         dynamicDisplay:30,
-
+        sans:false,
         listSubMenu:true
 	};
 
@@ -179,7 +179,10 @@ function JsonObjectEditor(specs){
 <--------------------------------------------------------------------*/
 	this.renderFramework = function(content){
 		var html =
-		'<div class="joe-overlay '+((self.specs.compact && ' compact ') || '')+'" data-joeindex="'+this.joe_index+'">'+
+		'<div class="joe-overlay '
+            +((self.specs.compact && ' compact ') || '')
+            +((self.specs.sans && ' sans ') || '')
+            +'" data-joeindex="'+this.joe_index+'">'+
 			'<div class="joe-overlay-panel">'+
 				(content || '')+
 			'</div>'+
@@ -2982,6 +2985,89 @@ this.renderSorterField = function(prop){
 		specs = specs || {};
 		goJoe({},{schema:self.current.schema});
 	};
+    function _defaultUpdateCallback(data){
+        self.showMessage(data.name +' updated successfully');
+    }
+
+    this.validateObject = function(obj){
+        var req_fields = [];
+
+        //_joe.current.fields.where({required:true});
+        req_fields = _joe.current.fields.filter(function (prop) {
+
+            if (prop.required && (typeof prop.required != 'function' && prop.required) || (typeof prop.required == 'function' && prop.required(self.current.object))) {
+                return true;
+            }
+            return false;
+        });
+
+        function olistVal(olistObj) {
+            var vals = '';
+            for (var i in olistObj) {
+                vals += olistObj[i];
+            }
+            vals.replace(/ /g, '');
+            return vals;
+        }
+
+        var required_missed = [];
+        req_fields.map(function (f) {
+            if (!obj[f.name] ||
+                ($.type(obj[f.name] == "array") && f.type != "objectList" && obj[f.name].length == 0 ) ||
+                (f.type == "objectList" && obj[f.name].filter(olistVal).length == 0)
+            ) {
+
+                required_missed.push(f);
+                return false;
+            }
+        });
+        $('.joe-object-field').removeClass('joe-highlighted');
+        if (required_missed.length) {
+            //f.display|| f.label|| f.name
+
+            self.showMessage("There are <b>" + required_missed.length + "</b> required fields currently missing.");//<br/>"+required_missed.join(', ')
+            required_missed.map(function (of) {
+                $('.joe-object-field[data-name=' + of.name + ']').addClass('joe-highlighted');
+            });
+            // self.panel.addClass('show-required');
+            return false;
+        }
+
+        return true;
+    };
+
+    this.updateObjectAsync = function(ajaxURL,specs){
+
+        var specs = $.extend({
+            oldObj:$.extend({},self.current.object),
+            callback:function(data){
+                self.showMessage(data.name +' updated successfully');
+            },
+            ajaxObj: self.constructObjectFromFields(self.joe_index),
+            overwrites:{},
+            skipValidation:false
+        },(specs||{}));
+        var newObj = $.extend(
+            ajaxObj.newObj,
+            specs.overwrites,
+            {joeUpdated:new Date()}
+        );
+
+        var skipVal = _joe.propAsFuncOrValue(self.skipValidation);
+        if(!skipVal) {
+            var valid = self.validateObject(obj);
+            if(!valid){return false;}
+        }
+
+        $.ajax({
+            url:specs.ajaxObj,
+            data:newObj,
+            dataType:'jsonp',
+            success:specs.callback
+        })
+
+
+    };
 
 	this.updateObject = function(dom,callback,stayOnItem,overwrites,skipValidation){
         var oldObj = $.extend({},self.current.object);
@@ -2997,48 +3083,9 @@ this.renderSorterField = function(prop){
 //check required fields()
         var skipVal = _joe.propAsFuncOrValue(skipValidation);
         if(!skipVal) {
-            var req_fields = [];
+            var valid = self.validateObject(obj);
+            if(!valid){return false;}
 
-            //_joe.current.fields.where({required:true});
-            req_fields = _joe.current.fields.filter(function (prop) {
-
-                if (prop.required && (typeof prop.required != 'function' && prop.required) || (typeof prop.required == 'function' && prop.required(self.current.object))) {
-                    return true;
-                }
-                return false;
-            });
-
-            function olistVal(olistObj) {
-                var vals = '';
-                for (var i in olistObj) {
-                    vals += olistObj[i];
-                }
-                vals.replace(/ /g, '');
-                return vals;
-            }
-
-            var required_missed = [];
-            req_fields.map(function (f) {
-                if (!obj[f.name] ||
-                    ($.type(obj[f.name] == "array") && f.type != "objectList" && obj[f.name].length == 0 ) ||
-                    (f.type == "objectList" && obj[f.name].filter(olistVal).length == 0)
-                ) {
-
-                    required_missed.push(f);
-                    return false;
-                }
-            });
-            $('.joe-object-field').removeClass('joe-highlighted');
-            if (required_missed.length) {
-                //f.display|| f.label|| f.name
-
-                self.showMessage("There are <b>" + required_missed.length + "</b> required fields currently missing.");//<br/>"+required_missed.join(', ')
-                required_missed.map(function (of) {
-                    $('.joe-object-field[data-name=' + of.name + ']').addClass('joe-highlighted');
-                });
-                // self.panel.addClass('show-required');
-                return false;
-            }
         }
     //end validation
 
