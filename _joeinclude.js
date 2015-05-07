@@ -49,7 +49,7 @@ var
 scripts_dir = web_dir+"js/",
 scripts = [];
 if (typeof jQuery == 'undefined') {  
-	scripts.push("libs/jquery-1.11.2.min.js");
+	scripts.push("libs/jquery-1.11.3.min.js");
 	scripts.push("libs/jquery-ui.min.js");
 
 }

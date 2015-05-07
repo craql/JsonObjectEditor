@@ -401,8 +401,11 @@ function JsonObjectEditor(specs){
                 {_joeHistoryTitle:self.overlay.find('.joe-panel-title').html()}
             );
 		}
-
-
+    //clear ace_editors
+/*        for (var p in _joe.ace_editors){
+            _joe.ace_editors[p].destroy();
+        }
+        _joe.ace_editors = {};*/
 
     //update hashlink
         self.updateHashLink();
@@ -520,10 +523,10 @@ function JsonObjectEditor(specs){
         self.current.fields = [];
         self.shiftSelecting = false;
         self.allSelected = false;
-		for (var p in _joe.ace_editors){
-			_joe.ace_editors[p].destroy();
-		}
-		_joe.ace_editors = {};
+/*        for (var p in _joe.ace_editors){
+            _joe.ace_editors[p].destroy();
+        }
+        _joe.ace_editors = {};*/
         if(self.current.userSpecs.multiedit){
             self.overlay.addClass('multi-edit');
 
@@ -1547,7 +1550,7 @@ View Mode Buttons
 		' >';
 
 
-        var template = prop.template || '';
+        var template = self.propAsFuncOrValue(prop.template) || '';
 		var val;
         var optionVal;
 			valObjs.map(function(v){
@@ -2303,7 +2306,7 @@ this.renderSorterField = function(prop){
         }
         var deleteButton = '<div class="joe-delete-button joe-block-button left" ' +
             'onclick="$(this).parent().remove();">&nbsp;</div>';
-        var template = field.template || "<div>${name}</div><span class='subtext'>"+id+"</span>";
+        var template = self.propAsFuncOrValue(field.template,item) || "<div>${name}</div><span class='subtext'>"+id+"</span>";
         return '<div class="joe-field-item" data-value="'+id+'">'+deleteButton+fillTemplate(template,item)+'</div>';
     };
 
