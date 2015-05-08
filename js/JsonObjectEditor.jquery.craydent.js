@@ -2257,7 +2257,7 @@ this.renderSorterField = function(prop){
                 values:values,
                 skip:true,
                 name:prop.name,
-                ftype:'objectReference'
+                ftype:'objectreference'
 
             }
         ); //,{onblur:'_joe.showMessage($(this).val());'})
@@ -3016,8 +3016,8 @@ this.renderSorterField = function(prop){
         var required_missed = [];
         req_fields.map(function (f) {
             if (!obj[f.name] ||
-                ($.type(obj[f.name] == "array") && f.type != "objectList" && obj[f.name].length == 0 ) ||
-                (f.type == "objectList" && obj[f.name].filter(olistVal).length == 0)
+                ($.type(obj[f.name] == "array") && f.type != "objectlist" && obj[f.name].length == 0 ) ||
+                (f.type == "objectlist" && obj[f.name].filter(olistVal).length == 0)
             ) {
 
                 required_missed.push(f);
@@ -3158,7 +3158,7 @@ this.renderSorterField = function(prop){
 		//var parentFind = $('.joe-overlay.active');
 
 		parentFind.find('.joe-field').each(function(){
-            if($(this).parents('.objectList-field').length){
+            if($(this).parents('.objectlist-field').length){
                 return true;
             }
 			if(self.current.userSpecs.multiedit){
@@ -3223,10 +3223,10 @@ this.renderSorterField = function(prop){
                                  });*/
                                 object[prop] = vals;
                                 break;
-                            case 'objectReference':
+                            case 'objectreference':
                                 var vals = [];
-                                object[prop] = 'objectReference';
-                                $('.objectReference-field[data-name="'+prop+'"]').find('.joe-field-item')
+                                object[prop] = 'objectreference';
+                                $('.objectreference-field[data-name="'+prop+'"]').find('.joe-field-item')
                                     .each(function(){
                                         vals.push($(this).data().value);
                                     });
@@ -3243,7 +3243,7 @@ this.renderSorterField = function(prop){
 
 
     //OBJECT LISTS
-        parentFind.find('.objectList-field').each(function(){
+        parentFind.find('.objectlist-field').each(function(){
             var ol_property = $(this).data('name');
             var ol_array = [];
         //get table header rows
