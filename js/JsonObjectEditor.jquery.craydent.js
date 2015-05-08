@@ -936,7 +936,8 @@ View Mode Buttons
 		var fieldProp;
         self.current.fields = [];
         self.current.sections = {};
-		if(!specs.schema || !specs.schema.fields){//no schema use items as own schema
+        var schemaFields = self.propAsFuncOrValue(specs.schema.fields);
+		if(!specs.schema || !schemaFields){//no schema use items as own schema
 			for( var prop in object){
 				if(object.hasOwnProperty(prop)){
 					propObj = $.extend({
@@ -955,7 +956,7 @@ View Mode Buttons
 			}
 		}
 		else{
-			(specs.schema.fields||[]).map(function(prop){
+			(schemaFields||[]).map(function(prop){
 
 
 				fields += self.renderObjectPropFieldUI(prop,specs);
@@ -2070,7 +2071,7 @@ this.renderSorterField = function(prop){
             };
 
             html+="<th data-subprop='"+subprop.name+"'>"
-                +(subprop.label || subprop.name)+"</th>";
+                +(subprop.display || subprop.name)+"</th>";
         }
         html+="<th class='joe-objectlist-delete-header'></th>"
         html+="</tr></thead>";

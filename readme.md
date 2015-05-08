@@ -120,6 +120,8 @@ Properties for all Fields
     - template: html template for fillTemplate(template,current_object);
 - `objectlist` : a table of objects with editable properties
     - properties: array of objects|strings for the object property names
+        -name: value in object
+        -display: header in objectList
     - max: integer, number or items that can be added. use zero for infinite.
     - hideHeadings: don't show table headings
 - `objectReference` : a list of object ids

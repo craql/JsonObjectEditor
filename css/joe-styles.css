@@ -871,13 +871,19 @@ display:none;
 
 .joe-content-section-label {
     background-color: rgba(0,40,80,.5);
-    padding: 10px 10px;
+    background-image: url("../img/white-arrow-down.png");
+    background-position:3px center;
+    background-repeat: no-repeat;
+    padding: 10px 10px 10px 30px;
     margin: 15px 0 15px 0px;
     font-weight: bold;
     clear: both;
     font-size: 1.1em;
     color: #fff;
     cursor:pointer;
+}
+.collapsed .joe-content-section-label{
+    background-image: url("../img/white-arrow-right.png");
 }
 .joe-content-section-label:hover{
     background-color: rgba(0,40,80,.6);
