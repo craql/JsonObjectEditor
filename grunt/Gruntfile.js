@@ -94,8 +94,8 @@ module.exports = function(grunt) {
                     "../js/JsonObjectEditor.jquery.craydent.js",
                     "../js/leaflet.js",
                     "../js/esri-leaflet-geocoder.js",
-                    "../js/zebra_datepicker.js",
-                    "../js/ace/ace.js"
+                    "../js/zebra_datepicker.js"/*,
+                    "../js/ace/ace.js"*/
                 ],
                 dest: '../js/joe.js'
             }

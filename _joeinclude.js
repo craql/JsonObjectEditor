@@ -62,8 +62,9 @@ scripts.push(
 	"leaflet.js",
 	"esri-leaflet-geocoder.js",
 	"zebra_datepicker.js",
-	"ace/ace.js"*/
-    "joe.js"
+	*/
+    "joe.js",
+    "ace/ace.js"
 );
 
 var

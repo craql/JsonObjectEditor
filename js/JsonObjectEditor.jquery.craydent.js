@@ -2136,9 +2136,9 @@ this.renderSorterField = function(prop){
 
     this.addObjectListItem = function(fieldname,specs){
         var fieldobj = self.getField(fieldname);
-        var index = $('.joe-object-field[data-name=module_fields]').find('.joe-object-list-row').length;
+        var index = $('.joe-object-field[data-name='+fieldname+']').find('.joe-object-list-row').length;
         var content = self.renderObjectListObject({},fieldobj.properties,index);
-        $('.joe-object-field[data-name=module_fields]').find('tbody').append(content);
+        $('.joe-object-field[data-name='+fieldname+']').find('tbody').append(content);
     };
     this._oldeleteaction = function(dom){
         $(dom).parents('tr.joe-object-list-row').remove();
