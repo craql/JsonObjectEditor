@@ -1,73 +1,129 @@
 /* =========================================================
-    Grunt Deployment Process for Tools
-    
-    Last Modified: April 23, 2015
-========================================================= */
-
+ Grunt Starter Project
+ ========================================================= */
 module.exports = function(grunt) {
 
-  // Project configuration.
-  grunt.initConfig({    
-    pkg: grunt.file.readJSON('package.json'),
-    
-    projects: {
-      // Tools folder on CDN
-      remote: '/var/www/tools',
-      Local: '',
-      Server: 'JOE',
-      Command: 'joe'
-    },
+    // Project configuration.
+    grunt.initConfig({
+        pkg: grunt.file.readJSON('package.json'),
 
-    rsync: {
-      options: {
-        args: ["--verbose"],
-        exclude: [".git*","*.scss","node_modules","grunt"],
-        syncDestIgnoreExcl: true,
-        recursive: true,
-        preservePermissions: true,
-        compareMode: "checksum"
-      },
-    
-      // IconLicensing Project
-      DEV: {
-        options: {
-          src: "<%= projects.Local %>",
-          dest: "<%= projects.remote %>/<%= projects.Server %>/",
-          host: "corey@webapps-cdn-dev.esri.com",
-        }
-      },
-      STG: {
-        options: {
-          src: "<%= projects.Local %>",
-          dest: "<%= projects.remote %>/<%= projects.Server %>/",
-          host: "corey@webapps-cdn-stg.esri.com",
-        }
-      },
-      PRD: {
-        options: {
-          src: "<%= projects.Local %>",
-          dest: "<%= projects.remote %>/<%= projects.Server %>/",
-          host: "corey@webapps-cdn.esri.com",
-        }
-      }
-} 
+        banner: '/* -------------------------------------------------------- \n' +
+        ' * \n' +
+        ' *  <%= pkg.projectName %> - v<%= pkg.version %> \n' +
+        ' *  Created by: <%= pkg.author.name %> \n' +
+        ' * \n' +
+        ' * -------------------------------------------------------- */',
+        files:{
+            styles:[]
+        },
 
-      
-  });
-  
-  // CDN Deploy Grunt Plugins
-  grunt.loadNpmTasks('grunt-rsync');
-  require('load-grunt-tasks')(grunt);
-  
-  grunt.file.setBase('../')
-  
-  // Push Form Creator
-  grunt.registerTask( 'sync-<%= projects.Command %>-dev', [ 'rsync:DEV' ] );
-  grunt.registerTask( 'sync-joe-stg', [ 'rsync:STG' ] );
-  grunt.registerTask( 'sync-<%= projects.Command %>-prd', [ 'rsync:PRD' ] );
-  
-  
-  
+        // Clean the build folder before rebuild
+        clean: {
+            dist: {
+                src: [ '../css/joe.css','../js/joe.js' ]
+            }
+        },
+
+        // Writes custom banner
+        usebanner: {
+            fullBanner: {
+                options: {
+                    banner: '<%= banner %>',
+                    linebreak: true
+                },
+                files: {
+                    src: [ '../css/joe.css','../js/joe.js']
+                }
+            }
+        },
+
+        // Compile Sass/SCSS files
+        'sass': {
+            options: {
+                precision: 4,
+                sourceMap: true
+            },
+            dist: {
+                options: {
+                    outputStyle: 'expanded'
+                },
+                files: [{
+                    expand: true,
+                    cwd: '<%= folders.source %>',
+                    src: ['**/*.scss'],
+                    dest: '<%= folders.build %>',
+                    ext: '.css'
+                }]
+            }
+        },
+
+        //
+        uglify: {
+            options: {
+                mangle: false,
+                beautify: true,
+                compress: false
+            },
+            dist: {
+                files: [{
+                    expand: true,
+                    cwd: '<%= folders.source %>/',
+                    src: [ '**/*.js' ],
+                    dest: '<%= folders.build %>/'
+                }]
+            }
+        },
+
+
+        concat: {
+          options: {
+            separator: ''
+          },
+          styles: {
+            src: [
+                "../css/leaflet.css",
+                "../css/esri-leaflet-geocoder.css",
+                "../css/joe-styles.css",
+                "../css/jquery-ui.min.css",
+                "../css/jif/style.css"
+            ],
+            dest: '../css/joe.css'
+          },
+            scripts: {
+                src: [
+                    "../js/JsonObjectEditor.jquery.craydent.js",
+                    "../js/leaflet.js",
+                    "../js/esri-leaflet-geocoder.js",
+                    "../js/zebra_datepicker.js",
+                    "../js/ace/ace.js"
+                ],
+                dest: '../js/joe.js'
+            }
+        },
+
+        // Watches for changes to files
+        watch: {
+            options: {
+                livereload: false,
+                spawn: false
+            },
+
+            build_include: {
+                files: ['../js/**/*.js','../css/**/*.css'],
+                tasks: [ 'concat', 'usebanner' ]
+            }
+        }
+
+    });
+
+
+    // Load Grunt Plugins
+    require('load-grunt-tasks')(grunt);
+    //grunt.loadNpmTasks('grunt-contrib-watch');
+   // grunt.loadNpmTasks('grunt-contrib-concat');
+
+    // Watch for changes
+    grunt.registerTask('default', [ 'concat', 'usebanner', 'watch' ]);
+
+
 };
-
-

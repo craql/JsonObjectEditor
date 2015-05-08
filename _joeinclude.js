@@ -58,23 +58,24 @@ if (typeof Craydent == 'undefined' || (!Craydent.VERSION || Craydent.VERSION < '
    scripts.push("libs/craydent-1.7.37.js");
 }
 scripts.push(
-	"JsonObjectEditor.jquery.craydent.js",
+/*	"JsonObjectEditor.jquery.craydent.js",
 	"leaflet.js",
 	"esri-leaflet-geocoder.js",
 	"zebra_datepicker.js",
-	"ace/ace.js"
-	
+	"ace/ace.js"*/
+    "joe.js"
 );
 
 var
 styles_dir = web_dir+"css/",
 styles =[
-   "leaflet.css",
+/*   "leaflet.css",
    "esri-leaflet-geocoder.css",
    "joe-styles.css",
    //"jquery-ui-1.10.4.custom.min.css",
 	"jquery-ui.min.css",
-    "jif/style.css"
+    "jif/style.css"*/
+    "joe.css"
 ],
 script,style,sc,st,
 sc_len = scripts.length,st_len = styles.length;

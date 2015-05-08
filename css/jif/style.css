@@ -1,10 +1,10 @@
 @font-face {
 	font-family: 'joeiconfont';
-	src:url('fonts/joeiconfont.eot?-ybo9sv');
-	src:url('fonts/joeiconfont.eot?#iefix-ybo9sv') format('embedded-opentype'),
-		url('fonts/joeiconfont.woff?-ybo9sv') format('woff'),
-		url('fonts/joeiconfont.ttf?-ybo9sv') format('truetype'),
-		url('fonts/joeiconfont.svg?-ybo9sv#joeiconfont') format('svg');
+	src:url('jif/fonts/joeiconfont.eot?-ybo9sv');
+	src:url('jif/fonts/joeiconfont.eot?#iefix-ybo9sv') format('embedded-opentype'),
+		url('jif/fonts/joeiconfont.woff?-ybo9sv') format('woff'),
+		url('jif/fonts/joeiconfont.ttf?-ybo9sv') format('truetype'),
+		url('jif/fonts/joeiconfont.svg?-ybo9sv#joeiconfont') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }
