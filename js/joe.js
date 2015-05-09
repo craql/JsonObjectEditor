@@ -1223,8 +1223,9 @@ View Mode Buttons
 		return html;
 	};
     this.renderFieldComment = function(prop){
-        if(!prop.comment){return '';}
-        var comment = ($.type(prop.comment) == "function")?prop.comment():prop.comment;
+        var comment = self.propAsFuncOrValue(prop.comment);
+        if(!comment){return '';}
+        //var comment = ($.type(prop.comment) == "function")?prop.comment():prop.comment;
         var comment_html = '<div class="joe-field-comment">'+comment+'</div>';
 
         return comment_html;
