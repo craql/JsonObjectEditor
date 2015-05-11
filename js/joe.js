@@ -2822,7 +2822,7 @@ this.renderSorterField = function(prop){
         var specs = specs || {};
         var reloadBM = new Benchmarker();
         var info = self.history.pop();
-        var obj = $.extend({},info.data,specs.overwrite);
+        var obj = $.extend({},info.data,(specs.overwrite||specs.overwrites));
         self.show(obj,info.specs);
         if(!hideMessage){self.showMessage('reloaded in '+reloadBM.stop()+' secs');}
     };
