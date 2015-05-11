@@ -288,3 +288,9 @@ an array of menu buttons
 
 ### e | exporting an object in pretty format json (or minified)
 JOE.exportJSON = function(object,objvarname,minify)
+
+##Useful Functions
+_joe.reload(hideMessage,specs)
+- use specs.overwreite object to extend reloaded object.
+
+_joe.constructObjectFromFields()
