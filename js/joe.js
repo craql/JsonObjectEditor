@@ -2818,10 +2818,12 @@ this.renderSorterField = function(prop){
         },timeout);
 	};
 
-    this.reload = function(hideMessage){
+    this.reload = function(hideMessage,specs){
+        var specs = specs || {};
         var reloadBM = new Benchmarker();
         var info = self.history.pop();
-        self.show(info.data,info.specs);
+        var obj = $.extend({},info.data,specs.overwrite);
+        self.show(obj,info.specs);
         if(!hideMessage){self.showMessage('reloaded in '+reloadBM.stop()+' secs');}
     };
 	this.compactMode = function(compact){
