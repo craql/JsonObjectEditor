@@ -86,7 +86,10 @@ function analyzeImportMerge(newArr,oldArr,idprop,specs){
             if (!newObj) {
                 data.same.push(oldObj);//same
             } else {
-                if (specs.dateProp && newObj[specs.dateProp] == oldObj[specs.dateProp]) {
+                if (specs.dateProp
+                    && newObj[specs.dateProp]
+                    && oldObj[specs.dateProp]
+                    && newObj[specs.dateProp] == oldObj[specs.dateProp]) {
                     data.same.push(newObj);//same
 
                 } else {

@@ -2187,7 +2187,7 @@ this.renderSorterField = function(prop){
 
 		var profile = self.current.profile;
 		var height = (prop.height)?'style="height:'+prop.height+';"' : '';
-		var code_language = prop.language||'html';
+		var code_language = (prop.language||'html').toLowerCase();
 		var editor_id = cuid();
 		var html=
 			'<div class="joe-ace-holder joe-rendering-field joe-field" '
@@ -3459,12 +3459,18 @@ ANALYSIS, IMPORT AND MERGE
 
         for(var i = 0, len = existing.length; i < len; i++ ){
             newObj = onetoone[i], oldObj = existing[i];
+            if (!newObj) {
+                data.same.push(oldObj);//same
+            } else {
+                if (specs.dateProp
+                    && newObj[specs.dateProp]
+                    && oldObj[specs.dateProp]
+                    && newObj[specs.dateProp] == oldObj[specs.dateProp]) {
+                    data.same.push(newObj);//same
 
-            if(specs.dateProp && newObj[specs.dateProp] == oldObj[specs.dateProp]) {
-                data.same.push(newObj);
-
-            }else {
-                data.update.push(newObj);
+                } else {
+                    data.update.push(newObj);//update
+                }
             }
 
         }
