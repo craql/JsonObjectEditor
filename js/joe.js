@@ -2805,6 +2805,20 @@ this.renderSorterField = function(prop){
         self.overlay.removeClass('hidden');
 		self.overlay.addClass('active');
 		setTimeout(self.onPanelShow(),0);
+/*        var evt = new Event('JoeEvent');
+        evt.initEvent("showJoe",true,true);
+
+// custom param
+        evt.schemaname = self.current.schema.__schemaname;
+        document.addEventListener("myEvent",function(){alert('finished')},false);
+        document.dispatchEvent(evt);*/
+
+
+        $(self.container).trigger({
+            type: "showJoe",
+            schema: self.current.specs.schema.__schemaname
+        });
+
 	};
 	this.hide = function(timeout){
         timeout = timeout || 0;
