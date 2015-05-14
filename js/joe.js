@@ -2276,7 +2276,7 @@ this.renderSorterField = function(prop){
         var html= '<div class="joe-tags-container">'
             +self.renderTextField(specs)
             +'<div class="joe-text-input-button " data-fieldname="'+prop.name+'"' +
-                'onclick="getJoe('+self.joe_index+').addObjectReferenceHandler(this);">add</div>'
+                'onclick="getJoe('+self.joe_index+').addObjectReferenceHandler(this);">link</div>'
             +'</div>'
             +'<div class ="joe-object-references-holder '+(sortable&&'sortable'||'')+'" data-field="'+prop.name+'">';
 
@@ -2314,10 +2314,15 @@ this.renderSorterField = function(prop){
                 }
             }
         }
-        var deleteButton = '<div class="joe-delete-button joe-block-button left" ' +
-            'onclick="$(this).parent().remove();">&nbsp;</div>';
-        var template = self.propAsFuncOrValue(field.template,item) || "<div>${name}</div><span class='subtext'>"+id+"</span>";
-        return '<div class="joe-field-item" data-value="'+id+'">'+deleteButton+fillTemplate(template,item)+'</div>';
+
+            var deleteButton = '<div class="joe-delete-button joe-block-button left" ' +
+                'onclick="$(this).parent().remove();">&nbsp;</div>';
+        if(!item) {
+            return '<div class="joe-field-item" data-value="' + id + '">' + deleteButton + "<div>REFERENCE NOT FOUND</div><span class='subtext'>" + id + "</span>" + '</div>';
+        }
+            var template = self.propAsFuncOrValue(field.template, item) || "<div>${name}</div><span class='subtext'>" + id + "</span>";
+            return '<div class="joe-field-item" data-value="' + id + '">' + deleteButton + fillTemplate(template, item) + '</div>';
+
     };
 
     function _getField(fieldname){
