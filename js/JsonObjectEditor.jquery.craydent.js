@@ -1146,20 +1146,22 @@ View Mode Buttons
         if(prop.hasOwnProperty('condition') && !self.propAsFuncOrValue(prop.condition)){
             return '';
         }
+
 		//field requires {name,type}
         self.current.fields.push(prop);
+        prop.value = self.propAsFuncOrValue(prop.value);
 		//set default value
 		if(prop.value == undefined && prop['default'] != undefined){
 			prop.value = prop['default'];
 		}
-        if($.type(prop.value) == "function"){
+/*        if($.type(prop.value) == "function"){
 			try {
 				prop.value = prop.value(self.current.object);
 			}catch(e){
 				logit('error with propoerty "'+(prop.name||'')+'": '+e);
 				prop.value= prop.value;
 			}
-		}
+		}*/
     //hidden
 		var hidden = '';
         //if(prop.hidden && (typeof prop.hidden != 'function' && prop.hidden) || (typeof prop.hidden == 'function' && prop.hidden())){
@@ -3580,15 +3582,20 @@ ANALYSIS, IMPORT AND MERGE
 	};
 
     this.propAsFuncOrValue = function(prop, toPass, defaultTo){
-        var toPass = toPass || self.current.object;
+        try {
+            var toPass = toPass || self.current.object;
 
-/*        if(!toPass.hasOwnProperty(prop)){
-            return defaultTo || false;
-        }*/
-        if(prop && typeof prop == 'function'){
-            return prop(toPass);
+            /*        if(!toPass.hasOwnProperty(prop)){
+             return defaultTo || false;
+             }*/
+            if (prop && typeof prop == 'function') {
+                return prop(toPass);
+            }
+            return prop;
+        }catch(e){
+            logit('JOE: error parsing propAsFunction: '+e);
+            return '';
         }
-        return prop;
     };
 /*-------------------------------------------------------------------->
  I | Hashlink
