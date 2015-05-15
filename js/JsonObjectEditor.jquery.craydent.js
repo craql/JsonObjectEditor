@@ -2817,7 +2817,8 @@ this.renderSorterField = function(prop){
 
         $(self.container).trigger({
             type: "showJoe",
-            schema: self.current.specs.schema.__schemaname
+            schema: self.current.specs.schema,
+            subset: self.current.specs.subset
         });
 
 	};
