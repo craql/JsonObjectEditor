@@ -1133,7 +1133,7 @@ View Mode Buttons
             return '';
         };
 		display = m.label || m.name;
-		action = m.action || 'alert(\''+display+'\')';
+		action = fillTemplate(self.propAsFuncOrValue(m.action),self.current.object) || 'alert(\''+display+'\')';
 		html+= '<div class="joe-button joe-footer-button '+(m.css ||'')+'" onclick="'+action+'" data-btnid="'+m.name+'" title="'+ (m.title||'')+'">'+display+'</div>';
 		return html;
 	};
@@ -2837,7 +2837,12 @@ this.renderSorterField = function(prop){
         var specs = specs || {};
         var reloadBM = new Benchmarker();
         var info = self.history.pop();
-        var obj = $.extend({},info.data,(specs.overwrite||specs.overwrites));
+        if($.type(info.data)== 'object') {
+            var obj = $.extend({}, info.data, (specs.overwrite || specs.overwrites));
+        }else{
+            var obj = info.data;
+        }
+
         self.show(obj,info.specs);
         if(!hideMessage){self.showMessage('reloaded in '+reloadBM.stop()+' secs');}
     };
@@ -3712,6 +3717,7 @@ var __defaultObjectButtons = [__deleteBtn__,__saveBtn__];
 var __defaultMultiButtons = [__multisaveBtn__,__multideleteBtn__];
 
 function __removeTags(str){
+    if(!str){return '';}
     return str.replace(/<(?:.|\n)*?>/gm, '');
 }
 
