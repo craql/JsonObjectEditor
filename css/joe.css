@@ -1476,9 +1476,14 @@ display:none;
     background-color: #ddd;
     float: right;
     margin: 0;
+    margin-bottom: 10PX;
 }
 .joe-object-field .joe-button:hover{
     background-color:#ccc;
+}
+.joe-object-field .joe-button.fleft {
+
+    float: left;
 }
 .joe-object-field input[type=text].joe-number-field {
     width: 200px;
