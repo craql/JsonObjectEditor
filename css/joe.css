@@ -689,6 +689,7 @@
 .joe-quicksave-button{background-image: url("../img/btns/save_stay.png");  }
 .joe-list_add-button{background-image: url("../img/btns/list-add.png");  }
 .joe-list_delete-button{background-image: url("../img/btns/list-remove.png");  }
+.joe-reload-button{background-image: url("../img/btns/reload.png");  }
 
 .joe-block-button {
     background-color: rgba(0,0,0,.1);
