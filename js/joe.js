@@ -4,18 +4,6 @@
  *  Created by: Corey Hadden 
  * 
  * -------------------------------------------------------- */
-/* -------------------------------------------------------- 
- * 
- *  JOE - v1.5.0 
- *  Created by: Corey Hadden 
- * 
- * -------------------------------------------------------- */
-/* -------------------------------------------------------- 
- * 
- *  JOE - v1.5.0 
- *  Created by: Corey Hadden 
- * 
- * -------------------------------------------------------- */
 /*/---------------------------------------------------------
     Craydent LLC
 	Copyright 2014 (http://craydent.com/joe)
@@ -504,6 +492,12 @@ function JsonObjectEditor(specs){
         self.hide(500);
 
         self.clearAuxiliaryData();
+        $(self.container).trigger({
+            type: "hideJoe",
+            index:self.joe_index/*,
+            schema: self.current.specs.schema,
+            subset: self.current.specs.subset*/
+        });
 	};
     var goingBackFromID;
     var goingBackQuery;
