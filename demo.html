@@ -11,6 +11,7 @@
 <div class="joe-button" onclick="goJoe();">go joe</div>
 <div class="joe-button" onclick="showJoeView('function');">Functions </div>
 <div class="joe-button" onclick="getDemoData();">Data </div>
+<div class="joe-button" onclick="showJoeView('schema');">Joe Schemas </div>
 <div class="joe-button" onclick="goJoe(_joe.analyzeClassObject(JOE,'JOE').functions,{schema:'function'})">Joe Functions </div>
 <div class="joe-button" onclick="goJoe(_joe.analyzeClassObject(Craydent,'Craydent').functions,{schema:'function'})">Craydent Functions </div>
 
@@ -21,11 +22,13 @@
 	var App = {Data:demo_data};
 	Craydent.DEBUG_MODE =true;
 	var JOE = new JsonObjectEditor(specs);
+    JOE.Data = App.Data;
 	JOE.init();
 
 	function showJoeView(view){
-		var dataset = getData(view);
-		goJoe(dataset,{schema:view});
+//		var dataset = getData(view);
+//		goJoe(dataset,{schema:view});
+        goJoe(view,{schema:view});
 
 	}
 

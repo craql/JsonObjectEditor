@@ -83,9 +83,9 @@ module.exports = function(grunt) {
             src: [
                 "../css/leaflet.css",
                 "../css/esri-leaflet-geocoder.css",
+                "../css/jif/style.css",
                 "../css/joe-styles.css",
-                "../css/jquery-ui.min.css",
-                "../css/jif/style.css"
+                "../css/jquery-ui.min.css"
             ],
             dest: '../css/joe.css'
           },

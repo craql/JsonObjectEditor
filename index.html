@@ -54,7 +54,8 @@ height: 300px;
 
 <a href="javascript:_joe.show(dog,{schema:'thing', title:'Thing with Rendering'});">edit Dog(thing)</a><br/>
 
-    <a href="javascript:goJoe(things,{schema:'thing', title:'List of Things | ${_listCount}'});">view Things</a><br/>
+    <a href="javascript:goJoe(things,{schema:'thing', title:'List of Things | ${_listCount}'});">view Things</a> |
+    <a href="javascript:goJoe(things,{schema:'thing', viewMode:'grid',title:'List of Things | ${_listCount}'});">as Grid</a><br/>
 
 <a href="javascript:_joe.show(animals,{schema:'animal',subsets:[{name:'Two-Legged',filter:{legs:2}}]});">edit Animals</a><br/>
 
@@ -183,7 +184,10 @@ var thingschema =
         subsets:[
             {name:'Has 2',filter:{name:/2/}},
             {name:'99ers',filter:{name:/99/}}
-        ]
+        ],
+        grid:{
+            cols:['Name']
+        }
 		
 	};
 

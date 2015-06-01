@@ -18,6 +18,11 @@ var demo_config = {
             _title:'&fnof; ${name}',
             _listMenuTitle:'Functions | ${_listCount}',
             listmenu:[__createBtn__]
+        },
+        'schema':{
+            fields:[
+                'name',
+            ]
         }
     },
     fields:{
@@ -50,6 +55,16 @@ var demo_config = {
                 return '<pre>'+evalString+'</pre>';
             }
         }
+
+        //schema
+
+       /* _title:{ 'Element | ${name}',
+        _listWindowTitle: 'Elements',
+        _listTitle:
+        '<div class="fright joe-subtext">sort:${sort_order}</div>'+
+        '<h4>${name}</h4>' +
+        '<div class="joe-subtext">${RUN[_COUNT;${sub_modules};]} submodules</div>'+
+        '<div class="subtext">${RUN[enumerate;${itags};]}</div>',*/
 
     },
     menu:[

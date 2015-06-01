@@ -88,6 +88,13 @@
 .joe-fright{  float:right;  }
 .joe-fleft{  float:left;  }
 .joe-nofloat{  float:none;  }
+.joe-absolute{
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+}
 /*-------------------------
 	JOE Button
 -------------------------*/
@@ -461,6 +468,19 @@ Subset Selector
 }
 
 /*------------------------------------------------------------------
+	JOE GRID
+------------------------------------------------------------------*/
+
+
+table.joe-grid-table {
+    width: 100%;
+}
+.joe-grid-checkbox{
+    width: 40px;
+    min-height: 40px;
+    text-align: center;
+}
+/*------------------------------------------------------------------
 	UI Panel Content
 ------------------------------------------------------------------*/
 .joe-panel-content {
@@ -593,14 +613,37 @@ input.joe-submenu-search-field {
     color:#999;
 }
 
-
+/*-------------------------
+	View Modes
+-------------------------*/
 .joe-submenu-viewmodes {
     float: right;
-    background: #fff;
-    height: 100%;
+    height: 40px;
     /* line-height: 250%; */
+    width: 40px;
+    cursor: pointer;
+    box-sizing: border-box;
+    -webkit-transition: width .2s;
 }
 
+.joe-submenu-viewmodes.expanded{
+    width:80px;
+}
+.joe-viewmode-button {
+/*    width: 40px;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    height: 40px;
+    line-height: 40px;*/
+    float:right;
+    background-image: url(".././img/btns/view-list.png");
+    background-repeat:no-repeat;
+    background-position: center center;
+}
+.joe-viewmode-button.grid-button{
+    background-image: url(".././img/btns/view-grid.png");
+}
 /*-------------------------
 	List Options
 -------------------------*/

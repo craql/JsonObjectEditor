@@ -5,11 +5,12 @@
 	(http://craydent.com/license)
 ---------------------------------------------------------/*/
 //render field - self.renderObjectPropFieldUI
+//render list item - self.renderListItems()
 /*TODO:
 
-	-merge specs (profile,schema,object,call?)
-	-required fields
-
+    -make autoinit true
+    -make grid into table functions
+    -
 
 */
 var _webworkers = false;
@@ -21,8 +22,10 @@ if (!!window.Worker) {
 }
 function JsonObjectEditor(specs){
 	var self = this;
-
+    initialized = false;
 	var listMode = false;
+    var gridMode = false;
+    var tableMOde = false;
     var multiEdit = false;
 	this.VERSION = '1.0.1';
 	window._joes = window._joes || [];
@@ -62,7 +65,7 @@ function JsonObjectEditor(specs){
 	};
 
 	this.specs = $.extend({},defaults,specs||{});
-
+    this.Data = {};
 	this.current = {};
 	//TODO: check for class/id selector
 	this.container = $(this.specs.container);
@@ -87,6 +90,7 @@ function JsonObjectEditor(specs){
 	1 | INIT
 <--------------------------------------------------------------------*/
 	this.init = function() {
+        if(initialized){return false;}
         self.current = {filters:{}};
         var html = self.renderFramework(
                 self.renderEditorHeader() +
@@ -170,6 +174,7 @@ function JsonObjectEditor(specs){
             }
         }
         self.readHashLink();
+        initialized = true;
 	};
 
 
@@ -204,6 +209,7 @@ function JsonObjectEditor(specs){
 		self.current.data = data;
 	//clean copy for later;
 		self.current.userSpecs = $.extend({},setts);
+        gridMode = (self.current.specs.viewMode == 'grid')?true:false;
 
 	//update history 1/2
 		if(!self.current.specs.noHistory){
@@ -245,14 +251,22 @@ function JsonObjectEditor(specs){
 	Object
 -------------------------*/
 	//when object passed in
-		if($.type(data) == 'object' || datatype =='object'){
-			specs.object = data;
-			specs.menu = specs.menu || (specs.schema && specs.schema.menu) || self.specs.menu || (specs.multiedit && __defaultMultiButtons) || __defaultObjectButtons;
+    if($.type(data) == 'object' || datatype =='object'){
+        specs.object = data;
+        specs.menu = specs.menu || (specs.schema && specs.schema.menu) || self.specs.menu || (specs.multiedit && __defaultMultiButtons) || __defaultObjectButtons;
 
-			specs.mode="object";
-			self.current.object = data;
+        specs.mode="object";
+        self.current.object = data;
 
-		}
+    }
+
+/*-------------------------
+ String
+ -------------------------*/
+    if($.type(data) == 'string' && self.getDataset(data)){
+        data = self.getDataset(data);
+    }
+
 /*-------------------------
  MultiEdit (Arrays)
  -------------------------*/
@@ -268,6 +282,7 @@ function JsonObjectEditor(specs){
 			specs.list = data;
 			specs.menu = specs.listMenu || (specs.schema && specs.schema.listMenu )|| __defaultButtons;//__defaultMultiButtons;
 			specs.mode="list";
+
 			//TODO: filter list items here.
 			self.current.list = data;
 
@@ -560,7 +575,7 @@ function JsonObjectEditor(specs){
             var submenu =
                 '<div class="joe-panel-submenu">'
 
-                    //+self.renderViewModeButtons(subSpecs)
+                +self.renderViewModeButtons(subSpecs)
                 + ((subSpecs.itemcount && self.renderSubmenuItemcount(subSpecs.itemcount)) || '')
                 + ((subSpecs.filters && self.renderSubmenuFilters(subSpecs.filter)) || '')
                 + ((subSpecs.search && self.renderSubmenuSearch(subSpecs.search)) || '')
@@ -772,11 +787,22 @@ function JsonObjectEditor(specs){
 /*------------------>
 View Mode Buttons
 <------------------*/
-
+    function renderViewModeButton(mode){
+        var html ="<div data-view='"+mode+"' class='joe-button joe-viewmode-button'>"+mode+"</div>";
+        return html;
+    }
     this.renderViewModeButtons = function(subspecs){
-        var gridspecs = self.current.schema && self.current.schema.grid || {};
+        var gridspecs = self.current.schema && self.current.schema.grid;
+        if(!gridspecs){return '';}
+        var modes = [
+            {name:'list'},
+            {name:'grid'}
+        ];
+        var modeTemplate="<div data-view='${name}' class='jif-panel-button joe-viewmode-button ${name}-button'>&nbsp;</div>";
         var submenuitem =
-            "<div class='joe-submenu-viewmodes'>views</div>";
+            "<div class='joe-submenu-viewmodes' onclick='$(this).toggleClass(\"expanded\")'>"+
+                fillTemplate(modeTemplate,modes)+
+            "</div>";
         return submenuitem;
     };
 
@@ -891,15 +917,31 @@ View Mode Buttons
         var start = start || 0;
         var stop = stop || currentListItems.length -1;
 
-        for(var i=start;i <stop;i++){
-            listItem = items[i];
-            if(listItem) {
-                html += self.renderListItem(listItem,false,i+1);
-               // html += $GET('table')?self.renderGridItem(listItem,false,i+1):self.renderListItem(listItem,false,i+1);
+        if(!gridMode) {
+            for (var i = start; i < stop; i++) {
+                listItem = items[i];
+                if (listItem) {
+                    html += self.renderListItem(listItem, false, i + 1);
+                    //html += $GET('table') ? self.renderGridItem(listItem, false, i + 1) : self.renderListItem(listItem, false, i + 1);
+                }
             }
-        }
 
-        return html;
+            return html;
+        }
+        else{
+            html+='<table class="joe-grid-table"><thead><th>&nbsp;</th><th>name</th><th>id</th></thead><tbody>';
+            for (var i = start; i < stop; i++) {
+                listItem = items[i];
+                if (listItem) {
+                    //html += self.renderListItem(listItem, false, i + 1);
+                    html += self.renderGridItem(listItem, false, i + 1);
+
+                }
+            }
+            html+='</tbody></table>';
+
+            return html;
+        }
     };
 
     this.onListContentScroll = function(domObj){
@@ -2336,8 +2378,11 @@ this.renderSorterField = function(prop){
 /*-------------------------------------------------------------------->
 	4 | OBJECT LISTS
 <--------------------------------------------------------------------*/
-    this.renderTableItem = function(listItem,quick,index) {
+    this.renderGridItem = function(listItem,quick,index,specs) {
         var ghtml = '<tr>';
+        ghtml +='<td class="joe-grid-checkbox"><label><input type="checkbox"></label></td>';
+        ghtml +='<td>'+index+'</td>';
+        ghtml +='<td>'+listItem[self.getIDProp()]+'</td>';
         ghtml +='</tr>';
     return ghtml;
     };
@@ -2750,6 +2795,71 @@ this.renderSorterField = function(prop){
 		});
 		return object;
 	};
+
+/*-------------------------------------------------------------------->
+  D | DATA
+ <--------------------------------------------------------------------*/
+    self.addDataset = function(name,values,specs){
+        //idprop
+        //concatenate
+        var values = self.propAsFuncOrValue(values,name);
+        if(name && values && $.type(values) == "array"){
+            self.Data[name] == values;
+        }
+
+
+    };
+    self.deleteDataset = function(dataset){
+        delete self.Data[dataset];
+    };
+    self.getDataItem = function(id,datatype,idprop) {
+        var item;
+        var idprop = idprop || '_id';
+        var dataset = self.Data[datatype];
+        if(!self.Data[datatype]){
+            return false;
+        }
+        for(var i = 0, tot =dataset.length; i < tot; i++){
+            item = dataset[i];
+            if(item[idprop] == id){
+                return item;
+            }
+        }
+        return false;
+    };
+    self.getDataset = function(datatype,specs) {
+        specs = specs || {};
+        var sortby = specs.sortby || 'name';
+
+        if (self.Data[datatype]) {
+            var data = self.Data[datatype].sortBy(sortby);
+        }else{
+            var data =[];
+        }
+        if(specs.filter){
+            data = data.where(specs.filter);
+        }
+        if(specs.reverse){
+            data.reverse();
+        }
+
+        if(specs.blank){
+            return [{name:'',val:''}].concat(data);
+        }
+        return data;
+    };
+    self.getNPCDataItemProp = function(id,dataset,prop){
+        prop = prop || 'name';
+        if(!id){
+            return '';
+        }
+//    var item = getNPCData(dataset,{filter:{_id:id},single:true});
+        var item = getNPCDataItem(id,dataset);
+        if(item){
+            return item[prop];
+        }
+        return '';
+    }
 /*-------------------------------------------------------------------->
 	SCHEMAS
 <--------------------------------------------------------------------*/
@@ -2780,8 +2890,6 @@ this.renderSorterField = function(prop){
 	this.toggleOverlay = function(dom){
 		$(dom).parents('.joe-overlay').toggleClass('active');
 	};
-
-	//this.show = function(data,schema,profile,callback){
 
 	this.show = function(data,specs){
         self.showBM = new Benchmarker();
@@ -3014,7 +3122,7 @@ this.renderSorterField = function(prop){
 	};
 
 /*-------------------------------------------------------------------->
-	D | DATA
+	K | OBJECT
 <--------------------------------------------------------------------*/
 	this.createObject = function(specs){
 		//takes fields to be deleted
@@ -3622,7 +3730,7 @@ ANALYSIS, IMPORT AND MERGE
         hash_delimiter = ':::';
     }
     this.updateHashLink = function(){
-        if(!specs.useHashlink){
+        if(!self.specs.useHashlink){
             return;
         }
         var hashInfo ={};
@@ -3716,7 +3824,7 @@ var __replaceBtn__ = {name:'replace',label:'Replace', action:'_joe.updateRenderi
 var __duplicateBtn__ = {name:'duplicate',label:'Duplicate', action:'_joe.duplicateObject();', css:'joe-left-button'};
 
 
-var __defaultButtons = [];
+var __defaultButtons = [__createBtn__];
 var __defaultObjectButtons = [__deleteBtn__,__saveBtn__];
 var __defaultMultiButtons = [__multisaveBtn__,__multideleteBtn__];
 
