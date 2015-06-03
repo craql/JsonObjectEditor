@@ -7,7 +7,7 @@ var action;
 var data;
 onmessage = function(e) {
 
-    console.log('Message received from main script');
+    //console.log('Message received from main script');
     action = e.data.action;
     data = e.data.data;
     if(!action || !data){

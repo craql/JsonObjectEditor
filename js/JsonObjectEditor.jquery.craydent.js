@@ -2854,18 +2854,19 @@ this.renderSorterField = function(prop){
         }
         return data;
     };
-    self.getNPCDataItemProp = function(id,dataset,prop){
+    self.getDataItemProp = function(id,dataset,prop){
         prop = prop || 'name';
         if(!id){
             return '';
         }
 //    var item = getNPCData(dataset,{filter:{_id:id},single:true});
-        var item = getNPCDataItem(id,dataset);
+        var item = self.getDataItem(id,dataset);
         if(item){
             return item[prop];
         }
         return '';
-    }
+    };
+
 /*-------------------------------------------------------------------->
 	SCHEMAS
 <--------------------------------------------------------------------*/
