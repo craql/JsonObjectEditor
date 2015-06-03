@@ -3750,20 +3750,27 @@ ANALYSIS, IMPORT AND MERGE
             hashInfo.object_id = (self.current.object && self.current.object[self.getIDProp()])||'';
         }
 
-        var hashtemplate = ($.type(specs.useHashlink) == 'string')?specs.useHashlink:'${schema_name}'+hash_delimiter+'${object_id}';
+        var hashtemplate = ($.type(specs.useHashlink) == 'string')?specs.useHashlink:hash_delimiter+'${schema_name}'+hash_delimiter+'${object_id}';
         //$SET({'@!':fillTemplate(hashtemplate,hashInfo)},{noHistory:true});
-        $SET({'@!':fillTemplate(hashtemplate,hashInfo)});
+        //$SET({'@!':fillTemplate(hashtemplate,hashInfo)});
+        location.hash = fillTemplate(hashtemplate,hashInfo);
+
     };
 
     this.readHashLink = function(){
         try {
-            var useHash = $GET('!');
+            var useHash = $GET('!') || location.hash;
             if (!useHash || self.joe_index != 0) {
-                return;
+                return false;
             }
+            var useHash = useHash.replace('#','');
             var hashBreakdown = useHash.split(hash_delimiter);
+            hashBreakdown.removeAll('');
+            if(!hashBreakdown.length){
+                return false;
+            }
             var hashSchema = self.schemas[hashBreakdown[0]];
-            var hashItemID = hashBreakdown[1];
+            var hashItemID = hashBreakdown[1]||'';
             if (hashSchema && (hashSchema.dataset || (!$.isEmptyObject(NPC.Data) && NPC.Data[hashSchema.__schemaname]))) {
                 var dataset;
                 if(hashSchema.dataset) {
@@ -3784,8 +3791,9 @@ ANALYSIS, IMPORT AND MERGE
                     }else {//SHOW LIST, NO item
                         goJoe(dataset, {schema: hashSchema});
                     }
-                    var section = $GET('section');
+                    var section = $GET('section')||hashBreakdown[2];
                     $DEL('section');
+                    self.updateHashLink();
                     gotoSection(section);
 
 
@@ -3793,6 +3801,7 @@ ANALYSIS, IMPORT AND MERGE
             }
         }catch(e){
             logit('error reading hashlink:'+e);
+            return false;
         }
         function gotoSection(section){
             if (section){
@@ -3800,6 +3809,7 @@ ANALYSIS, IMPORT AND MERGE
             }
         }
         __gotoJoeSection = gotoSection;
+        return true;
     };
 
     this.isNewItem = function(){
