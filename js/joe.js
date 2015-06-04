@@ -31,7 +31,7 @@ function JsonObjectEditor(specs){
     initialized = false;
 	var listMode = false;
     var gridMode = false;
-    var tableMOde = false;
+    var tableMode = false;
     var multiEdit = false;
 	this.VERSION = '1.0.1';
 	window._joes = window._joes || [];
@@ -216,6 +216,7 @@ function JsonObjectEditor(specs){
 	//clean copy for later;
 		self.current.userSpecs = $.extend({},setts);
         gridMode = (self.current.specs.viewMode == 'grid')?true:false;
+        tableMode = (self.current.specs.viewMode == 'table')?true:false;
 
 	//update history 1/2
 		if(!self.current.specs.noHistory){
@@ -670,7 +671,7 @@ function JsonObjectEditor(specs){
            return '';
         }
 
-        var action =' onclick="_joe.toggleFiltersMenu();" ';
+        var action =' onclick="getJoe('+self.joe_index+').toggleFiltersMenu();" ';
         var html =
             "<div class='jif-panel-submenu-button joe-filters-toggle ' "+action+">"
                 +"</div>";
@@ -680,8 +681,10 @@ function JsonObjectEditor(specs){
         return html;
     };
 
+    var leftMenuShowing = false;
     this.toggleFiltersMenu = function(){
-        self.panel.toggleClass('show-filters');
+        leftMenuShowing = !leftMenuShowing;
+        self.panel.toggleClass('show-filters',leftMenuShowing);
     };
 
     this.generateFiltersQuery = function(){//comgine all active fitlers into a query
@@ -805,11 +808,15 @@ View Mode Buttons
     }
     this.renderViewModeButtons = function(subspecs){
         var gridspecs = self.current.schema && self.current.schema.grid;
-        if(!gridspecs){return '';}
+        var tablespecs = self.current.schema && self.current.schema.table;
+
+        if(!gridspecs && !tablespecs){return '';}
         var modes = [
-            {name:'list'},
-            {name:'grid'}
+            {name:'list'}
         ];
+        if(gridspecs){modes.push({name:'grid'})}
+        if(tablespecs){modes.push({name:'table'})}
+
         var modeTemplate="<div data-view='${name}' class='jif-panel-button joe-viewmode-button ${name}-button'>&nbsp;</div>";
         var submenuitem =
             "<div class='joe-submenu-viewmodes' onclick='$(this).toggleClass(\"expanded\")'>"+
@@ -929,18 +936,7 @@ View Mode Buttons
         var start = start || 0;
         var stop = stop || currentListItems.length -1;
 
-        if(!gridMode) {
-            for (var i = start; i < stop; i++) {
-                listItem = items[i];
-                if (listItem) {
-                    html += self.renderListItem(listItem, false, i + 1);
-                    //html += $GET('table') ? self.renderGridItem(listItem, false, i + 1) : self.renderListItem(listItem, false, i + 1);
-                }
-            }
-
-            return html;
-        }
-        else{
+        if(gridMode) {
             html+='<table class="joe-grid-table"><thead><th>&nbsp;</th><th>name</th><th>id</th></thead><tbody>';
             for (var i = start; i < stop; i++) {
                 listItem = items[i];
@@ -953,6 +949,31 @@ View Mode Buttons
             html+='</tbody></table>';
 
             return html;
+        }else if(tableMode){
+            html+='<table class="joe-grid-table"><thead><th>&nbsp;</th><th>name</th><th>id</th></thead><tbody>';
+            for (var i = start; i < stop; i++) {
+                listItem = items[i];
+                if (listItem) {
+                    //html += self.renderListItem(listItem, false, i + 1);
+                    html += self.renderGridItem(listItem, false, i + 1);
+
+                }
+            }
+            html+='</tbody></table>';
+
+            return html;
+        }
+        else{
+            for (var i = start; i < stop; i++) {
+                listItem = items[i];
+                if (listItem) {
+                    html += self.renderListItem(listItem, false, i + 1);
+                    //html += $GET('table') ? self.renderGridItem(listItem, false, i + 1) : self.renderListItem(listItem, false, i + 1);
+                }
+            }
+
+            return html;
+
         }
     };
 
@@ -3079,6 +3100,8 @@ this.renderSorterField = function(prop){
             goingBackFromID = null;
         }
         self._currentListItems = currentListItems;
+
+        self.panel.toggleClass('show-filters',leftMenuShowing);
 /*        if($(window).height() > 700) {
             self.overlay.find('.joe-submenu-search-field').focus();
         }*/

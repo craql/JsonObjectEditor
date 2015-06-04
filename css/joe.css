@@ -1215,6 +1215,9 @@ input.joe-submenu-search-field {
 .joe-viewmode-button.grid-button{
     background-image: url(".././img/btns/view-grid.png");
 }
+.joe-viewmode-button.table-button{
+    background-image: url(".././img/btns/view-table.png");
+}
 /*-------------------------
 	List Options
 -------------------------*/
