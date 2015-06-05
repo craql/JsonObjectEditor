@@ -36,6 +36,12 @@ if(location && location.hostname){//fix for devices
 		case 'coreyh.esri.com':
 			web_dir = 'http://coreyh.esri.com:81/'+projectName+'/';
 		break;
+
+		case 'cinadapc.esri.com':
+
+			web_dir = 'http://cinadapc.esri.com/'+projectName+'/';
+
+		break;
 		case 'corey-bootcamp.esri.com':
 			web_dir = 'http://corey-bootcamp.esri.com/'+projectName+'/';
 		break;
