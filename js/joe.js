@@ -4,12 +4,6 @@
  *  Created by: Corey Hadden 
  * 
  * -------------------------------------------------------- */
-/* -------------------------------------------------------- 
- * 
- *  JOE - v1.5.0 
- *  Created by: Corey Hadden 
- * 
- * -------------------------------------------------------- */
 /*/---------------------------------------------------------
     Craydent LLC
 	Copyright 2014 (http://craydent.com/joe)
@@ -1846,20 +1840,38 @@ this.renderSorterField = function(prop){
 		'<input class="joe-image-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'" '
 		+	self.renderFieldAttributes(prop)
 		+' onkeyup="_joe.updateImageFieldImage(this);" '+_disableField(prop)+'/>'
-		+'<img class="joe-image-field-image" src="'+(prop.value||'')+'"/>'
+		+'<img class="joe-image-field-image" src="'+(prop.value||'')+'" />'
 		+'<span class="joe-image-field-size"></span>';
+           // +'<script>_joe.updateImageFieldImage($(\'input[name=thumbnail]\'),2000)</script>';
 
 		return html;
 	};
 
-	this.updateImageFieldImage = function(dom){
-		var src = $(dom).val();
-		//var img = $(dom).next('.joe-image-field-image');
-		var img = $(dom).parent().find('.joe-image-field-image');
-		img.attr('src',src);
-		$(dom).next('.joe-image-field-size').html(img.width() + 'w x '+img.height()+'h');
-
+	this.updateImageFieldImage = function(dom,timeout){
+        /*if($(dom).is('img')) {//img
+            var src = $(dom).parent().find('input.joe-image-field').val();
+            //var img = $(dom).next('.joe-image-field-image');
+            var img = $(dom).parent().find('.joe-image-field-image');
+            img.attr('src', src);
+        }else{//input*/
+        logit('img update');
+            var src = $(dom).val();
+            //var img = $(dom).next('.joe-image-field-image');
+            var img = $(dom).parent().find('.joe-image-field-image');
+            self.updateImageSize(img);
+            //img.attr('src', src);
+     //   }
 	};
+
+    this.updateImageSize = function(img) {
+        var jqImg = $(img);
+        //if (!jqImg.hasClass('loaded')) {
+            jqImg.siblings('.joe-image-field-size').html(jqImg.width() + 'w x ' + jqImg.height() + 'h');
+
+            //jqImg.addClass('loaded');
+       // }
+
+    };
 
 /*----------------------------->
 	J | Multisorter

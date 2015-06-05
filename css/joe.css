@@ -4,12 +4,6 @@
  *  Created by: Corey Hadden 
  * 
  * -------------------------------------------------------- */
-/* -------------------------------------------------------- 
- * 
- *  JOE - v1.5.0 
- *  Created by: Corey Hadden 
- * 
- * -------------------------------------------------------- */
 /* required styles */
 
 .leaflet-map-pane,
@@ -1599,11 +1593,7 @@ display:none;
     box-sizing: border-box;
 }
 
-.url-field .joe-button {
-    position: absolute;
-    right: 5px;
-    bottom: 8px;
-}
+
 .joe-object-field input[type=text].joe-date-field {
     width:200px;
 }
@@ -1620,6 +1610,11 @@ display:none;
 }
 .joe-object-field .joe-button:hover{
     background-color:#ccc;
+}
+.url-field .joe-button {
+    position: absolute;
+    right:0;
+/*    margin:5px;*/
 }
 .joe-object-field .joe-button.fleft {
 
