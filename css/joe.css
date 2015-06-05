@@ -4,6 +4,12 @@
  *  Created by: Corey Hadden 
  * 
  * -------------------------------------------------------- */
+/* -------------------------------------------------------- 
+ * 
+ *  JOE - v1.5.0 
+ *  Created by: Corey Hadden 
+ * 
+ * -------------------------------------------------------- */
 /* required styles */
 
 .leaflet-map-pane,
@@ -1196,10 +1202,13 @@ input.joe-submenu-search-field {
     box-sizing: border-box;
     -webkit-transition: width .2s;
 }
-
+.joe-submenu-viewmodes:hover{
+    width:120px;
+}
 .joe-submenu-viewmodes.expanded{
     width:80px;
 }
+
 .joe-viewmode-button {
 /*    width: 40px;
     margin: 0;

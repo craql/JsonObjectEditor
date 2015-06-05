@@ -264,7 +264,7 @@ function JsonObjectEditor(specs){
 /*-------------------------
  String
  -------------------------*/
-    if($.type(data) == 'string' && self.getDataset(data)){
+    if($.type(data) == 'string' && datatype != "string" && self.getDataset(data,{boolean:true})){
         data = self.getDataset(data);
     }
 
@@ -811,15 +811,19 @@ View Mode Buttons
         if(gridspecs){modes.push({name:'grid'})}
         if(tablespecs){modes.push({name:'table'})}
 
-        var modeTemplate="<div data-view='${name}' class='jif-panel-button joe-viewmode-button ${name}-button'>&nbsp;</div>";
+        var modeTemplate="<div data-view='${name}' " +
+            "onclick='getJoe("+self.joe_index+")" + ".setViewMode(\"${name}\");' " +
+            "class='jif-panel-button joe-viewmode-button ${name}-button'>&nbsp;</div>";
         var submenuitem =
-            "<div class='joe-submenu-viewmodes' onclick='$(this).toggleClass(\"expanded\")'>"+
+            "<div class='joe-submenu-viewmodes' >"+//onhover='$(this).toggleClass(\"expanded\")'
                 fillTemplate(modeTemplate,modes)+
             "</div>";
         return submenuitem;
     };
 
-
+    this.setViewMode = function(mode){
+        self.reload(true,{viewMode:mode});
+    };
     /*----------------------------->
         C | Content
     <-----------------------------*/
@@ -2861,6 +2865,9 @@ this.renderSorterField = function(prop){
         if (self.Data[datatype]) {
             var data = self.Data[datatype].sortBy(sortby);
         }else{
+            if(specs.boolean = true){
+                return false;
+            }
             var data =[];
         }
         if(specs.filter){
@@ -2982,7 +2989,11 @@ this.renderSorterField = function(prop){
             var obj = info.data;
         }
 
-        self.show(obj,info.specs);
+        //delete data overwirtes
+        delete specs.overwrite;
+        delete specs.overwrites;
+        var specs = $.extend({},info.specs,specs);
+        self.show(obj,specs);
         if(!hideMessage){self.showMessage('reloaded in '+reloadBM.stop()+' secs');}
     };
 	this.compactMode = function(compact){
