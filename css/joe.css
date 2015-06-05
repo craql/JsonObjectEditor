@@ -1051,6 +1051,32 @@ table.joe-grid-table {
     min-height: 40px;
     text-align: center;
 }
+
+/*------------------------------------------------------------------
+	JOE TABLE VIEW
+------------------------------------------------------------------*/
+
+
+table.joe-item-table {
+    width: 100%;
+}
+.joe-table-checkbox{
+    width: 40px;
+    min-height: 40px;
+    text-align: center;
+}
+
+.joe-item-table td{
+    padding:5px;
+}
+
+tr.joe-panel-content-option{
+
+}
+tr.joe-panel-content-option:hover{
+background-color:#eee;
+}
+
 /*------------------------------------------------------------------
 	UI Panel Content
 ------------------------------------------------------------------*/

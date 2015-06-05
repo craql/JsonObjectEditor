@@ -954,12 +954,18 @@ View Mode Buttons
 
             return html;
         }else if(tableMode){
-            html+='<table class="joe-grid-table"><thead><th>&nbsp;</th><th>name</th><th>id</th></thead><tbody>';
+            var tableSpecs = $.extend({cols:['name',self.getIDProp()]},(self.current.schema&&self.current.schema.table&&self.current.schema.table.cols)||{});
+            html+='<table class="joe-item-table"><thead><th>&nbsp;</th>';
+            tableSpecs.cols.map(function(c){
+                html+='<th>'+c+'</th>';
+            });
+
+            html+='</thead><tbody>';
             for (var i = start; i < stop; i++) {
                 listItem = items[i];
                 if (listItem) {
                     //html += self.renderListItem(listItem, false, i + 1);
-                    html += self.renderGridItem(listItem, false, i + 1);
+                    html += self.renderTableItem(listItem, i + 1,tableSpecs);
 
                 }
             }
@@ -997,11 +1003,17 @@ View Mode Buttons
                 if (listItem.getBoundingClientRect().bottom - 500 < viewPortHeight) {
                     //self.generateGroupContent(groupIndex);
                    // logit('more content coming');
-                    html +=self.renderListItems(null,currentItemCount,currentItemCount+self.specs.dynamicDisplay);
-                    self.panel.find('.joe-panel-content').append(html);
+                    if(gridMode){
+
+                    }if(tableMode){
+
+                    }else {
+                        html += self.renderListItems(null, currentItemCount, currentItemCount + self.specs.dynamicDisplay);
+                        self.panel.find('.joe-panel-content').append(html);
+                    }
                 }
         }catch(e){
-            alert('error scrolling for more content: \n'+e);
+            logit('error scrolling for more content: \n'+e);
         }
     };
 
@@ -2433,14 +2445,30 @@ this.renderSorterField = function(prop){
 /*-------------------------------------------------------------------->
 	4 | OBJECT LISTS
 <--------------------------------------------------------------------*/
+    this.renderTableItem = function(listItem,index,tableSpecs) {
+        var idprop = self.getIDProp();// listSchema._listID;
+        var id = listItem[idprop] || null;
+        //var action = 'onclick="_joe.editObjectFromList(\''+id+'\');"';
+        var action = 'onclick="getJoe('+self.joe_index+').listItemClickHandler({dom:this,id:\''+id+'\'});"';
+
+        var ghtml = '<tr class="joe-panel-content-option" '+action+'>';
+        ghtml +='<td class="joe-table-checkbox"><label>'+index+'<input type="checkbox"></label></td>';
+        //ghtml +='<td>'+index+'</td>';
+        tableSpecs.cols.map(function(c){
+            ghtml+='<td>'+(listItem[c]||'')+'</td>';
+        });
+        ghtml +='</tr>';
+    return ghtml;
+    };
     this.renderGridItem = function(listItem,quick,index,specs) {
-        var ghtml = '<tr>';
+        var ghtml = '<tr class="joe-panel-content-option">';
         ghtml +='<td class="joe-grid-checkbox"><label><input type="checkbox"></label></td>';
         ghtml +='<td>'+index+'</td>';
         ghtml +='<td>'+listItem[self.getIDProp()]+'</td>';
         ghtml +='</tr>';
-    return ghtml;
+        return ghtml;
     };
+
     this.renderListItem = function(listItem,quick,index){
 		var listSchema  = $.extend(
 			{
@@ -3130,7 +3158,7 @@ this.renderSorterField = function(prop){
         }
         self._currentListItems = currentListItems;
 
-        self.panel.toggleClass('show-filters',leftMenuShowing);
+        self.panel.toggleClass('show-filters',leftMenuShowing && listMode);
 /*        if($(window).height() > 700) {
             self.overlay.find('.joe-submenu-search-field').focus();
         }*/
