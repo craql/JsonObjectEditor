@@ -666,6 +666,13 @@
     right:0;
     bottom:0;
 }
+
+/*-------------------------
+	BG Color transition
+-------------------------*/
+.trans-bgcol {
+    transition: .2s background-color;
+}
 /*-------------------------
 	JOE Button
 -------------------------*/
@@ -1338,7 +1345,13 @@ input.joe-submenu-search-field {
     margin: 10px;
     margin-bottom: 0;
     border:1px solid #f2f2f2;
+    position: relative;
+    z-index: 30;
 }
+.joe-panel-content-option-icon:hover{
+    background-color: #333;
+}
+
 .joe-panel-content-option-icon img{
     padding:5px;
     opacity:0;

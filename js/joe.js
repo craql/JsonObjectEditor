@@ -2451,7 +2451,7 @@ this.renderSorterField = function(prop){
         //var action = 'onclick="_joe.editObjectFromList(\''+id+'\');"';
         var action = 'onclick="getJoe('+self.joe_index+').listItemClickHandler({dom:this,id:\''+id+'\'});"';
 
-        var ghtml = '<tr class="joe-panel-content-option" '+action+'>';
+        var ghtml = '<tr class="joe-panel-content-option trans-bgcol" '+action+'>';
         ghtml +='<td class="joe-table-checkbox"><label>'+index+'<input type="checkbox"></label></td>';
         //ghtml +='<td>'+index+'</td>';
         tableSpecs.cols.map(function(c){
@@ -2461,7 +2461,7 @@ this.renderSorterField = function(prop){
     return ghtml;
     };
     this.renderGridItem = function(listItem,quick,index,specs) {
-        var ghtml = '<tr class="joe-panel-content-option">';
+        var ghtml = '<tr class="joe-panel-content-option trans-bgcol">';
         ghtml +='<td class="joe-grid-checkbox"><label><input type="checkbox"></label></td>';
         ghtml +='<td>'+index+'</td>';
         ghtml +='<td>'+listItem[self.getIDProp()]+'</td>';
@@ -2513,7 +2513,7 @@ this.renderSorterField = function(prop){
             var listItemIcon = (listSchema._icon && renderIcon(listSchema._icon,listItem)) || '';
             //list item content
             title="<div class='joe-panel-content-option-content ' "+action+">"+title+"<div class='clear'></div></div>";
-			var html = '<div class="'+(self.allSelected && 'selected' ||'')+' joe-panel-content-option '+((numberHTML && 'numbered') || '' )+' joe-no-select '+((stripeColor && 'striped')||'')+'"  data-id="'+id+'" >'
+			var html = '<div class="'+(self.allSelected && 'selected' ||'')+' joe-panel-content-option trans-bgcol '+((numberHTML && 'numbered') || '' )+' joe-no-select '+((stripeColor && 'striped')||'')+'"  data-id="'+id+'" >'
 
                 +'<div class="joe-panel-content-option-bg" '+bgHTML+'></div>'
                 +'<div class="joe-panel-content-option-stripe" '+stripeHTML+'></div>'
@@ -2533,9 +2533,9 @@ this.renderSorterField = function(prop){
 
         function renderIcon(icon,listItem){
             var iconURL = fillTemplate(icon,listItem);
-            var iconhtml = '<div style=" background-image:url(\''+iconURL+'\'); " class="joe-panel-content-option-icon fleft"  >' +
+            var iconhtml = '<div style=" background-image:url(\''+iconURL+'\'); " class="joe-panel-content-option-icon trans-bgcol fleft"  >' +
                 '<img src="'+iconURL+'"/>' +
-                '</div>'
+                '</div>';
             return iconhtml;
         }
 		return html;
