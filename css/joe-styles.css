@@ -409,6 +409,9 @@
     padding: 5px;
     color: #007ac2;
     line-height:30px;
+    padding-right: 80px;
+    overflow:hidden;
+    height:34px;
 }
 
 .joe-header-back-btn{
@@ -1050,6 +1053,14 @@ display:none;
     font-size:14px;
 }
 
+.joe-object-field input[type=text]:focus {
+    outline: none;
+    border: 1px solid #007ac2;
+    /* padding: 1px; */
+    outline-offset: 0;
+    padding: 5px;
+}
+
 .joe-field-container.joe-fleft input[type=text] {
     min-width: initial;
 }
@@ -1085,8 +1096,13 @@ display:none;
 /*    margin:5px;*/
 }
 .joe-object-field .joe-button.fleft {
-
     float: left;
+}
+.joe-object-field .joe-button.inline {
+    float: none;
+    display: inline-block;
+    margin-left: 10px;
+    margin-right:10px;
 }
 .joe-object-field input[type=text].joe-number-field {
     width: 200px;
@@ -1592,7 +1608,13 @@ button.Zebra_DatePicker_Icon_Inside         { margin: 0 3px 0 0 }
 /* For phones and small tablets */
 @media only screen and (max-width: 600px),
 screen and (max-height:400px) and (orientation:landscape){
-
+    .joe-panel-title{
+        line-height: 19px;
+        font-size: 16px;
+        padding: 0;
+        padding-right: 82px;
+        height:40px;
+    }
     .joe-overlay-panel {
         margin: 0px;
     }

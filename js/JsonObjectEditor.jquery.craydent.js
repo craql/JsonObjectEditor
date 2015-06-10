@@ -643,7 +643,7 @@ function JsonObjectEditor(specs){
         var scount = 0;
         var template =
             //'<div class="joe-submenu-section" onclick="$(\'.joe-content-section[data-section=${id}]\').removeClass(\'collapsed\')[0].scrollIntoView()">${name}</div>';
-            '<div class="joe-submenu-section" onclick="__gotoJoeSection(\'${id}\');">${name}</div>';
+            '<div class="joe-submenu-section" onclick="_joe.gotoSection(\'${id}\','+self.joe_index+');">${name}</div>';
 
         var section;
         for(var secname in self.current.sections){
@@ -656,6 +656,13 @@ function JsonObjectEditor(specs){
         anchorhtml+="</div>";
         return {count:scount,code:anchorhtml};
     }
+
+    self.gotoSection =function(section,index){
+        if (section){
+            var i = index || self.joe_index;
+            $('.joe-overlay[data-joeindex='+i+']').find('.joe-content-section[data-section='+section+']').removeClass('collapsed')[0].scrollIntoView();
+        }
+    };
 /*------------------>
     Filter
 <------------------*/
@@ -1294,7 +1301,7 @@ View Mode Buttons
 		}
 
 		html += self.selectAndRenderFieldType(prop);
-
+        html += self.renderGotoLink(prop);
 		html+='</div>';
 		//if(prop.width){
         //close field container
@@ -1305,6 +1312,19 @@ View Mode Buttons
 
 		return html;
 	};
+
+    this.renderGotoLink = function(prop){
+        var goto = self.propAsFuncOrValue(prop.goto)
+      if(goto){
+          var action='';
+          if($.type(goto) == "string"){
+            action = goto;
+          }
+        return '<div class="joe-button inline view-button" onclick="'+action+'" >view</div>';
+      }else{
+        return '';
+      }
+    };
     this.renderFieldComment = function(prop){
         var comment = self.propAsFuncOrValue(prop.comment);
         if(!comment){return '';}
@@ -3883,12 +3903,8 @@ ANALYSIS, IMPORT AND MERGE
             logit('error reading hashlink:'+e);
             return false;
         }
-        function gotoSection(section){
-            if (section){
-                $('.joe-content-section[data-section='+section+']').removeClass('collapsed')[0].scrollIntoView();
-            }
-        }
-        __gotoJoeSection = gotoSection;
+
+        __gotoJoeSection = self.gotoSection;
         return true;
     };
 
@@ -3899,6 +3915,7 @@ ANALYSIS, IMPORT AND MERGE
         }
         return false;
     };
+
 /*<------------------------------------------------------------->*/
 
 	if(self.specs.autoInit){
