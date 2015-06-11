@@ -1855,7 +1855,17 @@ input.joe-image-field{
     float: left;
     min-width: 300px;
 }
-
+.joe-group-item.cols-1{
+    width:100%;
+}
+.joe-group-item.cols-3{
+    width:32%;
+    min-width: 200px;
+}
+.joe-group-item.cols-4{
+    width:24%;
+    min-width: 200px;
+}
 .joe-group-item:hover{
    background-color:#ddd;
 }

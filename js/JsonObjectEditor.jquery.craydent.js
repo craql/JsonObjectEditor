@@ -2287,6 +2287,7 @@ this.renderSorterField = function(prop){
         var checked;
         var itemid;
         var idprop = prop.idprop || '_id';
+        var cols = prop.cols || 2;
         values.map(function(value){
             if($.type(value) != 'object'){
                 var tempval = {name:value};
@@ -2294,8 +2295,8 @@ this.renderSorterField = function(prop){
                 value = tempval;
             }
             itemid = 'joe_checkbox-'+prop.name;
-            checked = (prop.value.indexOf(value[idprop]) != -1)?' checked ':'';
-            html+= '<div class="joe-group-item"><label >'
+            checked = ((prop.value||[]).indexOf(value[idprop]) != -1)?' checked ':'';
+            html+= '<div class="joe-group-item cols-'+cols+'"><label >'
             +'<div class="joe-group-item-checkbox">' +
             '<input class="joe-field" type="checkbox" name="'+prop.name+'" '
             +checked
@@ -3892,10 +3893,11 @@ ANALYSIS, IMPORT AND MERGE
                         goJoe(dataset, {schema: hashSchema});
                     }
                     var section = $GET('section')||hashBreakdown[2];
-                    $DEL('section');
-                    self.updateHashLink();
-                    gotoSection(section);
-
+                    if(section) {
+                        $DEL('section');
+                        self.updateHashLink();
+                        self.gotoSection(section);
+                    }
 
                 }
             }
