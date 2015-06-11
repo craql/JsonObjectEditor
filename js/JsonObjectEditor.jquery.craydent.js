@@ -1314,16 +1314,41 @@ View Mode Buttons
 	};
 
     this.renderGotoLink = function(prop){
-        var goto = self.propAsFuncOrValue(prop.goto)
+        var goto = self.propAsFuncOrValue(prop.goto);
       if(goto){
           var action='';
           if($.type(goto) == "string"){
+
             action = goto;
+            //action = 'getJoe('+self.joe_index+').gotoItemByProp(\''+prop.name+'\',$(this).siblings().val(),\''+goto+'\');';
+              action = 'getJoe('+self.joe_index+').gotoFieldItem(this,\''+goto+'\');';
+          }else {
+              //var values= self.getField(prop.name);
+
           }
+          /*else if(goto === true){
+              action = 'goJoe(getNPCDataItem(${_id},"element"),schema:"element");'
+          }*/
         return '<div class="joe-button inline view-button" onclick="'+action+'" >view</div>';
       }else{
         return '';
       }
+    };
+
+    this.gotoFieldItem =function(dom,schema){
+        var fieldname = $(dom).parents('.joe-object-field').data('name');
+        var field = self.getField(fieldname);
+        var idprop = prop.idprop || self.getIDProp(schema);
+        var values = self.propAsFuncOrValue(field.values);
+        var id = $(dom).siblings('.joe-field').val();
+        var object = values.filter(function(v){
+            return v[idprop] == id;
+        })[0]||false;
+        if(!object){
+            return false;
+        }
+        self.show(object,{schema:schema});
+
     };
     this.renderFieldComment = function(prop){
         var comment = self.propAsFuncOrValue(prop.comment);
@@ -3805,8 +3830,8 @@ ANALYSIS, IMPORT AND MERGE
 		return reg.exec(name)[1];
 	};
 
-	this.getIDProp = function(){
-		var prop = (self.current.schema && (self.current.schema.idprop || self.current.schema._listID)) || 'id' || '_id';
+	this.getIDProp = function(schema){
+		var prop = ( ((schema && self.schemas[schema]) || self.current.schema) && (self.current.schema.idprop || self.current.schema._listID)) || 'id' || '_id';
 		return prop;
 	};
 
