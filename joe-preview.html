@@ -19,7 +19,8 @@
 
             }
             if(bodyContent){
-                $('body').html(decodeURIComponent(bodyContent));
+               // $('body').html(decodeURIComponent(bodyContent));
+                $('body').html(bodyContent);
             }
             else if(content){
                 document.getElementsByTagName('html')[0].innerHTML = decodeURIComponent(content);

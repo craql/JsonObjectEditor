@@ -1162,6 +1162,8 @@ textarea.joe-rendering-field{
     background: #eee;
     width: 312px;
     display:none;
+    max-height: 300px;
+    overflow: auto;
 }
 .joe-text-autocomplete.active{
     display:block;
@@ -1170,6 +1172,7 @@ textarea.joe-rendering-field{
     padding: 5px;
     cursor: pointer;
     display:none;
+    border-bottom: 1px solid #ddd;
 }
 .joe-text-autocomplete-option.visible{
     display:block;

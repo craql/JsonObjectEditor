@@ -1584,8 +1584,16 @@ View Mode Buttons
         $('body').unbind( "click", textFieldAutocompleteHandler ).bind( "click", textFieldAutocompleteHandler );
 
         var autocomplete = dom.next('.joe-text-autocomplete');
+        var content,show
+            needles = dom.val().toLowerCase().replace( /,/,' ').split(' ');
+            needles.removeAll('');
 		autocomplete.find('.joe-text-autocomplete-option').each(function(i,obj){
-			self.checkAutocompleteValue(dom.val().toLowerCase(),obj.innerHTML,obj);
+            content = (obj.textContent===undefined) ? obj.innerText : obj.textContent;
+            //content = obj.innerHTML;
+			//self.checkAutocompleteValue(dom.val().toLowerCase(),content,obj);
+            show = self.checkAutocompleteValue(needles,content.replace( /,/,' ').toLowerCase(),obj);
+            $(obj).toggleClass('visible',show);
+
 		});
 		autocomplete.addClass('active');
 	};
@@ -1601,13 +1609,34 @@ View Mode Buttons
 		//$(dom).previous('.joe-text-field').val($(dom).html());
 	};
 
-	this.checkAutocompleteValue = function(needle,haystack,dom){
+	this.checkAutocompleteValue = function(needles,haystack,dom,additive){
 		var d = $(dom);
-		if(haystack.toLowerCase().indexOf(needle) != -1 || !needle){
+        //var needles = needle.replace( /,/,' ').split(' ');
+        if(!needles.length){
+            return true;
+            //d.addClass('visible');
+        }
+        for(var n = 0, tot = needles.length; n<tot; n++){
+          if(haystack.indexOf(needles[n]) == -1){//needle not in haystack
+            return false;
+          }
+            //d.removeClass('visible');
+        }
+        return true;
+        //d.addClass('visible');
+/*        var overlap = needles.filter(function(n) {
+            return haystacks.indexOf(n) != -1
+        });
+        if(overlap.length || !needle){
+            d.addClass('visible');
+        }else{
+            d.removeClass('visible');
+        }*/
+       /* if(haystack.toLowerCase().indexOf(needle) != -1 || !needle){
 			d.addClass('visible');
 		}else{
 			d.removeClass('visible');
-		}
+		}*/
 	};
 
 
@@ -2415,7 +2444,7 @@ this.renderSorterField = function(prop){
             value = (value != null)?[value]:[];
         }
         var idprop =prop.idprop || self.getIDProp();
-        var template = "<div>${name}</div><span class='subtext'>${"+idprop+"}</span>";//prop.template ||
+        var template = prop.autocomplete_template || "<div>${name}</div><span class='subtext'>${"+idprop+"}</span>";//prop.template ||
         //var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];
         var html = "Object Reference";
         var specs = $.extend(
@@ -2448,7 +2477,8 @@ this.renderSorterField = function(prop){
     };
 
     this.addObjectReferenceHandler = function(btn){
-        var id = $(btn).siblings('input').val()
+        var id = $(btn).siblings('input').val();
+        $(btn).siblings('input').val('');
         var field = $(btn).data().fieldname;
         $('.joe-object-references-holder[data-field='+field+']').append(self.createObjectReferenceItem(null,id,field));
 

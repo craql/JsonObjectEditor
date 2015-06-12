@@ -125,11 +125,12 @@ Properties for all Fields
     - max: integer, number or items that can be added. use zero for infinite.
     - hideHeadings: don't show table headings
 - `objectReference` : a list of object ids
-    -template
-    -idprop
-    -values
-    -max(0 unlimited)
-    -sortable(true)
+    - template
+    - autocomplete_template
+    - idprop
+    - values
+    - max(0 unlimited)
+    - sortable(true)
 - `code` :
 
 - `preview` :
