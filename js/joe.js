@@ -1335,7 +1335,7 @@ View Mode Buttons
           /*else if(goto === true){
               action = 'goJoe(getNPCDataItem(${_id},"element"),schema:"element");'
           }*/
-        return '<div class="joe-button inline view-button" onclick="'+action+'" >view</div>';
+        return '<div class="joe-button inline joe-view-button joe-iconed-button" onclick="'+action+'" title="view '+goto+'">view</div>';
       }else{
         return '';
       }
@@ -1458,6 +1458,10 @@ View Mode Buttons
 
             case 'group':
                 html+= self.renderCheckboxGroupField(prop);
+                break;
+
+            case 'preview':
+                html+= self.renderPreviewField(prop);
                 break;
 			default:
 				html+= self.renderTextField(prop);
@@ -2209,7 +2213,7 @@ this.renderSorterField = function(prop){
 
         if(!max || !prop.value || (prop.value.length < max)){
             var addaction = 'onclick="getJoe('+self.joe_index+').addObjectListItem(\''+prop.name+'\')"';
-            html+='<div><div class="joe-button" '+addaction+'> Add Another</div>'+__clearDiv__+'</div>'
+            html+='<div><div class="joe-button joe-iconed-button joe-plus-button" '+addaction+'> Add Another</div>'+__clearDiv__+'</div>'
         }
         return html;
     };
@@ -2257,7 +2261,9 @@ this.renderSorterField = function(prop){
     this.renderObjectListObject = function(object,objectListProperties,index){
         var properties = objectListProperties || self.objectlistdefaultproperties;
         var prop,property;
-        var html = "<tr class='joe-object-list-row' data-index='"+index+"'><td class='joe-objectlist-object-row-handle'>|||</td>";
+        //var html = "<tr class='joe-object-list-row' data-index='"+index+"'><td class='joe-objectlist-object-row-handle'>|||</td>";
+        var html = "<tr class='joe-object-list-row' data-index='"+index+"'><td><div class='joe-panel-button joe-objectlist-object-row-handle' "+delaction+">|||</div></td>";
+
 
         function renderTextInput(prop){
             var html = '<input type="text" class="joe-objectlist-object-input" style="width:auto;" value="'+prop.value+'"/>';
@@ -2476,10 +2482,43 @@ this.renderSorterField = function(prop){
 
     };
 
+/*----------------------------->
+ V | Preview Field
+ <-----------------------------*/
+    this.renderPreviewField = function(prop){
+        //var locked = self.propAsFuncOrValue(prop.locked)?' disabled ':'';
+        //var profile = self.current.profile;
+        var height = prop.height || '600px';
+        var url = self.propAsFuncOrValue(prop.url) || joe_web_dir+'joe-preview.html';
+        var construct = _joe.constructObjectFromFields();
+        obj = (construct[self.getIDProp()] && construct) || self.current.object;
+        var content= self.propAsFuncOrValue(prop.content,obj) || '';
+        var bodycontent= self.propAsFuncOrValue(prop.bodycontent,obj) || '';
+        var previewid = obj[self.getIDProp()] +'_'+prop.name;
+        /*if(content) {
+            url += '?c=' + ((prop.encoded && content) || encodeURIComponent(content));
+        }else if(bodycontent){
+            url+='?bc='+((prop.encoded && content) || encodeURIComponent(bodycontent));
+        }
+*/
+        window.__PreviewTest= function(){
+            alert('test alert');
+        };
+        window.__previews = window.__previews || {};
+        window.__previews[previewid] = {content:content,bodycontent:bodycontent};
+        url+='?pid='+previewid;
+        var html=
+            '<div class="joe-button joe-reload-button joe-iconed-button" onclick="getJoe('+self.joe_index+').rerenderField(\''+prop.name+'\');">Reload</div>'+
+            '<iframe class="joe-preview-field joe-field joe-preview-iframe" width="100%" height="'+height+'" name="'+prop.name+'" ' +
+            'src="'+url+'"></iframe>'
+            //+ '<a href="'+url+'" target="_blank"> view fullscreen preview</a><p>' + url.length + ' chars</p>';
+            + '<div class="joe-button joe-iconed-button joe-view-button" onclick="window.open(\''+url+'\',\'joe-preview-'+previewid+'\').joeparent = window;"> view fullscreen preview <p class="joe-subtext">' + url.length + ' chars</p></div>';
+        return html;
+    };
     function _getField(fieldname){
         var fieldobj;
         for(var f = 0,tot= self.current.fields.length; f<tot; f++){
-            fieldobj = self.current.fields[f]
+            fieldobj = self.current.fields[f];
             if(fieldobj.name == fieldname){
                 return fieldobj;
             }

@@ -132,6 +132,11 @@ Properties for all Fields
     -sortable(true)
 - `code` :
 
+- `preview` :
+	-content: string or function(current joe object) to replace everything on page (template).
+	-bodycontent: same as content, only replaces body content.
+	-url: preview page if not the default one.
+	- encoded: boolean, if pre uriencoded
 **labels:**
 
 - pass an object instead of a string to the fields array.

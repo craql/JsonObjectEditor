@@ -4,11 +4,29 @@
     <meta charset="UTF-8">
     <title></title>
     <script type="text/javascript" src="js/libs/jquery-1.11.2.min.js"></script>
-    <script type="text/javascript" src="js/libs/craydent-1.7.36.js"></script>
+    <script type="text/javascript" src="js/libs/craydent-1.7.37.js"></script>
     <script>
+        var parent = window.joeparent || window.opener || window.parent;
         $(document).ready(function(){
-            var content = $GET('content') || '<h1>Joe Preview</h1><p>No content selected.</p>';
-            $('body').html(decodeURIComponent(content));
+            var content = $GET('c') || $GET('content');// || '<h1>Joe Preview</h1><p>No content selected.</p>';
+            var bodyContent = $GET('bc') || $GET('bodycontent');// || '<h1>Joe Preview</h1><p>No content selected.</p>';
+            var previewID =  $GET('pid');
+            if(previewID){
+                //parent.__PreviewTest();
+                var preview = parent.__previews[previewID] || {};
+                bodyContent = preview.bodycontent || bodyContent;
+                content = preview.content || content;
+
+            }
+            if(bodyContent){
+                $('body').html(decodeURIComponent(bodyContent));
+            }
+            else if(content){
+                document.getElementsByTagName('html')[0].innerHTML = decodeURIComponent(content);
+            }else{
+
+                $('body').html(decodeURIComponent( '<h1>Joe Preview</h1><p>No content selected.</p>'));
+            }
         });
     </script>
 </head>
