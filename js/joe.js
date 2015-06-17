@@ -475,9 +475,9 @@ function JsonObjectEditor(specs){
 		'<div class="joe-panel-header">'+
 			((specs.schema && specs.schema.subsets && self.renderSubsetselector(specs.schema)) || (specs.subsets && self.renderSubsetselector(specs)) || '')+
 			renderHeaderBackButton()+
-			'<div class="joe-panel-title">'+
+			'<div class="joe-vcenter joe-panel-title-holder"><span class="joe-panel-title">'+
 				(('<div>'+title+'</div>').toDomElement().innerText || title || 'Json Object Editor')+
-			'</div>'+
+			'</span></div>'+
         //'<div class="joe-panel-reload joe-panel-header-button" title="reload" '+reload_action+'></div>'+
         '<div class="jif-panel-header-button joe-panel-reload" title="reload" '+reload_action+'><span class="jif-reload"></span></div>'+
         '<div class="jif-panel-header-button joe-panel-close" title="close" '+close_action+'>' +//joe-panel-close
@@ -1295,7 +1295,7 @@ View Mode Buttons
 
 		html+=
 			'<div class="joe-object-field '+hidden+' '+required+' '+prop.type+'-field " data-type="'+prop.type+'" data-name="'+prop.name+'">'+
-			'<label class="joe-field-label">'
+			'<label class="joe-field-label">'+(required && '*' ||'')
                 +fillTemplate((prop.display||prop.label||prop.name),self.current.object)
 				+self.renderFieldTooltip(prop)
             +'</label>';
@@ -1949,7 +1949,7 @@ this.renderSorterField = function(prop){
             //var img = $(dom).next('.joe-image-field-image');
             var img = $(dom).parent().find('.joe-image-field-image');
             self.updateImageSize(img);
-            //img.attr('src', src);
+            img.attr('src', src);
      //   }
 	};
 

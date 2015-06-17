@@ -96,6 +96,11 @@
     bottom:0;
 }
 
+.joe-vcenter{
+    display: flex;
+    align-items: center;
+}
+
 /*-------------------------
 	BG Color transition
 -------------------------*/
@@ -407,14 +412,18 @@
     background-position: -210px -11px;
 }
 
+.joe-panel-title-holder{
+    padding-right: 80px;
+    height:40px;
+}
 .joe-panel-title{
     font-weight: bold;
     padding: 5px;
     color: #007ac2;
     line-height:30px;
-    padding-right: 80px;
+
     overflow:hidden;
-    height:34px;
+
 }
 
 .joe-header-back-btn{
@@ -931,7 +940,9 @@ input.joe-boolean-field {
     background: #eee;
     border-bottom: 1px solid #fff;
 }
-
+.joe-field-item.btn-right{  padding-right:50px;  }
+.joe-field-item.btn-left{  padding-left:50px;  }
+.joe-field-item.btn-both{  padding-left:50px; padding-right:50px;  }
 
 .joe-object-references-holder {
     padding: 10px 0;
@@ -1628,15 +1639,18 @@ button.Zebra_DatePicker_Icon_Inside         { margin: 0 3px 0 0 }
 screen and (max-height:400px) and (orientation:landscape){
     .joe-panel-title{
         line-height: 19px;
-        font-size: 16px;
+        font-size: 14px;
         padding: 0;
-        padding-right: 82px;
-        height:40px;
+        padding-left: 4px;
+/*        height:40px;*/
     }
     .joe-overlay-panel {
         margin: 0px;
     }
 
+    .joe-subset-selector{
+        display:none;
+    }
     .joe-iconed-button {
         width: 40px;
         padding: 0;
