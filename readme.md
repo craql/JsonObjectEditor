@@ -182,6 +182,7 @@ a list of schema objects that can configure the editor fields, these can be give
 			alert(obj.name);
 		},*/
 		onblur:logit,
+		hideNumbers:boolean *toggle list numbers*
 		multipleCallback:function to be called after a multi-edit. passed list of edited items.
 		onUpdate: callback for after update. passed single edited items.
 		onMultipleUpdate:callback for after multi update.passed list of edited items.

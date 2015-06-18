@@ -1319,7 +1319,7 @@ View Mode Buttons
 		return html;
 	};
 
-    this.renderGotoLink = function(prop){
+    this.renderGotoLink = function(prop,style){
         var goto = self.propAsFuncOrValue(prop.goto);
       if(goto){
           var action='';
@@ -1335,7 +1335,15 @@ View Mode Buttons
           /*else if(goto === true){
               action = 'goJoe(getNPCDataItem(${_id},"element"),schema:"element");'
           }*/
-        return '<div class="joe-button inline joe-view-button joe-iconed-button" onclick="'+action+'" title="view '+goto+'">view</div>';
+          var btnHtml = '';
+          switch(style||prop.type){
+              case 'select':
+                  btnHtml+=
+                  '<div class="joe-button inline joe-view-button joe-iconed-button" onclick="' +
+                    action + '" title="view '+goto+ '">view</div>';
+              break;
+          }
+          return btnHtml;
       }else{
         return '';
       }
@@ -2443,6 +2451,7 @@ this.renderSorterField = function(prop){
         if($.type(value) != 'array'){
             value = (value != null)?[value]:[];
         }
+        var disabled = _disableField(prop);
         var idprop =prop.idprop || self.getIDProp();
         var template = prop.autocomplete_template || "<div>${name}</div><span class='subtext'>${"+idprop+"}</span>";//prop.template ||
         //var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];
@@ -2459,12 +2468,16 @@ this.renderSorterField = function(prop){
         ); //,{onblur:'_joe.showMessage($(this).val());'})
         var sortable = true;
         if(prop.hasOwnProperty('sortable')){sortable = prop.sortable;}
-        var html= '<div class="joe-tags-container">'
-            +self.renderTextField(specs)
-            +'<div class="joe-text-input-button " data-fieldname="'+prop.name+'"' +
-                'onclick="getJoe('+self.joe_index+').addObjectReferenceHandler(this);">link</div>'
-            +'</div>'
-            +'<div class ="joe-object-references-holder '+(sortable&&'sortable'||'')+'" data-field="'+prop.name+'">';
+        var html= '';
+        if(!disabled){
+            html+=
+                '<div class="joe-references-container">'
+                +self.renderTextField(specs)
+                +'<div class="joe-text-input-button " data-fieldname="'+prop.name+'"' +
+                'onclick="getJoe('+self.joe_index+').addObjectReferenceHandler(this);">add</div>'
+                + '</div>'
+        }
+            html+='<div class ="joe-object-references-holder '+disabled+(sortable && !disabled && 'sortable'||'')+'" data-field="'+prop.name+'">';
 
         //html+= fillTemplate(template,values);
        // html += self.createObjectReferenceItem(null,value,prop.name);
@@ -2619,7 +2632,7 @@ this.renderSorterField = function(prop){
             return fillTemplate(quicktitle,listItem);
         }
         var numberHTML = '';
-        if(index){
+        if(index && !listSchema.hideNumbers){
             numberHTML = index;
         }
         if(!listSchema._listTemplate){
@@ -2632,7 +2645,7 @@ this.renderSorterField = function(prop){
 
                 +'<div class="joe-panel-content-option-bg" '+bgHTML+'></div>'
                 +'<div class="joe-panel-content-option-stripe" '+stripeHTML+'></div>'
-                +'<div class="joe-panel-content-option-number" >'+numberHTML+'</div>'
+                +(numberHTML && '<div class="joe-panel-content-option-number" >'+numberHTML+'</div>' || numberHTML)
                     +listItemIcon
                 +listItemButtons
                 +fillTemplate(title,listItem)

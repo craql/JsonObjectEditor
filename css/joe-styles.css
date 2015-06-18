@@ -940,9 +940,19 @@ input.joe-boolean-field {
     background: #eee;
     border-bottom: 1px solid #fff;
 }
-.joe-field-item.btn-right{  padding-right:50px;  }
-.joe-field-item.btn-left{  padding-left:50px;  }
-.joe-field-item.btn-both{  padding-left:50px; padding-right:50px;  }
+
+
+.joe-references-container{
+    display: inline-block;
+    position: relative;
+}
+.joe-references-container .joe-text-field.skip-prop {
+    width: 90%;
+}
+
+.joe-references-container {
+    min-width: 50%;
+}
 
 .joe-object-references-holder {
     padding: 10px 0;
@@ -951,6 +961,12 @@ input.joe-boolean-field {
     padding:5px 50px;
 }
 
+.joe-object-references-holder.disabled .joe-field-item .joe-delete-button{
+    display:none;
+}
+.joe-object-references-holder.disabled .joe-field-item{
+    padding-left:5px;
+}
 
 .joe-field-item-delete-button {
     position: absolute;
@@ -962,6 +978,9 @@ input.joe-boolean-field {
     background-position:center center;
     background-repeat: no-repeat;
 }
+.joe-field-item.btn-right{  padding-right:50px;  }
+.joe-field-item.btn-left{  padding-left:50px;  }
+.joe-field-item.btn-both{  padding-left:50px; padding-right:50px;  }
 /*-------------------------
 	Section
 -------------------------*/
@@ -1099,6 +1118,7 @@ display:none;
     background-color: #ddd;
     float: right;
     margin: 10px 0;
+    line-height: 24px;
 }
 .joe-object-field .joe-button:hover{
     background-color:#ccc;
