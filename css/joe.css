@@ -835,6 +835,18 @@
     line-height: 35px;
     padding: 5px;
 }
+
+.joe-initials{
+    /* padding: 4px; */
+    font-size: 12px;
+    margin: 2px 5px 2px 0;
+    border: 1px solid #aaa;
+    width: 20px;
+    overflow: hidden;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+}
 /*-------------------------
 	UI Overlays
 -------------------------*/
@@ -1571,8 +1583,10 @@ display:none;
     background-image: url("../img/white-arrow-down.png");
     background-position:3px center;
     background-repeat: no-repeat;
-    padding: 10px 10px 10px 30px;
-    margin: 15px 0 15px 0px;
+/*    padding: 10px 10px 10px 30px;
+    margin: 15px 0 15px 0px;*/
+    padding: 5px 10px 5px 30px;
+    margin: 15px 0 10px 0px;
     font-weight: bold;
     clear: both;
     font-size: 1.1em;
@@ -1690,6 +1704,9 @@ display:none;
     float: right;
     margin: 10px 0;
     line-height: 24px;
+}
+.joe-button.multiline {
+    line-height: 16px;
 }
 .joe-object-field .joe-button:hover{
     background-color:#ccc;

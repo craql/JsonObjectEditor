@@ -2549,7 +2549,7 @@ this.renderSorterField = function(prop){
             '<iframe class="joe-preview-field joe-field joe-preview-iframe" width="100%" height="'+height+'" name="'+prop.name+'" ' +
             'src="'+url+'"></iframe>'
             //+ '<a href="'+url+'" target="_blank"> view fullscreen preview</a><p>' + url.length + ' chars</p>';
-            + '<div class="joe-button joe-iconed-button joe-view-button" onclick="window.open(\''+url+'\',\'joe-preview-'+previewid+'\').joeparent = window;"> view fullscreen preview <p class="joe-subtext">' + url.length + ' chars</p></div>';
+            + '<div class="joe-button joe-iconed-button joe-view-button multiline" onclick="window.open(\''+url+'\',\'joe-preview-'+previewid+'\').joeparent = window;"> view fullscreen preview <p class="joe-subtext">' + url.length + ' chars</p></div>';
         return html;
     };
     function _getField(fieldname){
@@ -2654,9 +2654,12 @@ this.renderSorterField = function(prop){
 
 
         function renderIcon(icon,listItem){
-            var iconURL = fillTemplate(icon,listItem);
+            var url = icon.url || icon;
+            var width = (icon.width)?' width:'+icon.width+'; ':'';
+            var height = (icon.height)?' height:'+icon.height+'; ':'';
+            var iconURL = fillTemplate(url,listItem);
             var iconhtml = '<div style=" background-image:url(\''+iconURL+'\'); " class="joe-panel-content-option-icon trans-bgcol fleft"  >' +
-                '<img src="'+iconURL+'"/>' +
+                '<img style="'+width+height+'" src="'+iconURL+'"/>' +
                 '</div>';
             return iconhtml;
         }
@@ -4067,6 +4070,16 @@ function _bmResponse(benchmarker,message){
     logit(message +' in '+benchmarker.stop()+' secs');
 }
 
+function _renderUserCube(user,cssclass){
+    var css = cssclass||'fleft';
+    var u = user;
+    var html ='';
+    initials = u.name[0]+ (((u.name.indexOf(' ') > 0) && u.name[u.name.indexOf(' ')+1])||'');
+    html += '<div title="'+ u.name+'" class="joe-initials '+css+'">'+initials+' <span>'+ u.name+'</span></div>';
+
+    return html;
+
+}
 /*-------------------------------------------------------------------->
  CRAYDENT UPDATES
  <--------------------------------------------------------------------*/
