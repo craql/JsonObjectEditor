@@ -27,24 +27,27 @@ if(location && location.hostname){//fix for devices
             web_dir = location.protocol+'//'+location.hostname+"/"+projectName+"/";
             break;
 
-		case 'localhost':
-		case 'localhost:81':
-			if(location && location.port < 1000) {
-				web_dir = 'http://' + location.hostname + ':' + location.port + "/" + projectName + '/';
-			}
-			break;
-		case 'coreyh.esri.com':
-			web_dir = 'http://coreyh.esri.com:81/'+projectName+'/';
-		break;
+        case 'localhost':
+        case 'localhost:81':
+                if(location && location.port < 1000) {
+                        web_dir = 'http://' + location.hostname + ':' + location.port + "/" + projectName + '/';
+                }
+                break;
+        case 'coreyh.esri.com':
+                web_dir = 'http://coreyh.esri.com:81/'+projectName+'/';
+        break;
 
-		case 'cinadapc.esri.com':
+        case 'cinadapc.esri.com':
 
-			web_dir = 'http://cinadapc.esri.com/'+projectName+'/';
+                web_dir = 'http://cinadapc.esri.com/'+projectName+'/';
 
-		break;
-		case 'corey-bootcamp.esri.com':
-			web_dir = 'http://corey-bootcamp.esri.com/'+projectName+'/';
-		break;
+        break;
+        case 'corey-bootcamp.esri.com':
+                web_dir = 'http://corey-bootcamp.esri.com/'+projectName+'/';
+        break;
+        case '':
+            web_dir = "http://ec2-23-23-199-244.compute-1.amazonaws.com/JsonObjectEditor/";
+            break;
 	}
 }
 if(location && location.origin == 'file://'){
