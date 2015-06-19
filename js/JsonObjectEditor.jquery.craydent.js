@@ -1058,7 +1058,16 @@ View Mode Buttons
 			}); //end map
 
 		}
-		var html = '<div class="joe-object-content">'+fields+'<div class="clear"></div></div>';
+        function renderSideBar(side,content){
+            var side = side || 'right';
+            var expanded=(content && ' expanded ') ||'';
+            var html="<div class='joe-content-sidebar joe-absolute "+side+"-side "+expanded+"'>"+(content||'')+"</div>";
+            return html;
+        }
+		var html =
+            renderSideBar('left')
+                +'<div class="joe-object-content">'+fields+'<div class="clear"></div></div>'
+            +renderSideBar('right');
 		return html;
 	};
 

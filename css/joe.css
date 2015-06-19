@@ -1564,6 +1564,7 @@ input.joe-boolean-field {
 .joe-field-item.btn-right{  padding-right:50px;  }
 .joe-field-item.btn-left{  padding-left:50px;  }
 .joe-field-item.btn-both{  padding-left:50px; padding-right:50px;  }
+
 /*-------------------------
 	Section
 -------------------------*/
@@ -1614,6 +1615,29 @@ display:none;
 .joe-submenu-section:hover{
     background:rgba(0,0,0,.2);
 }
+
+/*-------------------------
+	SIDEBAR
+-------------------------*/
+.joe-content-sidebar {
+    width: 0;
+    z-index: 3;
+    background-color: #ddd;
+    /* position: absolute; */
+}
+.joe-content-sidebar.expanded{
+    width:300px;
+}
+.joe-content-sidebar.left-side {  right: auto;  }
+.joe-content-sidebar.right-side {  left: auto;  }
+
+.joe-object-content.right-sidebar {
+    margin-right: 300px;
+}
+.joe-object-content.left-sidebar {
+    margin-left: 300px;
+}
+
 /*-------------------------
 	Field Tooltip
 -------------------------*/
