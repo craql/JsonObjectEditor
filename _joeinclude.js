@@ -46,7 +46,7 @@ if(location && location.hostname){//fix for devices
                 web_dir = 'http://corey-bootcamp.esri.com/'+projectName+'/';
         break;
 	}
-} else if (location && location.hostname) {
+} else if (location && location.hostname === '') {
     web_dir = "http://ec2-23-23-199-244.compute-1.amazonaws.com/JsonObjectEditor/";
 }
 if(location && location.origin == 'file://'){
