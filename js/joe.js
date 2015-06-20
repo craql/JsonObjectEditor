@@ -877,13 +877,28 @@ View Mode Buttons
         }
         submenu=(self.current.submenu || renderSectionAnchors().count)?' with-submenu ':'';
         var scroll = 'onscroll="getJoe('+self.joe_index+').onListContentScroll(this);"';
+        var rightC = content.right||'';
+        var leftC = content.left||'';
+        var content_class='joe-panel-content joe-inset ' +submenu +(rightC && ' right-sidebar '||'')+(leftC && ' left-sidebar '||'');
 		var html =
-		'<div class="joe-panel-content joe-inset '+submenu+'" '+((listMode && scroll)||'')+'>'+
-			content+
-		'</div>';
+
+
+		'<div class="'+content_class+'" ' +((listMode && scroll)||'')+'>'
+        +(content.main||content)
+		+'</div>'
+        +self.renderSideBar('left',leftC,{css:submenu})
+        +self.renderSideBar('right',rightC,{css:submenu})
+            ;
 		return html;
 	};
-
+    this.renderSideBar = function(side,content,specs){
+        var side = side || 'right';
+        var expanded=(content && ' expanded ') ||'';
+        var specs = specs || {};
+        var addCss = specs.css || '';
+        var html="<div class='joe-content-sidebar joe-absolute "+side+"-side "+expanded+ addCss+"'>"+(content||'')+"</div>";
+        return html;
+    };
 	this.renderTextContent = function(specs){
 		specs = specs || {};
 		var text = specs.text || specs.object || '';
@@ -1028,10 +1043,12 @@ View Mode Buttons
      //OBJECT
  --*/
 	//TODO: Add configed listeneres via jquery not strings
+    var renderFieldTo;
 	this.renderObjectContent = function(specs){
+        renderFieldTo = 'main';
 		specs = specs || {};
 		var object = specs.object;
-		var fields = '';
+		var fields = {main:'',left:'',right:''};
 		var propObj;
 		var fieldProp;
         self.current.fields = [];
@@ -1051,30 +1068,23 @@ View Mode Buttons
 					{value:object[prop]}
 					);
 
-					fields += self.renderObjectField(propObj);
+					fields.main += self.renderObjectField(propObj);
 				}
 			}
 		}
 		else{
+            var fhtml;
 			(schemaFields||[]).map(function(prop){
 
-
-				fields += self.renderObjectPropFieldUI(prop,specs);
-
+                logit(renderFieldTo);
+                fhtml = self.renderObjectPropFieldUI(prop,specs);
+                fields[renderFieldTo]+=fhtml;
 			}); //end map
 
 		}
-        function renderSideBar(side,content){
-            var side = side || 'right';
-            var expanded=(content && ' expanded ') ||'';
-            var html="<div class='joe-content-sidebar joe-absolute "+side+"-side "+expanded+"'>"+(content||'')+"</div>";
-            return html;
-        }
-		var html =
-            renderSideBar('left')
-                +'<div class="joe-object-content">'+fields+'<div class="clear"></div></div>'
-            +renderSideBar('right');
-		return html;
+
+		var html ='<div class="joe-object-content">'+fields.main+'<div class="clear"></div></div>';
+		return fields;
 	};
 
 	this.rerenderField = function(fieldname){
@@ -1104,6 +1114,7 @@ View Mode Buttons
             if(self.constructObjectFromFields()[prop.extend] !== undefined){
                 fieldProp.value = self.constructObjectFromFields()[prop.extend]
             }
+            //renderFieldTo = propObj.sidebar_side || propObj.side || 'main';
             fields += self.renderObjectField(propObj);
         }else if($.type(prop) == "object"){
 
@@ -1116,9 +1127,17 @@ View Mode Buttons
 			}
             else if(prop.section_start){
                 fields += self.renderPropSectionStart(prop);
+                //renderFieldTo = prop.sidebar_side || prop.side || renderFieldTo;
             }
             else if(prop.section_end){
                 fields += self.renderPropSectionEnd(prop);
+                //renderFieldTo = 'main';
+            }else if(prop.sidebar_start){
+                //fields += self.renderPropSectionStart(prop);
+                renderFieldTo = prop.sidebar_side || prop.sidebar_start || 'main';
+            }
+            else if(prop.sidebar_end){
+                renderFieldTo = 'main';
             }
 
 		}
@@ -1241,7 +1260,7 @@ View Mode Buttons
         if(m.condition && !m.condition(self.current.object,m)){
             return '';
         };
-		display = m.label || m.name;
+		display = fillTemplate(self.propAsFuncOrValue(m.label || m.name),self.current.object);
 		action = fillTemplate(self.propAsFuncOrValue(m.action),self.current.object) || 'alert(\''+display+'\')';
 		html+= '<div class="joe-button joe-footer-button '+(m.css ||'')+'" onclick="'+action+'" data-btnid="'+m.name+'" title="'+ (m.title||'')+'">'+display+'</div>';
 		return html;
@@ -1287,6 +1306,8 @@ View Mode Buttons
 
         var html ='';
 
+    //propdside
+        var propdside = prop.sidebar_side||prop.side || renderFieldTo;
 	//add clear div if the previous fields are floated.
 		if(preProp){
 		//TODO:deal with 50,50,50,50 four way float
@@ -1297,9 +1318,9 @@ View Mode Buttons
 			}
 		}
 		if(prop.width){
-			html+='<div class="joe-field-container joe-fleft" style="width:'+prop.width+';">';
+			html+='<div class="joe-field-container joe-fleft" style="width:'+prop.width+';" data-side="'+propdside+'">';
 		}else{
-            html+='<div class="joe-field-container">';
+            html+='<div class="joe-field-container" data-side="'+propdside+'">';
         }
 
 		html+=
@@ -1623,6 +1644,7 @@ View Mode Buttons
         var value = ($(dom).data('value'));
 		$(dom).parent().prev('.joe-text-field').val(value);
 		$(dom).parent().removeClass('active');
+        $(dom).parent().siblings('.joe-reference-add-button').click();
 		//$(dom).previous('.joe-text-field').val($(dom).html());
 	};
 
@@ -2482,11 +2504,11 @@ this.renderSorterField = function(prop){
             html+=
                 '<div class="joe-references-container">'
                 +self.renderTextField(specs)
-                +'<div class="joe-text-input-button " data-fieldname="'+prop.name+'"' +
+                +'<div class="joe-text-input-button joe-reference-add-button" data-fieldname="'+prop.name+'"' +
                 'onclick="getJoe('+self.joe_index+').addObjectReferenceHandler(this);">add</div>'
                 + '</div>'
         }
-            html+='<div class ="joe-object-references-holder '+disabled+(sortable && !disabled && 'sortable'||'')+'" data-field="'+prop.name+'">';
+            html+=__clearDiv__+'<div class ="joe-object-references-holder '+disabled+(sortable && !disabled && 'sortable'||'')+'" data-field="'+prop.name+'">';
 
         //html+= fillTemplate(template,values);
        // html += self.createObjectReferenceItem(null,value,prop.name);
@@ -2500,6 +2522,7 @@ this.renderSorterField = function(prop){
 
     this.addObjectReferenceHandler = function(btn){
         var id = $(btn).siblings('input').val();
+        if(!id){return false;}
         $(btn).siblings('input').val('');
         var field = $(btn).data().fieldname;
         $('.joe-object-references-holder[data-field='+field+']').append(self.createObjectReferenceItem(null,id,field));
@@ -4048,8 +4071,15 @@ ANALYSIS, IMPORT AND MERGE
 	if(self.specs.autoInit){
 		self.init();
 	}
+    if(window){
+        window._jco = function(construct){
+            if(construct){return self.constructObjectFromFields();}
+            return self.current.object};
+    }
 	return this;
 }
+
+
 var __gotoJoeSection;
 var __clearDiv__ = '<div class="clear"></div>';
 

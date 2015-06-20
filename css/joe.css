@@ -1525,12 +1525,17 @@ input.joe-boolean-field {
 }
 
 
+/*-------------------------
+	OBJECTREFERENCE
+-------------------------*/
 .joe-references-container{
     display: inline-block;
     position: relative;
 }
 .joe-references-container .joe-text-field.skip-prop {
-    width: 90%;
+
+    padding-left: 30px !important;
+    background: url(../img/search.png) center left no-repeat;
 }
 
 .joe-references-container {
@@ -1623,7 +1628,12 @@ display:none;
     width: 0;
     z-index: 3;
     background-color: #ddd;
+    top: 52px;
+    bottom: 51px;
     /* position: absolute; */
+}
+.joe-content-sidebar.with-submenu {
+    top: 82px;
 }
 .joe-content-sidebar.expanded{
     width:300px;
@@ -1631,13 +1641,31 @@ display:none;
 .joe-content-sidebar.left-side {  right: auto;  }
 .joe-content-sidebar.right-side {  left: auto;  }
 
-.joe-object-content.right-sidebar {
+.joe-panel-content.right-sidebar {
     margin-right: 300px;
 }
-.joe-object-content.left-sidebar {
+.joe-panel-content.left-sidebar {
     margin-left: 300px;
 }
+/*content objects*/
+.joe-content-sidebar .joe-object-field {
+    background-color: #fff;
+    border-top: none;
+    /* margin-top: 20px; */
+    border-radius: 8px;
+    padding-bottom: 2px;
+    padding-top: 20px;
+}
 
+.joe-content-sidebar .joe-field-label {
+    /* left: 0px; */
+    top: 2px;
+    background-color: transparent;
+}
+.joe-content-sidebar .joe-reference-add-button {
+    right: 0;
+    left: auto;
+}
 /*-------------------------
 	Field Tooltip
 -------------------------*/
@@ -1690,9 +1718,11 @@ display:none;
 .joe-object-field input[type=text] {
     padding: 4px;
 /*    width: 300px;*/
-    min-width:300px;
+/*    min-width:300px;*/
+    min-width:240px;
     width:70%;
     font-size:14px;
+    border: 1px solid #ddd;
 }
 
 .joe-object-field input[type=text]:focus {
@@ -1726,7 +1756,8 @@ display:none;
     /*color: blue;*/
     background-color: #ddd;
     float: right;
-    margin: 10px 0;
+/*    margin: 10px 0;*/
+    margin:0;
     line-height: 24px;
 }
 .joe-button.multiline {
@@ -2039,11 +2070,12 @@ iframe.joe-preview-iframe {
 <-----------------------------*/
 .joe-text-input-button {
     position: absolute;
-    right: 0;
+ /*   right: 0;*/
     background: #ccc;
     top: 0;
     padding: 4px 5px;
     cursor: pointer;
+    left:70%;
 }
 
 /*----------------------------->
@@ -2065,7 +2097,7 @@ iframe.joe-preview-iframe {
     max-width: 200px !important;
     padding-left: 30px !important;
     background: url(../img/search.png) center left no-repeat;
-    border: 1px solid #ddd;
+
 }
 /*-------------------------
 	 Buckets
