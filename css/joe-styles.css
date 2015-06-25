@@ -1076,6 +1076,10 @@ display:none;
 .joe-panel-content.left-sidebar {
     margin-left: 300px;
 }
+/*sections */
+.joe-content-sidebar .joe-content-section {
+    background-color: #fff;
+}
 /*content objects*/
 .joe-content-sidebar .joe-object-field {
     background-color: #fff;

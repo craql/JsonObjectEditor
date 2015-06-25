@@ -180,6 +180,13 @@ function JsonObjectEditor(specs){
             }
         }
         self.readHashLink();
+        var respond_timeout;
+        self.respond();
+        $(window).on('resize',function(){
+            clearTimeout(respond_timeout);
+            respond_timeout = setTimeout(self.respond,500);
+            //self.respond
+        });
         initialized = true;
 	};
 
@@ -666,7 +673,7 @@ function JsonObjectEditor(specs){
     self.gotoSection =function(section,index){
         if (section){
             var i = index || self.joe_index;
-            $('.joe-overlay[data-joeindex='+i+']').find('.joe-content-section[data-section='+section+']').removeClass('collapsed')[0].scrollIntoView();
+            $('.joe-overlay[data-joeindex='+i+']').find('.joe-content-section[data-section=\''+section+'\']').removeClass('collapsed')[0].scrollIntoView();
         }
     };
 /*------------------>
@@ -896,7 +903,7 @@ View Mode Buttons
         var expanded=(content && ' expanded ') ||'';
         var specs = specs || {};
         var addCss = specs.css || '';
-        var html="<div class='joe-content-sidebar joe-absolute "+side+"-side "+expanded+ addCss+"'>"+(content||'')+"</div>";
+        var html="<div class='joe-content-sidebar joe-absolute "+side+"-side "+expanded+ addCss+"'>"+(content||'')+__clearDiv__+"</div>";
         return html;
     };
 	this.renderTextContent = function(specs){
@@ -1076,7 +1083,7 @@ View Mode Buttons
             var fhtml;
 			(schemaFields||[]).map(function(prop){
 
-                logit(renderFieldTo);
+                //logit(renderFieldTo);
                 fhtml = self.renderObjectPropFieldUI(prop,specs);
                 fields[renderFieldTo]+=fhtml;
 			}); //end map
@@ -1183,7 +1190,7 @@ View Mode Buttons
         if(!secname || !secID){
          return '';
         }
-        var collapsed = (prop.collapsed)?'collapsed':'';
+        var collapsed = (self.propAsFuncOrValue(prop.collapsed))?'collapsed':'';
         var toggle_action = "onclick='$(this).parent().toggleClass(\"collapsed\")'";
         var section_html = '<div class="joe-content-section '+show+' '+collapsed+'" data-section="'+secID+'">' +
             '<div class="joe-content-section-label" '+toggle_action+'>'+secname+'</div>'+
@@ -1198,7 +1205,7 @@ View Mode Buttons
         if(!secID || !(section && section.open)){
             return '';
         }
-        var section_html = '</div></div>';
+        var section_html = __clearDiv__+'</div></div>';
         section.open = false;
         return section_html;
     };
@@ -1323,10 +1330,12 @@ View Mode Buttons
             html+='<div class="joe-field-container" data-side="'+propdside+'">';
         }
 
+        var fieldlabel = self.propAsFuncOrValue(prop.display||prop.label||prop.name);
+
 		html+=
 			'<div class="joe-object-field '+hidden+' '+required+' '+prop.type+'-field " data-type="'+prop.type+'" data-name="'+prop.name+'">'+
 			'<label class="joe-field-label">'+(required && '*' ||'')
-                +fillTemplate((prop.display||prop.label||prop.name),self.current.object)
+                +fillTemplate(fieldlabel,self.current.object)
 				+self.renderFieldTooltip(prop)
             +'</label>';
         //render comment
@@ -4067,6 +4076,31 @@ ANALYSIS, IMPORT AND MERGE
     };
 
 /*<------------------------------------------------------------->*/
+
+/*-------------------------------------------------------------------->
+ J | RESPOND
+ <--------------------------------------------------------------------*/
+    self.respond = function(e){
+        var w = self.overlay.width();
+        var h = self.overlay.height();
+        var curPanel = self.panel[0];
+        logit(w);
+        var sizeClass='';
+        if(curPanel.className.indexOf('-size') == -1){
+            curPanel.className += ' large-size ';
+        }
+        if(w<600){
+            sizeClass='small-size';
+        }else{
+            sizeClass='large-size';
+        }
+
+        curPanel.className = curPanel.className.replace(/[a-z]*-size/,sizeClass);
+
+/*
+        logit(e);
+        logit($(window).height())*/
+    };
 
 	if(self.specs.autoInit){
 		self.init();
