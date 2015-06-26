@@ -83,7 +83,7 @@ onUpdate and onMultipleUpdate added to schema for callbacks to these functions/b
 Properties for all Fields
 
 - `label / display`: what the field should display as
-    *If the field type is boolean, label controls checkbox label
+    *If the field type is boolean, label controls checkbox/boolean label
 - `value`: default value if not one in object
 - `default`: default value for field || function(object)
 - `type`: what type of field should JOE show
@@ -132,7 +132,10 @@ Properties for all Fields
     - max(0 unlimited)
     - sortable(true)
 - `code` :
-
+	- language
+	
+- `boolean`:
+	- label:controls checkbox label
 - `preview` :
 	-content: string or function(current joe object) to replace everything on page (template).
 	-bodycontent: same as content, only replaces body content.

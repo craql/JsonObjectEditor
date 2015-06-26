@@ -26,6 +26,23 @@ if (!!window.Worker) {
 
 
 }
+
+var __joeFieldTypes = [
+    'text',
+    'select',
+    'code',
+    'rendering',
+    'date',
+    'boolean',
+    'geo',
+    'image',
+    'url',
+    'objectList',
+    'objectReference',
+    'group',
+    'content'
+];
+
 function JsonObjectEditor(specs){
 	var self = this;
     initialized = false;
@@ -1392,7 +1409,8 @@ View Mode Buttons
         var fieldname = $(dom).parents('.joe-object-field').data('name');
         var field = self.getField(fieldname);
         var idprop = prop.idprop || self.getIDProp(schema);
-        var values = self.propAsFuncOrValue(field.values);
+        //var values = self.propAsFuncOrValue(field.values);
+        var values = self.getFieldValues(field.values);
         var id = $(dom).siblings('.joe-field').val();
         var object = values.filter(function(v){
             return v[idprop] == id;
@@ -1741,7 +1759,8 @@ View Mode Buttons
 	this.renderSelectField = function(prop){
         var disabled = _disableField(prop);
         //(prop.hasOwnProperty(prop.locked) && self.propAsFuncOrValue(prop.locked) &&'disabled')||'';
-		var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values || [prop.value];
+		/*var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values || [prop.value];*/
+        var values = self.getFieldValues(prop.values);
 		var valObjs = [];
 		if($.type(values[0]) != 'object'){
 			values.map(function(v){
@@ -2016,7 +2035,8 @@ this.renderSorterField = function(prop){
 <-----------------------------*/
 	this.renderMultisorterField = function(prop){
 
-		var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];
+		//var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];
+        var values = self.getFieldValues(prop.values);
 		var valObjs = [];
 
 
@@ -2112,7 +2132,8 @@ this.renderSorterField = function(prop){
 	//TODO: progressively render bucket options.
 	this.renderBucketsField = function(prop){
 
-		var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];
+		/*var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];*/
+        var values = self.getFieldValues(prop.values);
 		var valObjs = [];
 
 
@@ -2396,7 +2417,8 @@ this.renderSorterField = function(prop){
  <-----------------------------*/
     this.renderCheckboxGroupField = function(prop){
         //var profile = self.current.profile;
-        var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];
+       /* var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];*/
+        var values = self.getFieldValues(prop.values);
         var html= '';
         var checked;
         var itemid;
@@ -2483,7 +2505,8 @@ this.renderSorterField = function(prop){
  U | Object Reference
  <-----------------------------*/
     this.renderObjectReferenceField = function(prop){
-        var values = self.propAsFuncOrValue(prop.values) || [];
+        //var values = self.propAsFuncOrValue(prop.values) || [];
+        var values = self.getFieldValues(prop.values);
         var value = self.current.object[prop.name] ||
             prop.value ||
             (!self.current.object.hasOwnProperty(prop.name) && prop.default) ||
@@ -2542,7 +2565,8 @@ this.renderSorterField = function(prop){
         if(!item) {
             logit('adding ' + id + ' from ' + fieldname);
             var field = _getField(fieldname);
-            var values = self.propAsFuncOrValue(field.values);
+            //var values = self.propAsFuncOrValue(field.values);
+            var values = self.getFieldValues(field.values);
             var idprop = field.idprop||'_id';
             var item;
  /*           values.filter(function(i){
@@ -3982,6 +4006,13 @@ ANALYSIS, IMPORT AND MERGE
             logit('JOE: error parsing propAsFunction: '+e);
             return '';
         }
+    };
+    this.getFieldValues = function(values){
+        var vals = self.propAsFuncOrValue(values) || [];
+        if(vals.isString()){
+            return self.getDataset(vals)||[];
+        }
+        return vals;
     };
 /*-------------------------------------------------------------------->
  I | Hashlink

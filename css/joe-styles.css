@@ -1059,6 +1059,8 @@ display:none;
     background-color: #ddd;
     top: 52px;
     bottom: 51px;
+    overflow:hidden;
+    overflow-y:auto;
     /* position: absolute; */
 }
 .joe-content-sidebar.with-submenu {
@@ -1098,6 +1100,13 @@ display:none;
 .joe-content-sidebar .joe-reference-add-button {
     right: 0;
     left: auto;
+}
+
+/*text fields*/
+.joe-content-sidebar .joe-object-field input[type=text] {
+
+    width: 240px;
+
 }
 /*-------------------------
 	Field Tooltip
@@ -1163,7 +1172,7 @@ display:none;
     border: 1px solid #007ac2;
     /* padding: 1px; */
     outline-offset: 0;
-    padding: 5px;
+    padding: 4px;
 }
 
 .joe-field-container.joe-fleft input[type=text] {
