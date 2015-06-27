@@ -106,6 +106,7 @@ Properties for all Fields
 - `select`: select list. 
 	- multiple(bool)
 	- values(array of objects, [{value:"",name/display:""]), can be a function
+		- disabled:boolean(func acceptable)
 	- idprop: string of prop name
 - `geo`: shows a map
 	- *takes a string array "[lat,lon]"*

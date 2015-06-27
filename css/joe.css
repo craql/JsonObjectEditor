@@ -1637,6 +1637,9 @@ display:none;
 .joe-content-sidebar.with-submenu {
     top: 82px;
 }
+.joe-panel-content.right-sidebar .joe-content-sidebar.right-side{
+    width:300px;
+}
 .joe-content-sidebar.expanded{
     width:300px;
 }
@@ -1657,7 +1660,7 @@ display:none;
 .joe-content-sidebar .joe-object-field {
     background-color: #fff;
     border-top: none;
-    /* margin-top: 20px; */
+    margin: 0px 5px 10px 5px;
     border-radius: 8px;
     padding-bottom: 2px;
     padding-top: 20px;
@@ -1665,7 +1668,7 @@ display:none;
 
 .joe-content-sidebar .joe-field-label {
     /* left: 0px; */
-    top: 2px;
+    top: -2px;
     background-color: transparent;
 }
 .joe-content-sidebar .joe-reference-add-button {
@@ -1678,6 +1681,10 @@ display:none;
 
     width: 240px;
 
+}
+/*select fields*/
+.joe-content-sidebar select.joe-select-field.joe-field {
+    width: 260px;
 }
 /*-------------------------
 	Field Tooltip
@@ -2062,6 +2069,10 @@ table.joe-objectlist-table {
     min-width: 90px;
     width: 98%;
     box-sizing: border-box;
+}
+
+.objectList-field .joe-button.joe-plus-button {
+    margin-top: 10px;
 }
 
 /*-------------------------

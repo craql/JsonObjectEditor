@@ -931,6 +931,13 @@ View Mode Buttons
 
 	};
 
+    this.toggleSidebar = function(side,hardset){
+        if(['right','left'].indexOf(side) == -1){
+            return false;
+        }
+        $('.joe-panel-content').toggleClass(side+'-sidebar',hardset)
+        $('.joe-content-sidebar.'+side+'-side').toggleClass('expanded',hardset)
+    }
 	this.renderHTMLContent = function(specs){
 		specs = specs || {};
 		var html = '<textarea class="joe-rendering-field">'+(specs.rendering || '')+'</textarea>';
@@ -1771,11 +1778,7 @@ View Mode Buttons
 			valObjs = values;
 		}
 
-	//bluraction
-//		var bluraction = 'onblur="'+self.getActionString('onblur',prop)+'"';
-/*
-		var disabled = (profile.lockedFields.indexOf(prop.name) != -1 || prop.locked)?
-			'disabled':'';*/
+
 
 		var selected;
 		var multiple =(prop.multiple)?' multiple ':'';
@@ -1784,8 +1787,7 @@ View Mode Buttons
 		if(!prop.size && !prop.multiple){
 			selectSize = 1;
 		}
-		var html=/*
-		'<label class="joe-field-label">'+(prop.display||prop.name)+'</label>'+*/
+		var html=
 		'<select '+disabled+' class="joe-select-field joe-field" name="'+prop.name+'" value="'+(prop.value || '')+'" size="'+selectSize+'"'+
 			self.renderFieldAttributes(prop)+
 			multiple+
@@ -1808,7 +1810,9 @@ View Mode Buttons
 				}else{
 					selected = (prop.value == val)?'selected':'';
 				}
-				html += '<option value="'+val+'" '+selected+'>'+optionVal+'</option>'
+				html += '<option value="'+val+'" '
+                    +selected
+                    +(self.propAsFuncOrValue(v.disabled)&&'disabled="disabled"'||'')+'>'+optionVal+'</option>';
 			});
 
 		html+='</select>';
@@ -4115,7 +4119,7 @@ ANALYSIS, IMPORT AND MERGE
         var w = self.overlay.width();
         var h = self.overlay.height();
         var curPanel = self.panel[0];
-        logit(w);
+        //logit(w);
         var sizeClass='';
         if(curPanel.className.indexOf('-size') == -1){
             curPanel.className += ' large-size ';
