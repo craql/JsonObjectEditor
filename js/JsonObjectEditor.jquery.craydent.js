@@ -611,6 +611,7 @@ function JsonObjectEditor(specs){
                 + ((subSpecs.filters && self.renderSubmenuFilters(subSpecs.filter)) || '')
                 + ((subSpecs.search && self.renderSubmenuSearch(subSpecs.search)) || '')
 
+
                 + '</div>'
                 + "<div class='joe-filters-holder'>"
                 + renderSubsetsDiv()
@@ -621,7 +622,7 @@ function JsonObjectEditor(specs){
             var submenu =
                 '<div class="joe-panel-submenu">'
                     + ((sectionAnchors.count && sectionAnchors.code) || '')
-
+                    + renderSidebarToggle('left')+ renderSidebarToggle('right')
                 + '</div>';/*
                 + "<div class='joe-filters-holder'>"
                // + renderSubsetsDiv()
@@ -645,6 +646,8 @@ function JsonObjectEditor(specs){
                 sh+='</div>';
             return sh;
         }
+
+
         function renderFiltersDiv(){
             var fh = '<div><h4>Filters</h4>';
             var filters = self.current.schema.filters;
@@ -897,7 +900,7 @@ View Mode Buttons
         var scroll = 'onscroll="getJoe('+self.joe_index+').onListContentScroll(this);"';
         var rightC = content.right||'';
         var leftC = content.left||'';
-        var content_class='joe-panel-content joe-inset ' +submenu +(rightC && ' right-sidebar '||'')+(leftC && ' left-sidebar '||'');
+        var content_class='joe-panel-content joe-inset ' +submenu;// +(rightC && ' right-sidebar '||'')+(leftC && ' left-sidebar '||'');
 		var html =
 
 
@@ -905,18 +908,36 @@ View Mode Buttons
         +(content.main||content)
 		+'</div>'
         +self.renderSideBar('left',leftC,{css:submenu})
-        +self.renderSideBar('right',rightC,{css:submenu})
-            ;
+        +self.renderSideBar('right',rightC,{css:submenu});
+        self.current.sidebars = {left:leftC,right:rightC};
 		return html;
 	};
+
     this.renderSideBar = function(side,content,specs){
         var side = side || 'right';
-        var expanded=(content && ' expanded ') ||'';
+        var expanded='';//(content && ' expanded ') ||'';
         var specs = specs || {};
         var addCss = specs.css || '';
         var html="<div class='joe-content-sidebar joe-absolute "+side+"-side "+expanded+ addCss+"'>"+(content||'')+__clearDiv__+"</div>";
         return html;
     };
+    this.toggleSidebar = function(side,hardset){
+        if(['right','left'].indexOf(side) == -1){
+            return false;
+        }
+        self.panel.toggleClass(side+'-sidebar',hardset);
+        /*        $('.joe-panel-content').toggleClass(side+'-sidebar',hardset)
+         $('.joe-content-sidebar.'+side+'-side').toggleClass('expanded',hardset)*/
+    }
+
+    function renderSidebarToggle(side){
+        var html='<div class="jif-panel-header-button joe-sidebar-toggle '+side+'-side" ' +
+            'title="toggle sidebar" onclick="getJoe('+self.joe_index+').toggleSidebar(\''+side+'\')">' +
+            '<span class="jif-reload"></span></div>';
+
+        return html;
+    }
+
 	this.renderTextContent = function(specs){
 		specs = specs || {};
 		var text = specs.text || specs.object || '';
@@ -925,14 +946,7 @@ View Mode Buttons
 
 	};
 
-    this.toggleSidebar = function(side,hardset){
-        if(['right','left'].indexOf(side) == -1){
-            return false;
-        }
-        $('.joe-panel-content').toggleClass(side+'-sidebar',hardset)
-        $('.joe-content-sidebar.'+side+'-side').toggleClass('expanded',hardset)
-    }
-	this.renderHTMLContent = function(specs){
+this.renderHTMLContent = function(specs){
 		specs = specs || {};
 		var html = '<textarea class="joe-rendering-field">'+(specs.rendering || '')+'</textarea>';
 		return html;
@@ -3286,6 +3300,7 @@ this.renderSorterField = function(prop){
             self.overlay.find('.joe-submenu-itemcount').html(currentListItems.length+' item'+((currentListItems.length != 1 &&'s') ||''));
 
         }
+        //multisorter
         try {
             self.overlay.find('.joe-multisorter-bin').sortable({connectWith: '.joe-multisorter-bin'});
             self.overlay.find('.joe-buckets-bin').sortable({
@@ -3306,6 +3321,8 @@ this.renderSorterField = function(prop){
         }catch(e){
             logit('Error creating sortables:\n'+e);
         }
+
+        //imagefield
 		self.overlay.find('input.joe-image-field').each(function(){_joe.updateImageFieldImage(this);});
         //object reference
         self.overlay.find('.joe-object-references-holder.sortable').sortable();
@@ -3326,6 +3343,12 @@ this.renderSorterField = function(prop){
             )
 
         });
+
+        //sidebars
+        if(self.current.sidebars){
+            self.panel.toggleClass('right-sidebar',self.current.sidebars.right != '');
+            self.panel.toggleClass('left-sidebar',self.current.sidebars.left != '');
+        }
 
         //go back to previous item
         if(goingBackFromID){
