@@ -195,7 +195,7 @@ function JsonObjectEditor(specs){
         self.respond();
         $(window).on('resize',function(){
             clearTimeout(respond_timeout);
-            respond_timeout = setTimeout(self.respond,500);
+            respond_timeout = setTimeout(self.respond,200);
             //self.respond
         });
         initialized = true;
@@ -931,9 +931,8 @@ View Mode Buttons
     }
 
     function renderSidebarToggle(side){
-        var html='<div class="jif-panel-header-button joe-sidebar-toggle '+side+'-side" ' +
-            'title="toggle sidebar" onclick="getJoe('+self.joe_index+').toggleSidebar(\''+side+'\')">' +
-            '<span class="jif-reload"></span></div>';
+        var html='<div class="jif-panel-submenu-button joe-sidebar-button joe-sidebar_'+side+'-button" ' +
+            'title="toggle sidebar" onclick="getJoe('+self.joe_index+').toggleSidebar(\''+side+'\')"></div>';
 
         return html;
     }
@@ -3346,6 +3345,8 @@ this.renderSorterField = function(prop){
 
         //sidebars
         if(self.current.sidebars){
+            self.panel.find('.joe-sidebar_left-button').toggleClass('active',self.current.sidebars.left != '');
+            self.panel.find('.joe-sidebar_right-button').toggleClass('active',self.current.sidebars.right != '');
             self.panel.toggleClass('right-sidebar',self.current.sidebars.right != '');
             self.panel.toggleClass('left-sidebar',self.current.sidebars.left != '');
         }

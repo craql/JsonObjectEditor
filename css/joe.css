@@ -797,6 +797,8 @@
 .joe-list_delete-button{background-image: url("../img/btns/list-remove.png");  }
 .joe-reload-button{background-image: url("../img/btns/reload.png");  }
 .joe-view-button{background-image: url("../img/btns/view.png");  }
+.joe-sidebar_right-button{background-image: url("../img/btns/sidebar-right.png");  }
+.joe-sidebar_left-button{background-image: url("../img/btns/sidebar-left.png");  }
 
 .joe-block-button {
     background-color: rgba(0,0,0,.1);
@@ -1641,6 +1643,11 @@ display:none;
 .joe-overlay-panel.left-sidebar .joe-content-sidebar.left-side{
     width:300px;
 }
+
+.joe-overlay-panel.right-sidebar.small-size .joe-content-sidebar.right-side,
+.joe-overlay-panel.left-sidebar.small-size .joe-content-sidebar.left-side{
+    width:100%;
+}
 /*.joe-content-sidebar.expanded{
     width:300px;
 }*/
@@ -1661,6 +1668,19 @@ display:none;
     padding-left: 50px;
 }
 
+.joe-sidebar-button{
+    top:0;
+    bottom:0;
+    position:absolute;
+    display:none;
+}
+.joe-sidebar-button.active{
+    display:block;
+}
+.jif-panel-submenu-button.joe-sidebar_right-button {  right: -5px; left: auto;  }
+.jif-panel-submenu-button.joe-sidebar_left-button {  left: -5px; right: auto;  }
+
+.joe-leftsidebar-toggle{background-image: url("../img/btns/sidebar-left.png");  }
 
 /*sections */
 .joe-content-sidebar .joe-content-section {
@@ -2341,13 +2361,7 @@ button.Zebra_DatePicker_Icon_Inside         { margin: 0 3px 0 0 }
 /* For phones and small tablets */
 @media only screen and (max-width: 600px),
 screen and (max-height:400px) and (orientation:landscape){
-    .joe-panel-title{
-        line-height: 19px;
-        font-size: 14px;
-        padding: 0;
-        padding-left: 4px;
-/*        height:40px;*/
-    }
+
     .joe-overlay-panel {
         margin: 0px;
     }
@@ -2375,6 +2389,17 @@ screen and (max-height:400px) and (orientation:landscape){
         min-width: 40px;
         text-align: center;
     }*/
+}
+
+/* = SMALL-SIZE
+----------------------------------------------------------------------------------------------------------------------*/
+.small-size .joe-panel-title{
+    line-height: 19px;
+    font-size: 14px;
+    padding: 0;
+    padding-left: 4px;
+    /*        height:40px;*/
+
 }/*! jQuery UI - v1.11.2 - 2014-10-16
 * http://jqueryui.com
 * Includes: core.css, accordion.css, autocomplete.css, button.css, datepicker.css, dialog.css, draggable.css, menu.css, progressbar.css, resizable.css, selectable.css, selectmenu.css, slider.css, sortable.css, spinner.css, tabs.css, tooltip.css, theme.css
