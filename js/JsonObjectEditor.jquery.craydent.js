@@ -4093,10 +4093,29 @@ ANALYSIS, IMPORT AND MERGE
                 if(!$.isEmptyObject(NPC.Data)) {
                     if(hashItemID ){
                         var collectionName = hashSchema.__collection || hashSchema.__schemaname;
-                        if(collectionName){
-                            var collectionItem = getNPCDataItem(hashItemID,collectionName);
-                            if(collectionItem){
-                                goJoe(collectionItem, {schema: hashSchema});
+                    //using standard id
+                        if(hashItemID.indexOf(':') == -1) {
+
+                            if (collectionName) {
+                                var collectionItem = getNPCDataItem(hashItemID, collectionName);
+                                if (collectionItem) {
+                                    goJoe(collectionItem, {schema: hashSchema});
+                                }else {//SHOW LIST, NO item
+                                    goJoe(dataset, {schema: hashSchema});
+                                }
+                            }
+                        }else{
+                            var key = hashItemID.split(':')[0];
+                            var value = hashItemID.split(':')[1];
+
+                            //var collectionName = hashSchema.__collection || hashSchema.__schemaname;
+                            if (collectionName) {
+                                var collectionItem = getNPCDataItem(value, collectionName,key);
+                                if (collectionItem) {
+                                    goJoe(collectionItem, {schema: hashSchema});
+                                }
+                            }else {//SHOW LIST, NO item
+                                goJoe(dataset, {schema: hashSchema});
                             }
                         }
                     }else {//SHOW LIST, NO item

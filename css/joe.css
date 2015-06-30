@@ -1535,13 +1535,17 @@ input.joe-boolean-field {
     position: relative;
 }
 .joe-references-container .joe-text-field.skip-prop {
-
+    min-width: 226px;
     padding-left: 30px !important;
     background: url(../img/search.png) center left no-repeat;
 }
 
 .joe-references-container {
-    min-width: 50%;
+    min-width: 100%;
+}
+
+.joe-text-input-button.joe-reference-add-button {
+    display: none;
 }
 
 .joe-object-references-holder {
@@ -1714,13 +1718,18 @@ display:none;
 
 /*text fields*/
 .joe-content-sidebar .joe-object-field input[type=text] {
-
-    width: 240px;
+    min-width: 260px !important;
+    /*width: 240px;*/
 
 }
 /*select fields*/
 .joe-content-sidebar select.joe-select-field.joe-field {
     width: 260px;
+}
+.joe-content-sidebar .select-field .joe-iconed-button {
+
+    display: block;
+    margin: 5px auto 0 auto;
 }
 /*-------------------------
 	Field Tooltip
@@ -1779,6 +1788,7 @@ display:none;
     width:70%;
     font-size:14px;
     border: 1px solid #ddd;
+    box-sizing:border-box;
 }
 
 .joe-object-field input[type=text]:focus {
