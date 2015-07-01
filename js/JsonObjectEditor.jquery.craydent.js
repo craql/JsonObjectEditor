@@ -1146,7 +1146,17 @@ this.renderHTMLContent = function(specs){
 				fieldProp.value = self.constructObjectFromFields()[prop]
 			}
 			fields += self.renderObjectField(propObj);
-		}else if(prop && prop.extend){
+		}else if($.type(prop) == "object" && prop.name) {
+            var fieldProp = $.extend({},prop || {});
+            //merge all the items
+            var propObj =extendField(prop.name);
+
+            if(self.constructObjectFromFields()[prop.name] !== undefined){
+
+                fieldProp.value = self.constructObjectFromFields()[prop.name]
+            }
+            fields += self.renderObjectField(propObj);
+        }else if(prop && prop.extend){
             var fieldProp = $.extend({},self.fields[prop.extend] || {},prop.specs||{});
             var propObj =extendField(prop.extend);
             if(self.constructObjectFromFields()[prop.extend] !== undefined){
