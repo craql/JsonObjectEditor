@@ -1564,6 +1564,9 @@ table.joe-objectlist-table {
 iframe.joe-preview-iframe {
     border: 1px solid #ccc;
 }
+.preview-field .joe-button.joe-reload-button {
+    margin-bottom: 10px;
+}
 /*----------------------------->
 	Text Input Button
 <-----------------------------*/
