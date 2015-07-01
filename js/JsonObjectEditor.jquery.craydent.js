@@ -1539,6 +1539,10 @@ this.renderHTMLContent = function(specs){
                 html+= self.renderCheckboxGroupField(prop);
                 break;
 
+            case 'upload':
+                html+= self.renderUploadField(prop);
+                break;
+
             case 'preview':
                 html+= self.renderPreviewField(prop);
                 break;
@@ -2511,9 +2515,30 @@ this.renderSorterField = function(prop){
 		return html;
 	};
 
+/*----------------------------->
+ U | Upload Group
+ <-----------------------------*/
+    this.renderUploadField = function(prop){
+        if(typeof AWS == 'undefined' ){
+            $('body').append(
+                '<script>function none(){return; }</script>' +
+                '<script type="text/javascript" src="https://sdk.amazonaws.com/js/aws-sdk-2.1.34.min.js"></script>'+
+                //'<script src="http://webapps-cdn.esri.com/CDN/jslibs/craydent-1.7.37.js"></script>'+
+                //'<script src="craydent-upload-1.1.0.js" type="text/javascript"></script>'+
+                '');
+        }
+        //var profile = self.current.profile;
+        /* var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];*/
+        var values = self.getFieldValues(prop.values);
+        var html= '<div class="joe-upload-dropzone">dropzone</div>';
+
+        var idprop = prop.idprop || '_id';
+        html+= __clearDiv__;
+        return html;
+    };
 
 /*----------------------------->
- U | Object Reference
+ V | Object Reference
  <-----------------------------*/
     this.renderObjectReferenceField = function(prop){
         //var values = self.propAsFuncOrValue(prop.values) || [];

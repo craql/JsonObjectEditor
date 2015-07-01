@@ -1006,6 +1006,16 @@ input.joe-boolean-field {
 .joe-field-item.btn-both{  padding-left:50px; padding-right:50px;  }
 
 /*-------------------------
+	UPLOADER
+-------------------------*/
+.joe-upload-dropzone{
+    padding:10px;
+    background:#eee;
+    height:200px;
+    border: 2px dashed #ccc;
+}
+
+/*-------------------------
 	Section
 -------------------------*/
 .joe-content-section{
@@ -1057,7 +1067,7 @@ display:none;
 }
 
 /*-------------------------
-	SIDEBAR
+	CONTENT-SIDEBAR
 -------------------------*/
 .joe-content-sidebar {
     width: 0;
@@ -1119,6 +1129,10 @@ display:none;
 .joe-content-sidebar .joe-content-section {
     background-color: #fff;
 }
+.joe-content-sidebar .joe-content-section-label {
+    margin-top: 0;
+}
+
 /*field container*/
 
 .joe-content-sidebar .joe-field-container {
@@ -1280,6 +1294,10 @@ display:none;
 }
 .joe-object-field input[type=text].joe-int-field {
     width: 100px;
+}
+
+.joe-object-field input[type=text].joe-guid-field {
+    width: 300px !important;
 }
 
 .joe-select-field {
