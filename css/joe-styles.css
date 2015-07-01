@@ -1008,13 +1008,22 @@ input.joe-boolean-field {
 /*-------------------------
 	UPLOADER
 -------------------------*/
-.joe-upload-dropzone{
+.joe-uploader-dropzone{
     padding:10px;
     background:#eee;
     height:200px;
     border: 2px dashed #ccc;
 }
 
+.joe-uploader-preview {
+    float: right;
+    max-width: 200px;
+    margin: 10px;
+}
+
+.joe-uploader-preview img{
+width:100%
+}
 /*-------------------------
 	Section
 -------------------------*/

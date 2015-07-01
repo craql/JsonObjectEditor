@@ -1545,8 +1545,8 @@ this.renderHTMLContent = function(specs){
                 html+= self.renderCheckboxGroupField(prop);
                 break;
 
-            case 'upload':
-                html+= self.renderUploadField(prop);
+            case 'uploader':
+                html+= self.renderUploaderField(prop);
                 break;
 
             case 'preview':
@@ -2522,27 +2522,85 @@ this.renderSorterField = function(prop){
 	};
 
 /*----------------------------->
- U | Upload Group
+ U | Uploader Group
  <-----------------------------*/
-    this.renderUploadField = function(prop){
+    this.uploaders = {};
+    this.renderUploaderField = function(prop){
+        var uploader_id = cuid();
         if(typeof AWS == 'undefined' ){
             $('body').append(
                 '<script>function none(){return; }</script>' +
                 '<script type="text/javascript" src="https://sdk.amazonaws.com/js/aws-sdk-2.1.34.min.js"></script>'+
                 //'<script src="http://webapps-cdn.esri.com/CDN/jslibs/craydent-1.7.37.js"></script>'+
-                //'<script src="craydent-upload-1.1.0.js" type="text/javascript"></script>'+
+                '<script src="'+joe_web_dir+'js/craydent-upload-1.1.0.js" type="text/javascript"></script>'+
                 '');
         }
         //var profile = self.current.profile;
         /* var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];*/
         var values = self.getFieldValues(prop.values);
-        var html= '<div class="joe-upload-dropzone">dropzone</div>';
-
-        var idprop = prop.idprop || '_id';
-        html+= __clearDiv__;
+        var html=
+            '<div class="joe-uploader" data-uploader_id="'+uploader_id+'">'+
+                '<div class="joe-uploader-preview"></div>'+
+                '<div class="joe-uploader-dropzone">drag files here to upload</div>'+
+                '<div class="joe-uploader-message">add a file</div>'+
+            '</div>';
+        //var idprop = prop.idprop || '_id';
+        //html+= __clearDiv__;
+        self.uploaders[uploader_id] = {prop:prop.name};
         return html;
     };
 
+    this.onUserUpload = function(file,base64){
+        var dom = $(this.dropZone).parent();
+
+        var joe_uploader = self.uploaders[dom.data('uploader_id')];
+        //var results = dom.find('.joe-uploader-message');
+        var guid = "" || cuid();
+        if (file) {
+           /* var bucket = new AWS.S3({
+                params:{
+                    Bucket:'patterns.esri.com/uploaded'
+                }
+            });*/
+            joe_uploader.message.html('Uploading '+file.name+' to s3');
+            joe_uploader.preview.html('<img src="'+base64+'">');
+           /* var params = {
+                Key:guid+""+file.name,
+                ContentType:file.type,
+                Body:file
+            };
+            bucket.upload(params, function (err, data) {
+                results.innerHTML = err ? 'ERROR!' : 'UPLOADED.';
+                logit(data);
+            });*/
+        } else {
+            results.innerHTML = 'Nothing to upload.';
+        }
+    };
+    this.readyUploaders = function(){
+        self.panel.find('.joe-uploader').each(function(){
+            var id = $(this).data('uploader_id');
+          //$(this).find('.joe-uploader-message').html('awaiting file');
+            var uploader = new Uploader({
+                target:$(this).find('.joe-uploader-dropzone')[0],
+                deferUpload:true,
+                onerror:function (data, status, response) {
+                    var message = data.message || data || "Server responded with error code: " + status;
+                    message = message.indexOf('bytes') != -1 ? 'file is too small, needs to be larger than 1MB' : message;
+                    alert(message);
+                    //objUpload['uploadFaces'].clear();
+                    logit(data);
+                    //$('divDropZone').innerHTML = data;
+                },
+                onafterfileready:self.onUserUpload
+            });
+            self.uploaders[id].ready = true;
+            self.uploaders[id].uploader = uploader;
+            self.uploaders[id].message = $(this).find('.joe-uploader-message').html('awaiting file');
+            self.uploaders[id].preview = $(this).find('.joe-uploader-preview');
+
+        });
+    };
 /*----------------------------->
  V | Object Reference
  <-----------------------------*/
@@ -3381,6 +3439,9 @@ this.renderSorterField = function(prop){
             self.panel.toggleClass('right-sidebar',self.current.sidebars.right != '');
             self.panel.toggleClass('left-sidebar',self.current.sidebars.left != '');
         }
+
+        //uploaders
+        self.readyUploaders();
 
         //go back to previous item
         if(goingBackFromID){
