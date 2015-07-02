@@ -1531,17 +1531,13 @@ input.joe-boolean-field {
 	OBJECTREFERENCE
 -------------------------*/
 .joe-references-container{
-    display: inline-block;
     position: relative;
 }
+
 .joe-references-container .joe-text-field.skip-prop {
     min-width: 226px;
     padding-left: 30px !important;
     background: url(../img/search.png) center left no-repeat;
-}
-
-.joe-references-container {
-    min-width: 100%;
 }
 
 .joe-text-input-button.joe-reference-add-button {
@@ -1705,6 +1701,12 @@ display:none;
 
 .joe-leftsidebar-toggle{background-image: url("../img/btns/sidebar-left.png");  }
 
+
+/*labels*/
+.joe-content-sidebar .joe-content-label {
+    margin-top: 0;
+}
+
 /*sections */
 .joe-content-sidebar .joe-content-section {
     background-color: #fff;
@@ -1804,14 +1806,15 @@ display:none;
     display:none;
 }
 .joe-object-field input[type=text] {
-    padding: 4px;
+    padding: 5px;
 /*    width: 300px;*/
 /*    min-width:300px;*/
     min-width:240px;
     width:70%;
-    font-size:14px;
+    font-size:16px;
     border: 1px solid #ddd;
     box-sizing:border-box;
+    letter-spacing: .5px;
 }
 
 .joe-object-field input[type=text]:focus {
@@ -1819,7 +1822,7 @@ display:none;
     border: 1px solid #007ac2;
     /* padding: 1px; */
     outline-offset: 0;
-    padding: 4px;
+    /*padding: 4px;*/
 }
 
 .joe-field-container.joe-fleft input[type=text] {
@@ -1877,7 +1880,7 @@ display:none;
 }
 
 .joe-object-field input[type=text].joe-guid-field {
-    width: 300px !important;
+    width: 330px !important;
 }
 
 .joe-select-field {

@@ -3537,11 +3537,26 @@ this.renderSorterField = function(prop){
 /*-------------------------------------------------------------------->
 	K | OBJECT
 <--------------------------------------------------------------------*/
-	this.createObject = function(specs){
+	this.createObject = function(specs,item_defaults){
 		//takes fields to be deleted
-		specs = specs || {};
-		goJoe({},{schema:self.current.schema});
+        //var schema = self.current.schema
+		specs = specs || {schema:self.current.schema};
+		goJoe($.extend({},(item_defaults||{})),specs);
 	};
+
+/*    /!*-------------------------------------------------------------------->
+     + | Add Items
+     <--------------------------------------------------------------------*!/
+    this.createItem = function(schema,defaults,title){
+        var specs = {type:schema,itemtype:schema};
+        var defaults = defaults||{};
+        var joespecs = {schema:schema};
+        if(title){
+            joespecs.title = title;
+        }
+        goJoe($.extend(specs,defaults),joespecs)
+    };*/
+
     function _defaultUpdateCallback(data){
         self.showMessage(data.name +' updated successfully');
     }
@@ -4250,6 +4265,8 @@ ANALYSIS, IMPORT AND MERGE
     };
 
 /*<------------------------------------------------------------->*/
+
+
 
 /*-------------------------------------------------------------------->
  J | RESPOND
