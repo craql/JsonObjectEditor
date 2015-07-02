@@ -21,6 +21,12 @@ if (!!window.Worker) {
 
 }
 
+$c.TEMPLATE_VARS.push(
+    {variable:'endtextarea',value:'</textarea>'},
+    {variable:'textarea',value:'<textarea>'}
+);
+
+
 var __joeFieldTypes = [
     'text',
     'select',
@@ -4345,7 +4351,7 @@ function _renderUserCube(user,cssclass){
 
 }
 /*-------------------------------------------------------------------->
- CRAYDENT UPDATES
+ Watch Polyfill
  <--------------------------------------------------------------------*/
 
 /*
@@ -4412,13 +4418,14 @@ CRAYDENT UPDATES
 
 //UNTIL VERBOSE IS REMOVED
 
+/*
 function logit(){
     try {
 
-/*      var location = "\t\t\t\t    " + (new Error()).stack.split('\n')[2];
+/!*      var location = "\t\t\t\t    " + (new Error()).stack.split('\n')[2];
         for (var i = 0, len = arguments.length; i < len; i++) {
             arguments[i] = arguments[i] + location;
-        }*/
+        }*!/
 
         cout.apply(this, arguments);
         //cout.apply(arguments[0])
@@ -4426,6 +4433,7 @@ function logit(){
         error('logit', e);
     }
 }
+*/
 
 
 //until sortBy is updated
