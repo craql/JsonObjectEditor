@@ -28,7 +28,7 @@ if (!!window.Worker) {
 }
 
 $c.TEMPLATE_VARS.push(
-    {variable:'endtextarea',value:'</textarea>'},
+    {variable:'/textarea',value:'</textarea>'},
     {variable:'textarea',value:'<textarea>'}
 );
 
@@ -3194,6 +3194,26 @@ this.renderSorterField = function(prop){
 /*-------------------------------------------------------------------->
   D | DATA
  <--------------------------------------------------------------------*/
+    self.search = function(id,specs){
+        var specs = specs || {};
+        var collections = specs.collections || '';
+        var properties = specs.props || specs.properties ||['_id','id','name'];
+        //var idprop = specs.idprop || '_id';
+      var haystack =[];
+        for(var d in self.Data){
+            haystack = haystack.concat(self.Data[d]);
+        }
+        var results;
+        if($.type(id) == "string"){
+            results = haystack.filter(function(r){
+
+                return r['_id'] == id;
+            })
+        }else if($.type(id) == "object"){
+            results = haystack.where(id);
+        }
+        return results;
+    };
     self.addDataset = function(name,values,specs){
         //idprop
         //concatenate
