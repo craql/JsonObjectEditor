@@ -415,9 +415,10 @@ function JsonObjectEditor(specs){
 		specs.listWindowTitle = (
             specs.list
             && (
-                specs._listMenuTitle || specs._listWindowTitle
-                || (specs.schema && (specs.schema._listMenuTitle || specs.schema._listWindowTitle))
-            )
+                specs._listMenuTitle || specs._listWindowTitle || getProperty('specs.list.windowTitle')
+                || (specs.schema &&
+                 specs.schema._listMenuTitle || specs.schema._listWindowTitle))
+
             );
         specs.title =(
 			title
@@ -2806,20 +2807,28 @@ this.renderSorterField = function(prop){
         if(bgColor){
             bgHTML = 'style="background-color:'+bgColor+';"';
         }
+        var listSchemaObjIndicator = 'listView';
+        var template = //getProperty('listSchema.'+listSchemaObjIndicator+'.template')
+            (listSchema.listView && listSchema.listView.template) || listSchema._listTemplate;
+        var title = //getProperty('listSchema.'+listSchemaObjIndicator+'.title')
+            (listSchema.listView && listSchema.listView.title) || listSchema._listTitle;
 
         if(quick){
-
-            var quicktitle = listSchema._listTemplate || listSchema._listTitle || '';
+            var quicktitle = template || title || '';
             return fillTemplate(quicktitle,listItem);
         }
         var numberHTML = '';
         if(index && !listSchema.hideNumbers){
             numberHTML = index;
         }
-        if(!listSchema._listTemplate){
-			var title = listSchema._listTitle || listItem.name || id || 'untitled';
+
+        if(!template){
+			var title = title || listItem.name || id || 'untitled';
             var listItemButtons = '';//<div class="joe-panel-content-option-button fleft">#</div><div class="joe-panel-content-option-button fright">#</div>';
-            var listItemIcon = (listSchema._icon && renderIcon(listSchema._icon,listItem)) || '';
+            var icon = //getProperty('listSchema.'+listSchemaObjIndicator+'.icon')
+                (listSchema.listView && listSchema.listView.icon)||listSchema.icon || listSchema._icon || '';
+
+            var listItemIcon = (icon && renderIcon(icon,listItem)) || '';
             //list item content
             title="<div class='joe-panel-content-option-content ' "+action+">"+title+"<div class='clear'></div></div>";
 			var html = '<div class="'+(self.allSelected && 'selected' ||'')+' joe-panel-content-option trans-bgcol '+((numberHTML && 'numbered') || '' )+' joe-no-select '+((stripeColor && 'striped')||'')+'"  data-id="'+id+'" >'
@@ -2836,7 +2845,7 @@ this.renderSorterField = function(prop){
 		else{
             var dup = $c.duplicate(listItem);
             dup.action = action;
-			html = fillTemplate(listSchema._listTemplate,dup);
+			html = fillTemplate(template,dup);
 		}
 
 
