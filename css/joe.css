@@ -1647,7 +1647,7 @@ display:none;
 -------------------------*/
 .joe-content-sidebar {
     width: 0;
-    z-index: 3;
+    z-index: 10;
     background-color: #ddd;
     top: 52px;
     bottom: 51px;
@@ -1745,6 +1745,7 @@ display:none;
 /*text fields*/
 .joe-content-sidebar .joe-object-field input[type=text] {
     min-width: 260px !important;
+    width:100%;
     /*width: 240px;*/
 
 }

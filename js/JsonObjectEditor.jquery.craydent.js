@@ -3413,6 +3413,7 @@ this.renderSorterField = function(prop){
 
 	var sortable_index;
 	this.onPanelShow = function(){
+        self.respond();
 		//init datepicker
 		self.overlay.find('.joe-date-field').Zebra_DatePicker({offset:[5,20],format:'m/d/Y',first_day_of_week:0});
 
