@@ -1140,7 +1140,7 @@ this.renderHTMLContent = function(specs){
 
 	this.rerenderField = function(fieldname){
 		var fields = self.renderObjectPropFieldUI(fieldname);
-		$('.joe-object-field[data-name='+fieldname+']').replaceWith(fields);
+		$('.joe-object-field[data-name='+fieldname+']').parent().replaceWith(fields);
 	};
 
 	self.renderObjectPropFieldUI = function(prop,specs){

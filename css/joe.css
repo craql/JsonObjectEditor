@@ -1653,6 +1653,7 @@ display:none;
     bottom: 51px;
     overflow:hidden;
     overflow-y:auto;
+    transition: .2s width;
     /* position: absolute; */
 }
 .joe-content-sidebar.with-submenu {
