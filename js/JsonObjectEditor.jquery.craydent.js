@@ -198,7 +198,7 @@ function JsonObjectEditor(specs){
         }
         self.readHashLink();
         var respond_timeout;
-        self.respond();
+        //self.respond();
         $(window).on('resize',function(){
             clearTimeout(respond_timeout);
             respond_timeout = setTimeout(self.respond,200);
@@ -411,7 +411,8 @@ function JsonObjectEditor(specs){
             && (
                 specs._listMenuTitle || specs._listWindowTitle || getProperty('specs.list.windowTitle')
                 || (specs.schema &&
-                 specs.schema._listMenuTitle || specs.schema._listWindowTitle))
+                    (specs.schema._listMenuTitle || specs.schema._listWindowTitle)
+                ))
 
             );
         specs.title =(
@@ -694,7 +695,19 @@ function JsonObjectEditor(specs){
     self.gotoSection =function(section,index){
         if (section){
             var i = index || self.joe_index;
-            $('.joe-overlay[data-joeindex='+i+']').find('.joe-content-section[data-section=\''+section+'\']').removeClass('collapsed')[0].scrollIntoView();
+            var sectionDom = $('.joe-overlay[data-joeindex='+i+']')
+                .find('.joe-content-section[data-section=\''+section+'\']');
+            sectionDom.removeClass('collapsed')[0].scrollIntoView();
+
+            var sidebar = sectionDom.parents('.joe-content-sidebar');
+            if(sidebar && sidebar.length){
+                var s = sidebar.data('side');
+                self.toggleSidebar(s,true);
+            }else if(self.sizeClass == "small-size"){
+                self.toggleSidebar('left',false);
+                self.toggleSidebar('right',false);
+            }
+
         }
     };
 /*------------------>
@@ -925,7 +938,7 @@ View Mode Buttons
         var expanded='';//(content && ' expanded ') ||'';
         var specs = specs || {};
         var addCss = specs.css || '';
-        var html="<div class='joe-content-sidebar joe-absolute "+side+"-side "+expanded+ addCss+"'>"+(content||'')+__clearDiv__+"</div>";
+        var html="<div class='joe-content-sidebar joe-absolute "+side+"-side "+expanded+ addCss+"' data-side='"+side+"'>"+(content||'')+__clearDiv__+"</div>";
         return html;
     };
     this.toggleSidebar = function(side,hardset){
@@ -3414,6 +3427,7 @@ this.renderSorterField = function(prop){
 	var sortable_index;
 	this.onPanelShow = function(){
         self.respond();
+
 		//init datepicker
 		self.overlay.find('.joe-date-field').Zebra_DatePicker({offset:[5,20],format:'m/d/Y',first_day_of_week:0});
 
@@ -3476,10 +3490,12 @@ this.renderSorterField = function(prop){
         if(self.current.sidebars){
             self.panel.find('.joe-sidebar_left-button').toggleClass('active',self.current.sidebars.left != '');
             self.panel.find('.joe-sidebar_right-button').toggleClass('active',self.current.sidebars.right != '');
-            self.panel.toggleClass('right-sidebar',self.current.sidebars.right != '');
+            if(self.sizeClass != 'small-size'){
+                self.panel.toggleClass('right-sidebar',self.current.sidebars.right != '');
+            }
             self.panel.toggleClass('left-sidebar',self.current.sidebars.left != '');
         }
-
+        //self.toggleSidebar('right',false);
         //uploaders
         self.readyUploaders();
 
@@ -4317,7 +4333,7 @@ ANALYSIS, IMPORT AND MERGE
         }
 
         curPanel.className = curPanel.className.replace(/[a-z]*-size/,sizeClass);
-
+        self.sizeClass = sizeClass;
 /*
         logit(e);
         logit($(window).height())*/
