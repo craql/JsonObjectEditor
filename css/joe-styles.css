@@ -1881,3 +1881,8 @@ screen and (max-height:400px) and (orientation:landscape){
     /*        height:40px;*/
 
 }
+
+.small-size .joe-object-field input[type=text] {
+    width: 100%;
+    /* width: 240px; */
+}

@@ -4348,11 +4348,11 @@ ANALYSIS, IMPORT AND MERGE
 	if(self.specs.autoInit){
 		self.init();
 	}
-    if(window){
+   // if(window){
         window._jco = function(construct){
             if(construct){return self.constructObjectFromFields();}
             return self.current.object};
-    }
+   // }
 	return this;
 }
 

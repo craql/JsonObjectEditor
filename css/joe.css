@@ -2451,6 +2451,11 @@ screen and (max-height:400px) and (orientation:landscape){
     padding-left: 4px;
     /*        height:40px;*/
 
+}
+
+.small-size .joe-object-field input[type=text] {
+    width: 100%;
+    /* width: 240px; */
 }/*! jQuery UI - v1.11.2 - 2014-10-16
 * http://jqueryui.com
 * Includes: core.css, accordion.css, autocomplete.css, button.css, datepicker.css, dialog.css, draggable.css, menu.css, progressbar.css, resizable.css, selectable.css, selectmenu.css, slider.css, sortable.css, spinner.css, tabs.css, tooltip.css, theme.css
