@@ -1074,7 +1074,7 @@ this.renderHTMLContent = function(specs){
                     &&(self.current.schema.table||self.current.schema.tableView)
                    // &&(self.current.schema.table||self.current.schema.tableView).cols
                 ) ||{});*/
-            html+='<table class="joe-item-table"><thead><th>&nbsp;</th>';
+            html+='<table class="joe-item-table" cellspacing="0"><thead><th>&nbsp;</th>';
             tableSpecs.cols.map(function(c){
                 if($c.isString(c)) {
                     html += '<th>' + c + '</th>';
@@ -1201,7 +1201,8 @@ this.renderHTMLContent = function(specs){
 		var schemaspec = specs || self.current.schema;
 		if($.type(prop) == "string") {
 			//var fieldProp = self.fields[prop] || {};
-			var fieldProp = $.extend({},self.fields[prop] || {});
+            var propObj = self.fields[prop] || self.current.fields.filter(function(f){return f.name ==prop;})[0]||{};
+			var fieldProp = $.extend({},propObj);
 			//merge all the items
 			var propObj =extendField();
 
@@ -2829,7 +2830,8 @@ this.renderSorterField = function(prop){
         var action = 'onclick="getJoe('+self.joe_index+').listItemClickHandler({dom:this,id:\''+id+'\'});"';
 
         var ghtml = '<tr class="joe-panel-content-option trans-bgcol" '+action+'>';
-        ghtml +='<td class="joe-table-checkbox"><label>'+index+'<input type="checkbox"></label></td>';
+        ghtml +='<td class="joe-table-checkbox">' +
+            '<label>'+index+(tableSpecs.multiselect&&'||')+'<input type="checkbox" /></label></td>';
         //ghtml +='<td>'+index+'</td>';
 
         tableSpecs.cols.map(function(c){

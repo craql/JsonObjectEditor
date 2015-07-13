@@ -533,10 +533,11 @@ table.joe-item-table {
 
 .joe-item-table td{
     padding:5px;
+    border-bottom:1px solid #eee;
 }
 
 tr.joe-panel-content-option{
-
+    height:40px;
 }
 tr.joe-panel-content-option:hover{
 background-color:#eee;
