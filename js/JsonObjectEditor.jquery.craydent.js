@@ -48,7 +48,7 @@ function JsonObjectEditor(specs){
     initialized = false;
 	var listMode = false;
     var gridMode = false;
-    var tableMode = false;
+    var tableMode = false,tableSpecs;
     var multiEdit = false;
 	this.VERSION = '1.0.1';
 	window._joes = window._joes || [];
@@ -72,7 +72,7 @@ function JsonObjectEditor(specs){
 		fields:{},
 		schemas:{
 			'rendering':	{
-				_title:'HTML Rendering',
+				title:'HTML Rendering',
 				callback:function(){alert('yo');}
 				//fields:['id','name','thingType','legs','species','weight','color','gender'],
 				//_listID:'id',
@@ -127,18 +127,25 @@ function JsonObjectEditor(specs){
             window.onkeydown = function (e) {
                 var code = e.keyCode
                 var nonBackElements = ['input','select','textarea'];
-                if (code == 8) {
-                    if(self.history.length) {
+                var isInputElement = nonBackElements.indexOf(e.target.tagName.toLowerCase()) != -1;
+                if (code == 8) {//BACKBUTTON PRESSED
+                    if(isInputElement){
+                        //return false;
+                    }
+                    else{
+                        self.goBack();
+                        return false;
+                    }
+
+                   /* if(self.history.length) {
+
                         //if in editor fields, don't go back
                         if (nonBackElements.indexOf(e.target.tagName.toLowerCase()) != -1) {
-                            //logit('t');
-                            //return false;
-                            if(e.target.className.indexOf('joe-submenu-search-field') != -1){
+                            /!*if(e.target.className.indexOf('joe-submenu-search-field') != -1){
                                 //self.goBack();
                                 //return false;
-                            }
-                        } else {
-                            //otherwise, go back.
+                            }*!/
+                        } else {//otherwise, go back.
                             self.goBack();
                             return false;
                         }
@@ -147,7 +154,9 @@ function JsonObjectEditor(specs){
                         if(!leavePage){
                             return false;
                         }
-                    }
+                    }*/
+
+
                 }else if([38,40,13,16,17].indexOf(code) == -1){//set focus for alphanumeric keys
                     if(!listMode)return;
                     var inSearchfield = false;
@@ -241,6 +250,7 @@ function JsonObjectEditor(specs){
 		self.current.userSpecs = $.extend({},setts);
         gridMode = (self.current.specs.viewMode == 'grid')?true:false;
         tableMode = (self.current.specs.viewMode == 'table')?true:false;
+
 
 	//update history 1/2
 		if(!self.current.specs.noHistory){
@@ -418,7 +428,7 @@ function JsonObjectEditor(specs){
         specs.title =(
 			title
 			|| specs.listWindowTitle
-			|| (specs.schema && specs.schema._title)  || "Viewing "+specs.mode.capitalize());
+			|| (specs.schema && (specs.schema.title||specs.schema._title))  || "Viewing "+specs.mode.capitalize());
 	//setup profile
 		specs.profile = (profile)?
 			(self.specs.profiles[profile]||self.specs.joeprofile):
@@ -429,6 +439,19 @@ function JsonObjectEditor(specs){
 
 	//cleanup variables
 		self.cleanUp();
+
+/*-------------------------------------------------------------------->
+ Set global view mode specs
+ <--------------------------------------------------------------------*/
+        if(self.current.schema &&(self.current.schema.table||self.current.schema.tableView)){
+            tableSpecs = $.extend({cols:['name',self.getIDProp()]},
+                (self.current.schema
+                    &&(self.current.schema.table||self.current.schema.tableView)
+                    // &&(self.current.schema.table||self.current.schema.tableView).cols
+                ) ||{});
+        }else{
+            tableSpecs = null;
+        }
     /*-------------------------------------------------------------------->
      Framework Rendering
      <--------------------------------------------------------------------*/
@@ -819,7 +842,13 @@ function JsonObjectEditor(specs){
                     return (testable.toLowerCase().indexOf(value) != -1);
                     //return (testable+' '+i[idprop].toLowerCase().indexOf(value) != -1);
                 }
-                    testable = self.renderListItem(i,true);
+                    if(tableMode){
+                        testable = self.renderTableItem(i,true);
+                    }else if(gridMode){
+                    //testable = self.renderListItem(i,true);
+                    }else{
+                        testable = self.renderListItem(i,true);
+                    }
                     //return (__removeTags(testable).toLowerCase().indexOf(value) != -1);
                     return ((__removeTags(testable)+id).toLowerCase().indexOf(value) != -1);
 
@@ -856,7 +885,7 @@ View Mode Buttons
     }
     this.renderViewModeButtons = function(subspecs){
         var gridspecs = self.current.schema && self.current.schema.grid;
-        var tablespecs = self.current.schema && self.current.schema.table;
+        var tablespecs = tableSpecs; //self.current.schema && (self.current.schema.table||self.current.schema.tableView);
 
         if(!gridspecs && !tablespecs){return '';}
         var modes = [
@@ -1034,18 +1063,27 @@ this.renderHTMLContent = function(specs){
 
             return html;
         }else if(tableMode){
-            var tableSpecs = $.extend({cols:['name',self.getIDProp()]},(self.current.schema&&self.current.schema.table&&self.current.schema.table.cols)||{});
+            /*var tableSpecs = $.extend({cols:['name',self.getIDProp()]},
+                (self.current.schema
+                    &&(self.current.schema.table||self.current.schema.tableView)
+                   // &&(self.current.schema.table||self.current.schema.tableView).cols
+                ) ||{});*/
             html+='<table class="joe-item-table"><thead><th>&nbsp;</th>';
             tableSpecs.cols.map(function(c){
-                html+='<th>'+c+'</th>';
+                if($c.isString(c)) {
+                    html += '<th>' + c + '</th>';
+                }else if($c.isObject(c)){
+                    html += '<th>' + (c.header||c.display) + '</th>';
+                }
             });
 
             html+='</thead><tbody>';
+            stop = currentListItems.length-1;
             for (var i = start; i < stop; i++) {
                 listItem = items[i];
                 if (listItem) {
                     //html += self.renderListItem(listItem, false, i + 1);
-                    html += self.renderTableItem(listItem, i + 1,tableSpecs);
+                    html += self.renderTableItem(listItem, false,i + 1);
 
                 }
             }
@@ -2762,17 +2800,41 @@ this.renderSorterField = function(prop){
 /*-------------------------------------------------------------------->
 	4 | OBJECT LISTS
 <--------------------------------------------------------------------*/
-    this.renderTableItem = function(listItem,index,tableSpecs) {
+    this.renderTableItem = function(listItem,quick,index) {
+        //var tableSpecs = tSpecs || tableSpecs;
         var idprop = self.getIDProp();// listSchema._listID;
         var id = listItem[idprop] || null;
+        var colprop;
+        if(quick){
+            var searchable = '';
+            tableSpecs.cols.map(function(c){
+                if($c.isString(c)) {
+                    searchable+=(listItem[c]||'')+' ';
+                }else if($c.isObject(c)){
+                    colprop = c.property || c.name;
+                    searchable+=(listItem[colprop]||(colprop.indexOf('${') != -1 && colprop)||'')+' ';
+                   // html += '<th>' + (c.display || c.header) + '</th>';
+                }
+                searchable = fillTemplate(searchable,listItem);
+            });
+            return searchable;
+        }
         //var action = 'onclick="_joe.editObjectFromList(\''+id+'\');"';
         var action = 'onclick="getJoe('+self.joe_index+').listItemClickHandler({dom:this,id:\''+id+'\'});"';
 
         var ghtml = '<tr class="joe-panel-content-option trans-bgcol" '+action+'>';
         ghtml +='<td class="joe-table-checkbox"><label>'+index+'<input type="checkbox"></label></td>';
         //ghtml +='<td>'+index+'</td>';
+
         tableSpecs.cols.map(function(c){
-            ghtml+='<td>'+(listItem[c]||'')+'</td>';
+
+            if($c.isString(c)) {
+                ghtml+=fillTemplate('<td>'+(listItem[c]||'')+'</td>',listItem);
+            }else if($c.isObject(c)){
+                colprop = c.property || c.name;
+                ghtml+=fillTemplate('<td>'+(listItem[colprop]||(colprop.indexOf('${') != -1 && colprop)||'')+'</td>',listItem);
+            }
+
         });
         ghtml +='</tr>';
     return ghtml;

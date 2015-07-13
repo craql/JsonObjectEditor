@@ -68,7 +68,7 @@ onUpdate and onMultipleUpdate added to schema for callbacks to these functions/b
         useBackButton:true,
         listSubMenu:{filters:{}},
         useHashlink:true,
-        _title:'${itemtype} | ${display}'
+        title:'${itemtype} | ${display}'
 	}
 	var JOE = new JsonObjectEditor(specs);
 	JOE.init();
@@ -186,13 +186,13 @@ Properties for all Fields
 ###defaultProfile
 overwrites the default profile
 
-##schemas 
+#schemas 
 
 a list of schema objects that can configure the editor fields, these can be given properties that are delegated to all the corresponding fields.
 
 	var animalschema = 
 	{
-		_title:'Animal', *what shows as the panel header* 
+		title:'Animal', *what shows as the panel header* 
 		fields:['id','name','legs','species','weight','color','gender','animalLink'], *list of visible fields*
 		_listID:'id', *the id for finding the object*
 		_listTitle:'${name} ${species}', *how to display items in the list*
@@ -209,6 +209,12 @@ a list of schema objects that can configure the editor fields, these can be give
 		onMultipleUpdate:callback for after multi update.passed list of edited items.
                 filters: array of objects
 	}
+##Table View
+	- add tableView object to a schema;
+	-cols = [strings||objects]
+		-string is the name and value
+		-display/header is the column title
+		-property/name = object property 
 ###Pre-formating
 you can preformat at the joe call or schema level. The data item will be affected by the passed function (which should return the preformated item). 
 
