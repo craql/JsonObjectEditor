@@ -2848,7 +2848,7 @@ this.renderSorterField = function(prop){
 
         var ghtml = '<tr class="joe-panel-content-option trans-bgcol" '+action+'>';
         ghtml +='<td class="joe-table-checkbox">' +
-            '<label>'+index+(tableSpecs.multiselect&&'||')+'<input type="checkbox" /></label></td>';
+            '<label>'+index+(tableSpecs.multiselect && '<input type="checkbox" />' || '')+'</label></td>';
         //ghtml +='<td>'+index+'</td>';
 
         tableSpecs.cols.map(function(c){
