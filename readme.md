@@ -288,12 +288,13 @@ an array of menu buttons
 			+values : ARRAY/FUNC (for select)
 			
 			//modifiers
-			+hidden:BOOL //don't show, but value is passed
+			+hidden:BOOL/STRING(name of field that toggles this) //don't show, but value is passed
 			+locked:BOOL // show, but uneditable
 			//events
 			+onchange : FUNC
 			+onblur : FUNC
 			+onkeypress : FUNC
+			+rerender : STRING // name of field to rerender
 		}
 	}
 

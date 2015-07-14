@@ -650,7 +650,7 @@
     font-weight: bold;
     font-size: 1.1em;
 }
-.joe-subtext{
+.joe-subtext, joe-subtext{
     font-size:.8em;
     font-weight: normal;
     opacity: .6;
@@ -1287,6 +1287,10 @@ input.joe-submenu-search-field {
 /*-------------------------
 	List Options
 -------------------------*/
+joe-list-right{
+    float:right;
+    text-align:right;
+}
 .joe-panel-content-option {
     /* height: 40px; */
     /* line-height: 40px; */
@@ -1760,10 +1764,14 @@ display:none;
 .joe-content-sidebar select.joe-select-field.joe-field {
     width: 260px;
 }
-.joe-content-sidebar .select-field .joe-iconed-button {
-
+.large-size .joe-content-sidebar .select-field .joe-iconed-button {
     display: block;
-    margin: 5px auto 0 auto;
+    position: absolute;
+    right: 0;
+    top: 15px;
+    font-size: 0;
+    padding: 0px 0 0px 40px;
+    height: 35px;
 }
 /*-------------------------
 	Field Tooltip
@@ -2456,7 +2464,17 @@ screen and (max-height:400px) and (orientation:landscape){
     /*        height:40px;*/
 
 }
-
+.small-size .joe-content-sidebar .select-field .joe-iconed-button {
+    display: block;
+    position: absolute;
+    right: -5px;
+    top: 15px;
+    font-size: 14px;
+    padding: 0px 5px 0px 40px;
+    height: 35px;
+    line-height: 35px;
+    text-align: center;
+}
 /*
 .small-size .joe-object-field input[type=text] {
     width: 100%;

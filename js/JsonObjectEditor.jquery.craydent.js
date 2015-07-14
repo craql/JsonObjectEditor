@@ -1184,8 +1184,14 @@ this.renderHTMLContent = function(specs){
 	};
 
 	this.rerenderField = function(fieldname){
-		var fields = self.renderObjectPropFieldUI(fieldname);
-		$('.joe-object-field[data-name='+fieldname+']').parent().replaceWith(fields);
+        if($c.isArray(fieldname)){
+            fieldname = fieldname.join(',');
+        }
+        fieldname.split(',').map(function(f){
+            var fields = self.renderObjectPropFieldUI(f);
+            $('.joe-object-field[data-name='+f+']').parent().replaceWith(fields);
+        })
+
 	};
 
 	self.renderObjectPropFieldUI = function(prop,specs){
@@ -1400,8 +1406,15 @@ this.renderHTMLContent = function(specs){
     //hidden
 		var hidden = '';
         //if(prop.hidden && (typeof prop.hidden != 'function' && prop.hidden) || (typeof prop.hidden == 'function' && prop.hidden())){
-        if(self.propAsFuncOrValue(prop.hidden)){
-            hidden = 'hidden';
+        var qHidden = self.propAsFuncOrValue(prop.hidden);
+        if(qHidden){
+            if(parseBoolean(qHidden) === undefined){
+                var negated = qHidden[0] == '!';
+                var hiddenPropVal = $.extend({},self.current.object,self.constructObjectFromFields())[qHidden.replace('!','')];
+                hidden = negated^!!hiddenPropVal?'hidden':'';
+            }else {
+                hidden = 'hidden';
+            }
         }
 
     //required
@@ -1640,12 +1653,15 @@ this.renderHTMLContent = function(specs){
 
 	this.renderFieldAttributes = function(prop, evts){
 		evts = evts ||{};
+
 		var bluraction = '';
 		//var updateaction = '';
 		var changeaction = '';
 
 		var keypressaction = '';
 		var keyupaction = '';
+        var rerender = (prop.rerender)?
+            ' getJoe('+self.joe_index+').rerenderField(\''+prop.rerender+'\'); ':'';
 
 		var profile = self.current.profile;
 
@@ -1655,8 +1671,8 @@ this.renderHTMLContent = function(specs){
 		if(evts.onblur || prop.onblur){
 			bluraction = 'onblur="'+(evts.onblur||'')+' '+self.getActionString('onblur',prop)+'"';
 		}
-		if(evts.onchange || prop.onchange){
-			changeaction = 'onchange="'+(evts.onchange||'')+' '+self.getActionString('onchange',prop)+'"';
+		if(evts.onchange || prop.onchange || rerender){
+			changeaction = 'onchange="'+rerender+(evts.onchange||'')+' '+self.getActionString('onchange',prop)+'"';
 		}
 		if(evts.onkeypress || prop.onkeypress){
 			keypressaction = 'onkeypress="'+(evts.onkeypress||'')+' '+self.getActionString('onkeypress',prop)+'"';
@@ -2708,7 +2724,12 @@ this.renderSorterField = function(prop){
         //html+= fillTemplate(template,values);
        // html += self.createObjectReferenceItem(null,value,prop.name);
         value.map(function(v){
-            html += self.createObjectReferenceItem(null,v,prop.name);
+            if($c.isObject(v)){
+                html += self.createObjectReferenceItem(v,null,prop.name);
+            }else if($c.isString(v)){
+                html += self.createObjectReferenceItem(null,v,prop.name);
+            }
+
         });
         html +='</div>';
         //html+= self.renderTextField(specs);
@@ -2725,16 +2746,16 @@ this.renderSorterField = function(prop){
     };
 
     this.createObjectReferenceItem = function(item,id,fieldname){
+            var field = _getField(fieldname);
+            var idprop = field.idprop||'_id';
+
         if(!item) {
             logit('adding ' + id + ' from ' + fieldname);
-            var field = _getField(fieldname);
+
             //var values = self.propAsFuncOrValue(field.values);
             var values = self.getFieldValues(field.values);
-            var idprop = field.idprop||'_id';
+            //var idprop = field.idprop||'_id';
             var item;
- /*           values.filter(function(i){
-                return
-            });*/
             for(var i = 0,tot = values.length; i <tot; i++){
                 if(values[i][idprop] == id){
                     item = values[i];
@@ -2743,13 +2764,15 @@ this.renderSorterField = function(prop){
             }
         }
 
-            var deleteButton = '<div class="joe-delete-button joe-block-button left" ' +
-                'onclick="$(this).parent().remove();">&nbsp;</div>';
+        var deleteButton = '<div class="joe-delete-button joe-block-button left" ' +
+            'onclick="$(this).parent().remove();">&nbsp;</div>';
         if(!item) {
-            return '<div class="joe-field-item" data-value="' + id + '">' + deleteButton + "<div>REFERENCE NOT FOUND</div><span class='subtext'>" + id + "</span>" + '</div>';
+            return '<div class="joe-field-item" data-value="' + id + '">' +
+                deleteButton + "<div>REFERENCE NOT FOUND</div><span class='subtext'>" + id + "</span>" + '</div>';
         }
-            var template = self.propAsFuncOrValue(field.template, item) || "<div>${name}</div><span class='subtext'>" + id + "</span>";
-            return '<div class="joe-field-item" data-value="' + id + '">' + deleteButton + fillTemplate(template, item) + '</div>';
+        var id = id||item[idprop];
+        var template = self.propAsFuncOrValue(field.template, item) || "<div>${name}</div><span class='subtext'>" + id + "</span>";
+        return '<div class="joe-field-item" data-value="' + id + '">' + deleteButton + fillTemplate(template, item) + '</div>';
 
     };
 
