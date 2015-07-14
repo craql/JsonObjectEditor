@@ -900,6 +900,9 @@ input.joe-boolean-field {
     letter-spacing: .8px;
     line-height: 16px;
 }
+.joe-field-comment .joe-button{
+    z-index:10;
+}
 /*-------------------------------------------------------------------->
 	Editor Form
 <--------------------------------------------------------------------*/
@@ -1292,6 +1295,7 @@ display:none;
 
 
 .joe-object-field .joe-button {
+    position:relative;
     /* max-width: 200px; */
     /* margin: 5px auto; */
     /*color: blue;*/
