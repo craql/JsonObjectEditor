@@ -1954,10 +1954,11 @@ textarea.joe-rendering-field{
     position: absolute;
     z-index: 1001;
     background: #eee;
-    width: 312px;
+    /*width: 312px;*/
     display:none;
     max-height: 300px;
     overflow: auto;
+    max-width:80%;
 }
 .joe-text-autocomplete.active{
     display:block;
@@ -1974,7 +1975,9 @@ textarea.joe-rendering-field{
 .joe-text-autocomplete-option:hover {
     background: #ccc;
 }
-
+.joe-text-autocomplete-option.keyboard-selected {
+    background: #ccc;
+}
 /*-------------------------
 	J | MultiSorter
 -------------------------*/

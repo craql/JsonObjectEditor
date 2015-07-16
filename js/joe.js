@@ -164,7 +164,9 @@ function JsonObjectEditor(specs){
 
 
                 }else if([38,40,13,16,17].indexOf(code) == -1){//set focus for alphanumeric keys
+
                     if(!listMode)return;
+
                     var inSearchfield = false;
                     if ($(document.activeElement) && $(document.activeElement)[0] != $('.joe-submenu-search-field')[0]) {
                         self.overlay.find('.joe-submenu-search-field').focus();
@@ -172,22 +174,49 @@ function JsonObjectEditor(specs){
                         $('.joe-panel-content-option.keyboard-selected').removeClass('keyboard-selected');
                     }
                 }else{
+                    //38 up, 40 dn,13 enter
+                    var autocompleteField = $('.joe-text-autocomplete.active').length;
+
+                    if(autocompleteField){
+                        var sel = '.joe-text-autocomplete-option.visible'+'.keyboard-selected';
+                        //$('.joe-text-autocomplete-option.visible').length();
+                        var keyboardSelectedIndex = ($(sel).length)? $(sel).index():-1;
+                        switch(code){
+                            case 38://up
+                                keyboardSelectedIndex--;
+                                if(keyboardSelectedIndex > -1) {
+                                    keyboardSelectOption('.joe-text-autocomplete-option.visible');
+                                }
+                                break;
+                            case 40://down
+                                keyboardSelectedIndex++;
+                                if(keyboardSelectedIndex < $('.joe-text-autocomplete-option.visible').length) {
+                                    keyboardSelectOption('.joe-text-autocomplete-option.visible');
+                                }
+                                break;
+                            case 13://enter
+                                if(keyboardSelectedIndex != -1){
+                                    $(sel).click();
+                                }
+                                break;
+                        }
+                    }
                     if(!listMode)return;
                     var keyboardSelectedIndex = ($('.joe-panel-content-option.keyboard-selected').length)?
                         $('.joe-panel-content-option.keyboard-selected').index():-1;
-                    logit(keyboardSelectedIndex);
+                    //logit(keyboardSelectedIndex);
 
                     switch(code){
                         case 38://up
                             keyboardSelectedIndex--;
                             if(keyboardSelectedIndex > -1) {
-                                keyboardSelectOption();
+                                keyboardSelectOption('.joe-panel-content-option',top);
                             }
                         break;
                         case 40://down
                             keyboardSelectedIndex++;
                             if(keyboardSelectedIndex < currentListItems.length) {
-                                keyboardSelectOption();
+                                keyboardSelectOption('.joe-panel-content-option',top);
                             }
                         break;
                         case 13://enter
@@ -196,13 +225,13 @@ function JsonObjectEditor(specs){
                             }
                         break;
                     }
-                    function keyboardSelectOption(){
-                        $('.joe-panel-content-option.keyboard-selected').toggleClass('keyboard-selected');
-                        var el = $('.joe-panel-content-option').eq(keyboardSelectedIndex);
+                    function keyboardSelectOption(selector,top){
+                        $(selector+'.keyboard-selected').toggleClass('keyboard-selected');
+                        var el = $(selector).eq(keyboardSelectedIndex);
                         el.addClass('keyboard-selected');
                         self.overlay.find('.joe-submenu-search-field').blur();
                        // $('.joe-panel-content').scrollTop($('.joe-panel-content-option.keyboard-selected').offset().top);
-                        el[0].scrollIntoView(true);
+                        el[0].scrollIntoView(top);
                         //var panel_content = self.overlay.find('.joe-panel-content');
                         //panel_content.animate({ scrollTop: panel_content.scrollTop()-10 });
 
@@ -3509,7 +3538,13 @@ this.renderSorterField = function(prop){
 		return (window._joes[index] || false)
 	};
 	$(document).keyup(function(e) {
-		if (e.keyCode == 27) { self.closeButtonAction(); }   // esc
+		if (e.keyCode == 27) {
+        if($('.joe-text-autocomplete.active').length){//close autocoomplete first
+            $('.joe-text-autocomplete.active').removeClass('active');
+        }else {
+            self.closeButtonAction();
+        }
+        }   // esc
         //TODO:if the joe is also current main joe.
 	//ctrl + enter
 		else if(e.ctrlKey && e.keyCode == 13 && self.specs.useControlEnter){
