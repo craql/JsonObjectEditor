@@ -29,7 +29,9 @@ if (!!window.Worker) {
 
 $c.TEMPLATE_VARS.push(
     {variable:'/textarea',value:'</textarea>'},
-    {variable:'textarea',value:'<textarea>'}
+    {variable:'textarea',value:'<textarea>'},
+    {variable:'SERVER',value:'//'+$c.SERVER}
+
 );
 
 
@@ -53,6 +55,7 @@ function JsonObjectEditor(specs){
 	var self = this;
     initialized = false;
 	var listMode = false;
+
     var gridMode = false;
     var tableMode = false,tableSpecs;
     var multiEdit = false;
@@ -256,6 +259,10 @@ function JsonObjectEditor(specs){
 /*-------------------------------------------------------------------->
 	2 | FRAMEWORK START
 <--------------------------------------------------------------------*/
+    this.getMode = function(){
+        if(listMode){return 'list';}
+        return 'details';
+    }
 	this.renderFramework = function(content){
 		var html =
 		'<div class="joe-overlay '

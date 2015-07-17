@@ -729,8 +729,8 @@
 .joe-confirm-button,.joe-green-button{background-color:#6BB476;}
 .joe-confirm-button:hover, .joe-green-button:hover{background-color:#5BD16D;}
 
-.joe-orange-button{background-color:#ff8804;}
-.joe-orange-button:hover{background-color:#F93}
+.joe-orange-button{background-color:#ff8804 !important;}
+.joe-orange-button:hover{background-color:#F93 !important;}
 
 .joe-blue-button{background-color:#336699}
 .joe-blue-button:hover{background-color:#447799;}
@@ -1895,6 +1895,13 @@ display:none;
     display: inline-block;
     margin-left: 10px;
     margin-right:10px;
+}
+.joe-object-field .joe-button.full-width {
+    width: 90%;
+    margin: 5px auto;
+    max-width: 300px;
+    text-align: center;
+    float: none;
 }
 .joe-object-field input[type=text].joe-number-field {
     width: 200px;
