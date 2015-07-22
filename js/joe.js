@@ -2394,6 +2394,17 @@ this.renderSorterField = function(prop){
         return html;
 
     };
+
+    this.renderFieldListItem = function(item,contentTemplate,schema){
+        var schemaobj = self.schemas[schema];
+        var idprop = schemaobj.idprop ||'_id';
+
+        var html = fillTemplate('<div class="joe-field-list-item" ' +
+            'onclick="goJoe(_joe.search(\'${'+idprop+'}\')[0],{schema:\''+schema+'\'})">'
+            +contentTemplate
+            +'<div class="clear"></div></div>',item);
+        return html;
+    };
 /*----------------------------->
  M | URL
  <-----------------------------*/

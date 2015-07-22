@@ -1474,6 +1474,17 @@ input.joe-boolean-field {
 .joe-field-comment .joe-button{
     z-index:10;
 }
+/*-------------------------
+    JOE Field list item
+-------------------------*/
+
+.joe-field-list-item {
+    padding:10px;
+    cursor:pointer;
+}
+.joe-field-list-item:hover{
+    background-color:rgba(0,0,0,.1);
+}
 /*-------------------------------------------------------------------->
 	Editor Form
 <--------------------------------------------------------------------*/
