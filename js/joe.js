@@ -2896,8 +2896,14 @@ this.renderSorterField = function(prop){
             });
             return searchable;
         }
+        var action;
         //var action = 'onclick="_joe.editObjectFromList(\''+id+'\');"';
-        var action = 'onclick="getJoe('+self.joe_index+').listItemClickHandler({dom:this,id:\''+id+'\'});"';
+        var schemaprop = self.current.schema && (self.current.schema.listView && self.current.schema.listView.schemaprop);
+        if(schemaprop){
+            action = 'onclick="getJoe('+self.joe_index+').listItemClickHandler({dom:this,id:\''+id+'\',schema:\''+schemaprop+'\'});"';
+        }else{
+            action = 'onclick="getJoe('+self.joe_index+').listItemClickHandler({dom:this,id:\''+id+'\'});"';
+        }
 
         var ghtml = '<tr class="joe-panel-content-option trans-bgcol" '+action+'>';
         ghtml +='<td class="joe-table-checkbox">' +
@@ -2939,7 +2945,14 @@ this.renderSorterField = function(prop){
 		var idprop = self.getIDProp();// listSchema._listID;
 		var id = listItem[idprop] || null;
 		//var action = 'onclick="_joe.editObjectFromList(\''+id+'\');"';
-		var action = 'onclick="getJoe('+self.joe_index+').listItemClickHandler({dom:this,id:\''+id+'\'});"';
+        var schemaprop = self.current.schema && (self.current.schema.listView && self.current.schema.listView.schemaprop);
+        if(schemaprop){
+            action = 'onclick="getJoe('+self.joe_index+')' +
+                '.listItemClickHandler({dom:this,id:\''+id+'\',schema:\''+listItem[schemaprop]+'\',idprop:\'_id\'});"';
+        }else{
+            action = 'onclick="getJoe('+self.joe_index+')' +
+                '.listItemClickHandler({dom:this,id:\''+id+'\'});"';
+        }
 
     //add stripe color
         var stripeColor = ($.type(listSchema.stripeColor)=='function')?listSchema.stripeColor(listItem):fillTemplate(listSchema.stripeColor,listItem);
@@ -3032,7 +3045,7 @@ this.renderSorterField = function(prop){
 
 			$('.joe-panel-content-option.selected').map(function(i,listitem){
 				self.current.selectedListItems.push($(listitem).data('id'));
-			})
+			});
 
         /*    if(!window.event.shiftKey){
                 self.shiftSelecting = false;
@@ -3105,7 +3118,7 @@ this.renderSorterField = function(prop){
 		self.current.schema = specs.schema || self.current.schema || null;
 		var list = specs.list || self.current.list;
 		var id = specs.id;
-		var idprop = self.getIDProp();//(self.current.schema && self.current.schema._listID) || 'id';
+		var idprop = specs.idprop || self.getIDProp();//(self.current.schema && self.current.schema._listID) || 'id';
 
 		var object = list.filter(function(li){return li[idprop] == id;})[0]||false;
 
@@ -3114,7 +3127,7 @@ this.renderSorterField = function(prop){
 			return;
 		}
 
-		var setts ={schema:self.current.schema,callback:specs.callback};
+		var setts ={schema:specs.schema||self.current.schema,callback:specs.callback};
 		/*self.populateFramework(object,setts);
 		self.overlay.addClass('active');*/
 		goJoe(object,setts);
@@ -3578,7 +3591,7 @@ this.renderSorterField = function(prop){
 		self.overlay.find('.joe-date-field').Zebra_DatePicker({offset:[5,20],format:'m/d/Y',first_day_of_week:0});
 
         //itemcount
-        if(currentListItems){
+        if(currentListItems && self.overlay.find('.joe-submenu-search-field').length){
             if(goingBackQuery  || (!$c.isEmpty(self.current.userSpecs.filters) && listMode) ){
                 self.overlay.find('.joe-submenu-search-field').val(goingBackQuery);
                 self.filterListFromSubmenu(self.overlay.find('.joe-submenu-search-field')[0].value,true);
