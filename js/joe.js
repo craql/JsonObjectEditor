@@ -1751,7 +1751,7 @@ this.renderHTMLContent = function(specs){
 		var html=
             ((autocomplete && '<div class="joe-text-autocomplete-label"></div>')||'')+
 		'<input class="joe-text-field joe-field '+((prop.skip && 'skip-prop')||'')+'" ' +
-            'type="text"  '+disabled+' name="'+prop.name+'" value="'+(prop.value || '')+'" '
+            'type="text"  '+disabled+' name="'+prop.name+'" value="'+(prop.value || '')+'" maxlength="'+(prop.maxlength || '')+'" '
 			+self.renderFieldAttributes(prop)
 			+((autocomplete &&
 				//' onblur="getJoe('+self.joe_index+').hideTextFieldAutoComplete($(this));"'
@@ -2515,14 +2515,7 @@ this.renderSorterField = function(prop){
         //var html = "<tr class='joe-object-list-row' data-index='"+index+"'><td class='joe-objectlist-object-row-handle'>|||</td>";
         var html = "<tr class='joe-object-list-row' data-index='"+index+"'><td><div class='joe-panel-button joe-objectlist-object-row-handle' "+delaction+">|||</div></td>";
 
-
-        function renderTextInput(prop){
-            var html = '<input type="text" class="joe-objectlist-object-input" style="width:auto;" value="'+prop.value+'"/>';
-            return html;
-        }
-
         var renderInput = {
-         //   'text':renderTextInput,
             'text':self.renderTextField,
             select:self.renderSelectField,
             'date':self.renderDateField

@@ -730,9 +730,26 @@ joe-list-right{
     font-size: 14px;
     clear:both;
     border-bottom: 1px solid #e1e1e1;
+    box-sizing: border-box;
 }
+/*-------------------------
+	//COLS
+-------------------------*/
+.cols-2 .joe-panel-content-option,.cols-3 .joe-panel-content-option{
+    float:left;
+    clear: none;
+}
+.cols-2 .joe-panel-content-option-content ,.cols-3 .joe-panel-content-option-content {
+    min-height: 60px;
+}
+.cols-2 .joe-panel-content-option{  width:49%;  }
+.cols-2 .joe-panel-content-option-content {  min-height: 60px;  }
 
-/*STRIPE*/
+.cols-3 .joe-panel-content-option{  width:32%;  }
+.cols-3 .joe-panel-content-option-content {  min-height: 60px;  }
+/*-------------------------
+	//STRIPE
+-------------------------*/
 
 .joe-panel-content-option.striped{
     /*padding-left:10px;*/

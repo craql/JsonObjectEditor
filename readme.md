@@ -101,6 +101,7 @@ Properties for all Fields
 - `text`: default single line text.
 	- autocomplete: boolean // obj of specs (template, idprop)
 		- values:array of possibilities
+	-maxlength:string
 - `int`: integer field
 - `number`: number (float) field
 - `select`: select list. 
