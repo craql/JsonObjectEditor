@@ -48,6 +48,7 @@ var __joeFieldTypes = [
 function JsonObjectEditor(specs){
 	var self = this;
     initialized = false;
+    var colCount = 1;
 	var listMode = false;
 
     var gridMode = false;
@@ -256,10 +257,11 @@ function JsonObjectEditor(specs){
     this.getMode = function(){
         if(listMode){return 'list';}
         return 'details';
-    }
+    };
 	this.renderFramework = function(content){
-		var html =
-		'<div class="joe-overlay '
+		var style = 'style-variant1';
+        var html =
+		'<div class="joe-overlay cols-'+colCount+' '+style+' '
             +((self.specs.compact && ' compact ') || '')
             +((self.specs.sans && ' sans ') || '')
             +'" data-joeindex="'+this.joe_index+'">'+
@@ -286,7 +288,7 @@ function JsonObjectEditor(specs){
 		self.current.userSpecs = $.extend({},setts);
         gridMode = (self.current.specs.viewMode == 'grid')?true:false;
         tableMode = (self.current.specs.viewMode == 'table')?true:false;
-
+        colCount = self.current.specs.colCount || 1;
 
 	//update history 1/2
 		if(!self.current.specs.noHistory){
@@ -664,7 +666,8 @@ function JsonObjectEditor(specs){
         var subSpecs = {
             search:true,
             itemcount:true,
-            filters:showFilters
+            filters:showFilters,
+            numCols:['1','2','3']
         };
         var userSubmenu = ($.type(self.current.submenu) != 'object')?{}:self.current.submenu;
         $.extend(subSpecs,userSubmenu);
@@ -673,7 +676,8 @@ function JsonObjectEditor(specs){
             var submenu =
                 '<div class="joe-panel-submenu">'
 
-                +self.renderViewModeButtons(subSpecs)
+                + self.renderViewModeButtons(subSpecs)
+                + self.renderColumnCountSelector(subSpecs.numCols)
                 + ((subSpecs.itemcount && self.renderSubmenuItemcount(subSpecs.itemcount)) || '')
                 + ((subSpecs.filters && self.renderSubmenuFilters(subSpecs.filter)) || '')
                 + ((subSpecs.search && self.renderSubmenuSearch(subSpecs.search)) || '')
@@ -856,6 +860,7 @@ function JsonObjectEditor(specs){
             var searchBM = new Benchmarker();
             keyword = keyword || $('.joe-submenu-search-field').val();
             var value=keyword.toLowerCase();
+            var keywords = keyword.replace(/,/g,' ').split(' ');
             var filters = self.generateFiltersQuery();
 
             _joe.history[_joe.history.length-1].keyword = value;
@@ -875,19 +880,31 @@ function JsonObjectEditor(specs){
                     searchables.map(function(s){
                         testable+=i[s]+' ';
                     });
-                    return (testable.toLowerCase().indexOf(value) != -1);
-                    //return (testable+' '+i[idprop].toLowerCase().indexOf(value) != -1);
-                }
-                    if(tableMode){
-                        testable = self.renderTableItem(i,true);
-                    }else if(gridMode){
-                    //testable = self.renderListItem(i,true);
-                    }else{
-                        testable = self.renderListItem(i,true);
+                    testable = testable.toLowerCase()+id;
+                    for(var k = 0,tot = keywords.length; k<tot;k++){
+                        if(testable.indexOf(keywords[k]) == -1){
+                            return false;
+                        }
                     }
-                    //return (__removeTags(testable).toLowerCase().indexOf(value) != -1);
-                    return ((__removeTags(testable)+id).toLowerCase().indexOf(value) != -1);
+                    //return (testable.toLowerCase().indexOf(value) != -1);
 
+                    //return (testable+' '+i[idprop].toLowerCase().indexOf(value) != -1);
+                }else {
+                    if (tableMode) {
+                        testable = self.renderTableItem(i, true);
+                    } else if (gridMode) {
+                        //testable = self.renderListItem(i,true);
+                    } else {
+                        testable = self.renderListItem(i, true);
+                    }
+                    for (var k = 0, tot = keywords.length; k < tot; k++) {
+                        if (testable.indexOf(keywords[k]) == -1) {
+                            return false;
+                        }
+                    }
+                    //return ((__removeTags(testable)+id).toLowerCase().indexOf(value) != -1);
+                }
+                return true;
             });
 
             logit('search filter found '+currentListItems.length+' items in '+searchBM.stop()+' seconds');
@@ -915,10 +932,6 @@ function JsonObjectEditor(specs){
 /*------------------>
 View Mode Buttons
 <------------------*/
-    function renderViewModeButton(mode){
-        var html ="<div data-view='"+mode+"' class='joe-button joe-viewmode-button'>"+mode+"</div>";
-        return html;
-    }
     this.renderViewModeButtons = function(subspecs){
         var gridspecs = self.current.schema && self.current.schema.grid;
         var tablespecs = tableSpecs; //self.current.schema && (self.current.schema.table||self.current.schema.tableView);
@@ -934,7 +947,7 @@ View Mode Buttons
             "onclick='getJoe("+self.joe_index+")" + ".setViewMode(\"${name}\");' " +
             "class='jif-panel-button joe-viewmode-button ${name}-button'>&nbsp;</div>";
         var submenuitem =
-            "<div class='joe-submenu-viewmodes' >"+//onhover='$(this).toggleClass(\"expanded\")'
+            "<div class='joe-submenu-selector opts-"+modes.length+"' >"+//onhover='$(this).toggleClass(\"expanded\")'
                 fillTemplate(modeTemplate,modes)+
             "</div>";
         return submenuitem;
@@ -942,6 +955,41 @@ View Mode Buttons
 
     this.setViewMode = function(mode){
         self.reload(true,{viewMode:mode});
+    };
+
+
+
+/*------------------------------------------------>
+ Column COunt Buttons
+ <-----------------------------------------------------*/
+    this.renderColumnCountSelector = function(subspecs){
+        if(!subspecs){
+            return '';
+        }
+        var gridspecs = self.current.schema && self.current.schema.grid;
+        var tablespecs = tableSpecs; //self.current.schema && (self.current.schema.table||self.current.schema.tableView);
+
+        if(!gridspecs && !tablespecs){return '';}
+        var modes = [
+            {name:'1'},
+            {name:'2'},
+            {name:'3'}
+        ];
+
+        var modeTemplate="<div data-colcount='${name}' " +
+            "onclick='getJoe("+self.joe_index+")" + ".setColumnCount(${name});' " +
+            "class='jif-panel-button selector-button-${name} joe-selector-button'>${name}</div>";
+        var submenuitem =
+            "<div class='joe-submenu-selector opts-"+modes.length+"'' >"+//onhover='$(this).toggleClass(\"expanded\")'
+            fillTemplate(modeTemplate,modes)+
+            "</div>";
+        return submenuitem;
+    };
+
+    this.setColumnCount = function(mode){
+        self.overlay[0].className = self.overlay[0].className.replace(/cols-[0-9]/,'cols-'+mode);
+        if(mode){colCount = mode;}
+        //self.reload(true,{colCount:mode});
     };
     /*----------------------------->
         C | Content
@@ -1520,9 +1568,6 @@ this.renderHTMLContent = function(specs){
               //var values= self.getField(prop.name);
 
           }
-          /*else if(goto === true){
-              action = 'goJoe(getNPCDataItem(${_id},"element"),schema:"element");'
-          }*/
           var btnHtml = '';
           switch(style||prop.type){
               case 'select':
@@ -2651,11 +2696,10 @@ this.renderSorterField = function(prop){
                 '<script>function none(){return; }</script>' +
                 '<script type="text/javascript" src="https://sdk.amazonaws.com/js/aws-sdk-2.1.34.min.js"></script>'+
                 //'<script src="http://webapps-cdn.esri.com/CDN/jslibs/craydent-1.7.37.js"></script>'+
-                '<script src="'+joe_web_dir+'js/craydent-upload-1.1.0.js" type="text/javascript"></script>'+
+                '<script src="'+joe_web_dir+'js/libs/craydent-upload-1.1.0.js" type="text/javascript"></script>'+
                 '');
         }
-        //var profile = self.current.profile;
-        /* var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];*/
+
         var values = self.getFieldValues(prop.values);
         var html=
             '<div class="joe-uploader" data-uploader_id="'+uploader_id+'">'+
@@ -2675,23 +2719,36 @@ this.renderSorterField = function(prop){
         var joe_uploader = self.uploaders[dom.data('uploader_id')];
         //var results = dom.find('.joe-uploader-message');
         var guid = "" || cuid();
+        var field = _joe.getField(joe_uploader.prop);
+
+        //setup AWS
+
+        AWS.config.update({
+            accessKeyId:'AKIAJRHOEUZY4QCDW5UQ',
+            secretAccessKey:'yR/SrWMHXd67AtIxW6daPjbhyeLCHOyS5qrmoElZ'
+        });
+        // Configure your region
+        AWS.config.region = 'us-west-1';
         if (file) {
-           /* var bucket = new AWS.S3({
-                params:{
-                    Bucket:'patterns.esri.com/uploaded'
-                }
-            });*/
-            joe_uploader.message.html('Uploading '+file.name+' to s3');
-            joe_uploader.preview.html('<img src="'+base64+'">');
-           /* var params = {
+            if(field.aws && field.aws.bucket) {
+                var bucket = new AWS.S3({
+                    params: {
+                        Bucket: field.aws.bucket//'patterns.esri.com/uploaded'
+                    }
+                });
+            }
+            joe_uploader.message.append('Uploading '+file.name+' to s3');
+            joe_uploader.preview.append('<img src="'+base64+'">');
+            var params = {
                 Key:guid+""+file.name,
                 ContentType:file.type,
                 Body:file
             };
             bucket.upload(params, function (err, data) {
-                results.innerHTML = err ? 'ERROR!' : 'UPLOADED.';
+                var m = err ? 'ERROR!' : 'UPLOADED.';
+                joe_uploader.message.append(m);
                 logit(data);
-            });*/
+            });
         } else {
             results.innerHTML = 'Nothing to upload.';
         }
@@ -3427,7 +3484,7 @@ this.renderSorterField = function(prop){
         if(!id){
             return '';
         }
-//    var item = getNPCData(dataset,{filter:{_id:id},single:true});
+
         var item = self.getDataItem(id,dataset);
         if(item){
             return item[prop];
@@ -3577,6 +3634,7 @@ this.renderSorterField = function(prop){
 		//init datepicker
 		self.overlay.find('.joe-date-field').Zebra_DatePicker({offset:[5,20],format:'m/d/Y',first_day_of_week:0});
 
+
         //itemcount
         if(currentListItems && self.overlay.find('.joe-submenu-search-field').length){
             if(goingBackQuery  || (!$c.isEmpty(self.current.userSpecs.filters) && listMode) ){
@@ -3670,6 +3728,10 @@ this.renderSorterField = function(prop){
         }
         self._currentListItems = currentListItems;
 
+        if(listMode) {
+            //self.overlay[0].className.replace()
+            self.setColumnCount(colCount);
+        }
         self.panel.toggleClass('show-filters',leftMenuShowing && listMode);
 /*        if($(window).height() > 700) {
             self.overlay.find('.joe-submenu-search-field').focus();
@@ -4391,22 +4453,22 @@ ANALYSIS, IMPORT AND MERGE
             }
             var hashSchema = self.schemas[hashBreakdown[0]];
             var hashItemID = hashBreakdown[1]||'';
-            if (hashSchema && (hashSchema.dataset || (!$.isEmptyObject(NPC.Data) && NPC.Data[hashSchema.__schemaname]))) {
+            if (hashSchema && (hashSchema.dataset || (!$.isEmptyObject(self.Data) && self.Data[hashSchema.__schemaname]))) {
                 var dataset;
                 if(hashSchema.dataset) {
                     dataset = (typeof(hashSchema.dataset) == "function") ? hashSchema.dataset() : hashSchema.dataset;
                 }else{
-                    dataset =  NPC.Data[hashSchema.__schemaname] || [];
+                    dataset =  self.Data[hashSchema.__schemaname] || [];
                 }
                 //SINGLE ITEM
-                if(!$.isEmptyObject(NPC.Data)) {
+                if(!$.isEmptyObject(self.Data)) {
                     if(hashItemID ){
                         var collectionName = hashSchema.__collection || hashSchema.__schemaname;
                     //using standard id
                         if(hashItemID.indexOf(':') == -1) {
 
                             if (collectionName) {
-                                var collectionItem = getNPCDataItem(hashItemID, collectionName);
+                                var collectionItem = self.getDataItem(hashItemID, collectionName);
                                 if (collectionItem) {
                                     goJoe(collectionItem, {schema: hashSchema});
                                 }else {//SHOW LIST, NO item
@@ -4419,7 +4481,7 @@ ANALYSIS, IMPORT AND MERGE
 
                             //var collectionName = hashSchema.__collection || hashSchema.__schemaname;
                             if (collectionName) {
-                                var collectionItem = getNPCDataItem(value, collectionName,key);
+                                var collectionItem = self.getDataItem(value, collectionName,key);
                                 if (collectionItem) {
                                     goJoe(collectionItem, {schema: hashSchema});
                                 }
@@ -4522,9 +4584,14 @@ function __removeTags(str){
 }
 
 function _COUNT(array){
+    if(!array){
+        return 0;
+    }
 	if(array.isArray()) {
 		return array.length;
-	}
+	}else if(array.isString()){
+        return 'str';
+    }
 	return 0;
 };
 
