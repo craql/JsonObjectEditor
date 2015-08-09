@@ -294,7 +294,7 @@ function JsonObjectEditor(specs){
 		self.current.userSpecs = $.extend({},setts);
         gridMode = (self.current.specs.viewMode == 'grid')?true:false;
         tableMode = (self.current.specs.viewMode == 'table')?true:false;
-        colCount = self.current.specs.colCount || 1;
+        colCount = self.current.specs.colCount || colCount || 1;
 
 	//update history 1/2
 		if(!self.current.specs.noHistory){
@@ -935,6 +935,37 @@ function JsonObjectEditor(specs){
         return submenuitem;
     };
 
+/*------------------------------------------------------>
+    //SUBMENU SELECTORS
+ <-----------------------------------------------------*/
+    function renderSubmenuSelectors(specs){
+        var specs = $.extend({
+                options:[],
+                content:'',
+                action:'nothing',
+                buttonTemplate: "<div class='selection-label'>select</div>${name}",
+                label:''
+            },(specs||{}));
+
+        var selectionTemplate =
+            "<div data-colcount='${name}' " +
+                "onclick='getJoe("+self.joe_index+")" + "."+specs.action+"(${name});' "
+                +"class='jif-panel-button selector-button-${name} joe-selector-button'>"
+                +specs.buttonTemplate
+            +'</div>';
+
+
+        var content = specs.content ||
+            "<div class='joe-selector-button selector-label'>"+specs.label+"</div>"+
+            fillTemplate(selectionTemplate,specs.options);
+
+        var html="<div class='joe-submenu-selector opts-"+specs.options.length+"' >"+ content+ "</div>";
+
+        return html;
+    }
+    this.nothing = function(nothing){
+        alert(value);
+    }
 /*------------------>
 View Mode Buttons
 <------------------*/
@@ -951,11 +982,13 @@ View Mode Buttons
 
         var modeTemplate="<div data-view='${name}' " +
             "onclick='getJoe("+self.joe_index+")" + ".setViewMode(\"${name}\");' " +
-            "class='jif-panel-button joe-viewmode-button ${name}-button'>&nbsp;</div>";
+            "class='jif-panel-button joe-viewmode-button ${name}-button joe-selector-button'>&nbsp;</div>";
         var submenuitem =
             "<div class='joe-submenu-selector opts-"+modes.length+"' >"+//onhover='$(this).toggleClass(\"expanded\")'
+                "<div class='joe-selector-button selector-label'>view</div>"+
                 fillTemplate(modeTemplate,modes)+
             "</div>";
+        //return '';
         return submenuitem;
     };
 
@@ -965,31 +998,36 @@ View Mode Buttons
 
 
 
-/*------------------------------------------------>
- Column COunt Buttons
+/*------------------------------------------------------>
+ Column Count Buttons
  <-----------------------------------------------------*/
     this.renderColumnCountSelector = function(subspecs){
         if(!subspecs){
             return '';
         }
-        var gridspecs = self.current.schema && self.current.schema.grid;
-        var tablespecs = tableSpecs; //self.current.schema && (self.current.schema.table||self.current.schema.tableView);
-
-        if(!gridspecs && !tablespecs){return '';}
         var modes = [
             {name:'1'},
             {name:'2'},
             {name:'3'}
         ];
 
-        var modeTemplate="<div data-colcount='${name}' " +
+/*        var modeTemplate="<div data-colcount='${name}' " +
             "onclick='getJoe("+self.joe_index+")" + ".setColumnCount(${name});' " +
-            "class='jif-panel-button selector-button-${name} joe-selector-button'>${name}</div>";
+            "class='jif-panel-button selector-button-${name} joe-selector-button'>" +
+            "<div class='selection-label'>cols</div>${name}</div>";
         var submenuitem =
-            "<div class='joe-submenu-selector opts-"+modes.length+"'' >"+//onhover='$(this).toggleClass(\"expanded\")'
+            "<div class='joe-submenu-selector opts-"+modes.length+"'' >"+
             fillTemplate(modeTemplate,modes)+
-            "</div>";
-        return submenuitem;
+            "</div>";*/
+
+        var h = renderSubmenuSelectors({
+            options:modes,
+            buttonTemplate:"<div class='selection-label'>cols</div>${name}",
+            label:'cols',
+            action:'setColumnCount'
+        });
+        return h;
+        //return submenuitem;
     };
 
     this.setColumnCount = function(mode){
@@ -3737,6 +3775,7 @@ this.renderSorterField = function(prop){
         if(listMode) {
             //self.overlay[0].className.replace()
             self.setColumnCount(colCount);
+            self.panel.toggleClass('list-mode',listMode);
         }
         self.panel.toggleClass('show-filters',leftMenuShowing && listMode);
 /*        if($(window).height() > 700) {

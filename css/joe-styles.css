@@ -686,6 +686,7 @@ input.joe-submenu-search-field {
     cursor: pointer;
     box-sizing: border-box;
     -webkit-transition: width .2s;
+    font-size: 20px;
 }
 
 .joe-submenu-selector.opts-2:hover,
@@ -696,9 +697,32 @@ input.joe-submenu-search-field {
 .joe-submenu-selector.opts-3.expanded{
     width:120px;
 }
+/*label*/
+
 /*button */
 .joe-selector-button{
     float:right;
+    position: relative;
+    font-size:20px;
+    height: 40px;
+    width: 40px;
+    cursor: pointer;
+}
+.joe-selector-button.selector-label{
+    /*background:#fff;*/
+}
+.joe-submenu-selector:hover .selector-label,
+.joe-submenu-selector.expanded .selector-label{
+    display:none;
+}
+
+.joe-submenu-selector .selection-label{
+    position:absolute;
+    text-align:center;
+    font-size:12px;
+    line-height:16px !important;
+    top:0;
+    left:0;right:0;
 }
 /*-------------------------
 	View Modes
