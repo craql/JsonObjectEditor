@@ -1315,13 +1315,7 @@ input.joe-submenu-search-field {
 }*/
 
 .joe-viewmode-button {
-/*    width: 40px;
-    margin: 0;
-    padding: 0;
-    text-align: center;
-    height: 40px;
-    line-height: 40px;*/
-    float:right;
+
     background-image: url(".././img/btns/view-list.png");
     background-repeat:no-repeat;
     background-position: center center;
