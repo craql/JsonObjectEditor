@@ -2761,7 +2761,10 @@ this.renderSorterField = function(prop){
 
         //setup AWS
 
-
+        AWS.config.update({
+            accessKeyId:'',
+            secretAccessKey:''
+        });
         // Configure your region
         AWS.config.region = 'us-west-1';
         if (file) {
