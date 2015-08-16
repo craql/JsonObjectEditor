@@ -980,6 +980,13 @@
     color:#007ac2
 }
 
+.joe-panel-header-button:active,
+.jif-panel-header-button:active,
+.jif-panel-submenu-button:active,
+.jif-panel-button:active{
+    background-color: #007ac2;
+    color:#eee;
+}
 .jif-panel-header-button{
     position: absolute;
     top: 0;
@@ -1165,6 +1172,7 @@ bottom:5px;
 /*-------------------------
 	Filters
 -------------------------*/
+
 .jif-panel-submenu-button.joe-filters-toggle {
     margin-right: 5px;
     background-repeat:no-repeat;
@@ -1172,6 +1180,7 @@ bottom:5px;
     background-image: url("../img/btns/filter.png");
 
 }
+
 .joe-filters-holder {
     background: #fff;
     position: absolute;
@@ -1433,6 +1442,10 @@ joe-list-right{
 .joe-panel-content-option-content:hover,
 .joe-panel-content-option.keyboard-selected .joe-panel-content-option-content{
     background-color: rgba(0,0,0,.1) !important;
+}
+.joe-panel-content-option-content:active{
+    background-color: #007ac2;
+    color:#fff;
 }
 .joe-panel-content-option-icon{
     height:100%;

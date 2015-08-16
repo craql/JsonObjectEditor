@@ -937,14 +937,17 @@ function JsonObjectEditor(specs){
                 options:[],
                 content:'',
                 action:'nothing',
-                buttonTemplate: "<div class='selection-label'>select</div>${name}",
-                label:''
+                buttonTemplate: "<div class='selection-label'>${label}</div>${name}",
+                label:'label',
+                value:'v'
             },(specs||{}));
 
         var selectionTemplate =
             "<div data-colcount='${name}' " +
                 "onclick='getJoe("+self.joe_index+")" + "."+specs.action+"(${name});' "
-                +"class='jif-panel-button selector-button-${name} joe-selector-button'>"
+                +"class='jif-panel-button selector-button-${name} joe-selector-button " +
+                //"${RUN{checkSubmenuSelector;${name}}}" +
+                "'>"
                 +specs.buttonTemplate
             +'</div>';
 
@@ -955,11 +958,15 @@ function JsonObjectEditor(specs){
 
         var html="<div class='joe-submenu-selector opts-"+specs.options.length+"' >"+ content+ "</div>";
 
+        /*function checkSubmenuSelector(value){
+            var submenuValue = value || this.value;
+            return ''
+        }*/
         return html;
     }
     this.nothing = function(nothing){
         alert(value);
-    }
+    };
 /*------------------>
 View Mode Buttons
 <------------------*/
@@ -1016,8 +1023,9 @@ View Mode Buttons
 
         var h = renderSubmenuSelectors({
             options:modes,
-            buttonTemplate:"<div class='selection-label'>cols</div>${name}",
+            //buttonTemplate:"<div class='selection-label'>cols</div>${name}",
             label:'cols',
+            value:colCount,
             action:'setColumnCount'
         });
         return h;

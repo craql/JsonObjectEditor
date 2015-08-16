@@ -61,16 +61,15 @@ module.exports = function(grunt) {
         uglify: {
             options: {
                 mangle: false,
-                beautify: true,
-                compress: false
+                beautify: false,
+                compress: false,
+                sourceMap: true
             },
-            dist: {
-                files: [{
-                    expand: true,
-                    cwd: '<%= folders.source %>/',
-                    src: [ '**/*.js' ],
-                    dest: '<%= folders.build %>/'
-                }]
+
+            main: {
+                files: {
+                    '../js/joe.min.js': ['../js/joe.js']
+                }
             }
         },
 
@@ -102,6 +101,20 @@ module.exports = function(grunt) {
             }
         },
 
+        coverage: {
+            default: {
+                options: {
+                    thresholds: {
+                        'statements': 90,
+                        'branches': 90,
+                        'lines': 90,
+                        'functions': 90
+                    },
+                    dir: 'coverage',
+                    //root: 'test'
+                }
+            }
+        },
         // Watches for changes to files
         watch: {
             options: {
@@ -111,20 +124,20 @@ module.exports = function(grunt) {
 
             build_include: {
                 files: ['../js/**/*.js','../css/**/*.css'],
-                tasks: [ 'concat', 'usebanner' ]
+                tasks: [ 'concat', 'usebanner' ,'uglify']
             }
         }
 
     });
 
-
+    grunt.loadNpmTasks('grunt-istanbul-coverage');
     // Load Grunt Plugins
     require('load-grunt-tasks')(grunt);
     //grunt.loadNpmTasks('grunt-contrib-watch');
    // grunt.loadNpmTasks('grunt-contrib-concat');
 
     // Watch for changes
-    grunt.registerTask('default', [ 'concat', 'usebanner', 'watch' ]);
+    grunt.registerTask('default', [ 'concat', 'usebanner', 'uglify',  'watch' ]);
 
 
 };
