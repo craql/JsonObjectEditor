@@ -1817,6 +1817,9 @@ this.renderHTMLContent = function(specs){
 /*----------------------------->
 	A | Text Input
 <-----------------------------*/
+    function cleanString(value){
+        return ((value || '')+'').replace(/\"/g,"&quot;");
+    }
 	this.renderTextField = function(prop){
 		var autocomplete;
 		if(prop.autocomplete && prop.values){
@@ -1836,7 +1839,7 @@ this.renderHTMLContent = function(specs){
 		var html=
             ((autocomplete && '<div class="joe-text-autocomplete-label"></div>')||'')+
 		'<input class="joe-text-field joe-field '+((prop.skip && 'skip-prop')||'')+'" ' +
-            'type="text"  '+disabled+' name="'+prop.name+'" value="'+(prop.value || '')+'" maxlength="'+(prop.maxlength || '')+'" '
+            'type="text"  '+disabled+' name="'+prop.name+'" value="'+cleanString(prop.value || '')+'" maxlength="'+(prop.maxlength || '')+'" '
 			+self.renderFieldAttributes(prop)
 			+((autocomplete &&
 				//' onblur="getJoe('+self.joe_index+').hideTextFieldAutoComplete($(this));"'
