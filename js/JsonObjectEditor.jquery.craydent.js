@@ -2970,6 +2970,22 @@ this.renderSorterField = function(prop){
 /*-------------------------------------------------------------------->
 	4 | OBJECT LISTS
 <--------------------------------------------------------------------*/
+    function renderItemMenu(item,buttons){
+        if(!buttons){
+            return '';
+        }
+
+        var btn_template = '<td class="joe-option-menu-button" onclick="${action}"> ${name}</td>';
+        var html = '<div class="joe-panel-content-option-menu"><table class=""><tbody><tr>';
+            buttons.map(function(b){
+                html+= fillTemplate('<td class="joe-option-menu-button" onclick="'+(b.action||"alert('"+ b.name+"');")+'">'+ b.name+'</td>',item)
+            });
+
+            html+='</tr></tbody></table></div>';
+
+
+        return html;
+    }
     this.renderTableItem = function(listItem,quick,index) {
         //var tableSpecs = tSpecs || tableSpecs;
         var idprop = self.getIDProp();// listSchema._listID;
@@ -3070,6 +3086,8 @@ this.renderSorterField = function(prop){
             var quicktitle = template || title || '';
             return fillTemplate(quicktitle,listItem);
         }
+
+    //add background color
         var numberHTML = '';
         if(index && !listSchema.hideNumbers){
             numberHTML = index;
@@ -3077,7 +3095,10 @@ this.renderSorterField = function(prop){
 
         if(!template){
 			var title = title || listItem.name || id || 'untitled';
-            var listItemButtons = '';//<div class="joe-panel-content-option-button fleft">#</div><div class="joe-panel-content-option-button fright">#</div>';
+
+            var menu = //getProperty('listSchema.'+listSchemaObjIndicator+'.icon')
+                (listSchema.listView && listSchema.listView.itemMenu)||listSchema.itemMenu;
+            var listItemMenu = renderItemMenu(listItem,menu);//<div class="joe-panel-content-option-button fleft">#</div><div class="joe-panel-content-option-button fright">#</div>';
             var icon = //getProperty('listSchema.'+listSchemaObjIndicator+'.icon')
                 (listSchema.listView && listSchema.listView.icon)||listSchema.icon || listSchema._icon || '';
 
@@ -3089,8 +3110,8 @@ this.renderSorterField = function(prop){
                 +'<div class="joe-panel-content-option-bg" '+bgHTML+'></div>'
                 +'<div class="joe-panel-content-option-stripe" '+stripeHTML+'></div>'
                 +(numberHTML && '<div class="joe-panel-content-option-number" >'+numberHTML+'</div>' || numberHTML)
-                    +listItemIcon
-                +listItemButtons
+                +listItemIcon
+                +listItemMenu
                 +fillTemplate(title,listItem)
                 +'</div>';
 		}
@@ -3114,6 +3135,7 @@ this.renderSorterField = function(prop){
         }
 		return html;
 	};
+
 	this.shiftSelecting = false;
     var goBackListIndex;
 	this.listItemClickHandler=function(specs){

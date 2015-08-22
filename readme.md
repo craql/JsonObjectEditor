@@ -229,6 +229,9 @@ an array of menu buttons
     self = Joe object
     var __saveBtn__ = {name:'save',label:'Save', action:'_joe.updateObject(this);', css:'joe-save-button'};
 
+##itemMenu##
+as array of buttons for each item in list views
+
 ###Addition properties
 **Changing the schema on the fly?**
 
