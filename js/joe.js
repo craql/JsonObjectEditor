@@ -2588,7 +2588,7 @@ this.renderSorterField = function(prop){
 
 //render objects
     this.renderObjectListObjects = function(prop){
-        var objects = self.current.object[prop.name] || prop.default || [];
+        var objects = self.current.object[prop.name] || prop['default'] || [];
         var properties = prop.properties || self.objectlistdefaultproperties;
 
         var html = '<tbody id="joe-objectist-table">';
@@ -2840,7 +2840,7 @@ this.renderSorterField = function(prop){
         var values = self.getFieldValues(prop.values);
         var value = self.current.object[prop.name] ||
             prop.value ||
-            (!self.current.object.hasOwnProperty(prop.name) && prop.default) ||
+            (!self.current.object.hasOwnProperty(prop.name) && prop['default']) ||
             [];
         if($.type(value) != 'array'){
             value = (value != null)?[value]:[];
@@ -3624,7 +3624,7 @@ this.renderSorterField = function(prop){
 
         self.overlay.removeClass('hidden');
 		self.overlay.addClass('active');
-		setTimeout(self.onPanelShow(),0);
+		setTimeout(self.onPanelShow,0);
 /*        var evt = new Event('JoeEvent');
         evt.initEvent("showJoe",true,true);
 
@@ -4700,7 +4700,7 @@ function _renderUserCube(user,cssclass){
  * Public Domain.
  * NO WARRANTY EXPRESSED OR IMPLIED. USE AT YOUR OWN RISK.
  */
-
+/*
 // object.watch
 if (!Object.prototype.observeProp && Object.defineProperty) {
     Object.defineProperty(Object.prototype, "watch", {
@@ -4748,7 +4748,7 @@ if (!Object.prototype.observeProp && Object.defineProperty) {
             this[prop] = val;
         }
     });
-}
+}*/
 /*-------------------------------------------------------------------->
 CRAYDENT UPDATES
  <--------------------------------------------------------------------*/
