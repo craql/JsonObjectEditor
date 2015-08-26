@@ -681,13 +681,13 @@ function JsonObjectEditor(specs){
         if(specs.mode == 'list') {
             var submenu =
                 '<div class="joe-panel-submenu">'
-
+            //right side
                 + self.renderViewModeButtons(subSpecs)
                 + self.renderColumnCountSelector(subSpecs.numCols)
-                + ((subSpecs.itemcount && self.renderSubmenuItemcount(subSpecs.itemcount)) || '')
+            //left side
                 + ((subSpecs.filters && self.renderSubmenuFilters(subSpecs.filter)) || '')
                 + ((subSpecs.search && self.renderSubmenuSearch(subSpecs.search)) || '')
-
+                + ((subSpecs.itemcount && self.renderSubmenuItemcount(subSpecs.itemcount)) || '')
 
                 + '</div>'
                 + "<div class='joe-filters-holder'>"
@@ -1318,8 +1318,9 @@ this.renderHTMLContent = function(specs){
 		var html ='<div class="joe-object-content">'+fields.main+'<div class="clear"></div></div>';
 		return fields;
 	};
-
+    var rerenderingField = false;
 	this.rerenderField = function(fieldname){
+        rerenderingField = true;
         if($c.isArray(fieldname)){
             fieldname = fieldname.join(',');
         }
@@ -1327,6 +1328,7 @@ this.renderHTMLContent = function(specs){
             var fields = self.renderObjectPropFieldUI(f);
             $('.joe-object-field[data-name='+f+']').parent().replaceWith(fields);
         })
+        rerenderingField = false;
 
 	};
 
@@ -2476,14 +2478,25 @@ this.renderSorterField = function(prop){
 		var constructedItem = self.constructObjectFromFields();
 		if(!self.current.object[idProp] ||(constructedItem[idProp] && constructedItem[idProp] == self.current.object[idProp])){
 			itemObj = constructedItem;
+
             if(self.current.object[idProp] && constructedItem[idProp] == self.current.object[idProp]){
-                itemObj = $.extend({}, constructedItem, self.current.object);
+                if(rerenderingField){
+
+                    itemObj = $.extend({},  self.current.object,constructedItem);
+                }else{
+
+                    itemObj = $.extend({}, constructedItem, self.current.object);
+                }
             }
 		}
-        if(prop.run){
-            html+= prop.run(itemObj,prop)||'';
-        }else if(prop.template){
-            html += fillTemplate(prop.template,itemObj);
+        try {
+            if (prop.run) {
+                html += prop.run(itemObj, prop) || '';
+            } else if (prop.template) {
+                html += fillTemplate(prop.template, itemObj);
+            }
+        }catch(e){
+            return 'error rendering field:'+e;
         }
         return html;
 
@@ -2976,6 +2989,9 @@ this.renderSorterField = function(prop){
 /*-------------------------------------------------------------------->
 	4 | OBJECT LISTS
 <--------------------------------------------------------------------*/
+
+    //ITEM MENU
+
     function renderItemMenu(item,buttons){
         if(!buttons){
             return '';
@@ -2992,6 +3008,31 @@ this.renderSorterField = function(prop){
 
         return html;
     }
+
+
+    //ITEM EXPANDER
+    this._renderExpanderButton =function(expanderContent,item){
+            if(!expanderContent){return '';}
+            return '<div class="joe-panel-content-option-expander-button" onclick="_joe.toggleItemExpander(this);"></div>';
+    };
+    this.toggleItemExpander = function(dom,itemid){
+      if(dom){
+          $(dom).parents('.joe-panel-content-option')
+              .toggleClass('expander-collapsed')
+              .toggleClass('expander-expanded');
+
+      }
+    };
+    function renderItemExpander(item,contentVal){
+        var content = fillTemplate(self.propAsFuncOrValue(contentVal),item);
+        if(!content){return '';}
+        var html = '<div class="joe-panel-content-option-expander">'+content+'</div>';
+
+
+        return html;
+    }
+
+
     this.renderTableItem = function(listItem,quick,index) {
         //var tableSpecs = tSpecs || tableSpecs;
         var idprop = self.getIDProp();// listSchema._listID;
@@ -3102,23 +3143,30 @@ this.renderSorterField = function(prop){
         if(!template){
 			var title = title || listItem.name || id || 'untitled';
 
-            var menu = //getProperty('listSchema.'+listSchemaObjIndicator+'.icon')
-                (listSchema.listView && listSchema.listView.itemMenu)||listSchema.itemMenu;
+            var menu = (listSchema.listView && listSchema.listView.itemMenu)||listSchema.itemMenu;
             var listItemMenu = renderItemMenu(listItem,menu);//<div class="joe-panel-content-option-button fleft">#</div><div class="joe-panel-content-option-button fright">#</div>';
+
+            var expander = (listSchema.listView && listSchema.listView.itemExpander)||listSchema.itemExpander;
+
+            var listItemExpander = renderItemExpander(listItem,expander);
+            var listItemExpanderButton = self._renderExpanderButton(listItemExpander,listItem);
             var icon = //getProperty('listSchema.'+listSchemaObjIndicator+'.icon')
                 (listSchema.listView && listSchema.listView.icon)||listSchema.icon || listSchema._icon || '';
 
             var listItemIcon = (icon && renderIcon(icon,listItem)) || '';
             //list item content
             title="<div class='joe-panel-content-option-content ' "+action+">"+title+"<div class='clear'></div></div>";
-			var html = '<div class="'+(self.allSelected && 'selected' ||'')+' joe-panel-content-option trans-bgcol '+((numberHTML && 'numbered') || '' )+' joe-no-select '+((stripeColor && 'striped')||'')+'"  data-id="'+id+'" >'
+
+            var html = '<div class="'+(self.allSelected && 'selected' ||'')+' joe-panel-content-option trans-bgcol '+((numberHTML && 'numbered') || '' )+' joe-no-select '+((stripeColor && 'striped')||'')+' '+((listItemExpanderButton && 'expander-collapsed')||'')+'"  data-id="'+id+'" >'
 
                 +'<div class="joe-panel-content-option-bg" '+bgHTML+'></div>'
                 +'<div class="joe-panel-content-option-stripe" '+stripeHTML+'></div>'
                 +(numberHTML && '<div class="joe-panel-content-option-number" >'+numberHTML+'</div>' || numberHTML)
+                +listItemExpanderButton
                 +listItemIcon
                 +listItemMenu
                 +fillTemplate(title,listItem)
+                +listItemExpander
                 +'</div>';
 		}
 		//if there is a list template
@@ -4001,6 +4049,17 @@ this.renderSorterField = function(prop){
             self.current.list.push(obj);
         }
 
+    //update object in dataset
+        var dsname = self.current.schema.__schemaname;
+        var idprop = self.getIDProp();
+        if(self.Data[dsname]){
+            if(self.getDataItem(obj[idprop],dsname)) {
+
+            }else{
+                self.Data[dsname].push(obj);
+            }
+            logit('item matches current schema, updating...');
+        }
     //run callback
 
 		logit('object updated');
@@ -4624,6 +4683,21 @@ ANALYSIS, IMPORT AND MERGE
         logit(e);
         logit($(window).height())*/
     };
+
+
+
+/*-------------------------------------------------------------------->
+K | Smart Schema Values
+ <--------------------------------------------------------------------*/
+    this.smartSave = function(item,newItem,schema){
+        //find schema
+        //look for save function
+
+    };
+
+/*-------------------------------------------------------------------->
+     //AUTOINIT
+ <--------------------------------------------------------------------*/
 
 	if(self.specs.autoInit){
 		self.init();

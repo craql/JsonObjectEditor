@@ -4,6 +4,12 @@
  *  Created by: Corey Hadden 
  * 
  * -------------------------------------------------------- */
+/* -------------------------------------------------------- 
+ * 
+ *  JOE - v1.5.0 
+ *  Created by: Corey Hadden 
+ * 
+ * -------------------------------------------------------- */
 /* required styles */
 
 .leaflet-map-pane,
@@ -761,6 +767,12 @@
     background-position: left center;
 }
 
+.joe-left-plus-button{
+    padding-left: 42px;
+    background:url('../img/btns/plus.png') no-repeat left center;
+
+}
+
 /*
 .joe-iconed-button {
   padding-left: 0;
@@ -1249,7 +1261,7 @@ input.joe-submenu-search-field {
     margin-left:0;
 }
 .joe-submenu-itemcount {
-    float: right;
+    float: left;
     padding-right: 1px;
     padding-top: 9px;
     font-size: 12px;
@@ -1386,6 +1398,9 @@ joe-list-right{
 .joe-panel-content-option.selected{
     background-color: rgba(0,0,0,.15) !important;
 }
+.joe-panel-content-option.selected:active{
+    background-color: #007ac2 !important;
+}
 .joe-panel-content-option-stripe {
     position: absolute;
     left: 1px;
@@ -1437,6 +1452,7 @@ joe-list-right{
 .joe-panel-content-option-content {
     padding: 10px 10px 10px 10px;
     position:relative;
+    transition:.2s;
 }
 
 .joe-panel-content-option-content:hover,
@@ -1444,9 +1460,20 @@ joe-list-right{
     background-color: rgba(0,0,0,.1) !important;
 }
 .joe-panel-content-option-content:active{
-    background-color: #007ac2;
+    background-color: #007ac2 !important;
     color:#fff;
 }
+.joe-panel-content-option-content:active h5,
+.joe-panel-content-option-content:active h4,
+.joe-panel-content-option-content:active h3{
+
+    color:#fff;
+}
+
+.joe-panel-content-option-content:active .joe-subtext{
+    color:#ddd;
+}
+
 .joe-panel-content-option-icon{
     height:100%;
     min-height:50px; text-align:center; min-width:50px;
@@ -1468,7 +1495,7 @@ joe-list-right{
 }
 
 /*-------------------------
-	Option Menu
+	Item Menu
 -------------------------*/
 .joe-panel-content-option-menu {
     float: right;
@@ -1478,15 +1505,59 @@ joe-list-right{
     /* height: 100%; */
 }
 .joe-option-menu-button{
-    /* display: table-cell; */
-
     text-align: center;
-    padding: 10px;
-    height: 25px;
+    padding: 10px 0;
     cursor: pointer;
+    border-radius: 50%;
+    width: 50px;
+    line-height: 30px;
+    transition:.2s;
 }
 .joe-option-menu-button:hover{
     background:rgba(0,0,0,.1);
+}
+
+/*-------------------------
+	Item Expander
+-------------------------*/
+.joe-panel-content-option-expander-button {
+    width: 50px;
+    height: 50px;
+    /* display: inline-block; */
+    position: absolute;
+    left: 5px;
+    background-position:center center;
+    background-repeat:no-repeat;
+
+    top: 5px;
+    opacity:.75;
+    border-radius:50%;
+    transition:.2s;
+}
+.joe-panel-content-option-expander-button:hover{
+    background-color: rgba(0,0,0,.1);
+}
+.expander-collapsed .joe-panel-content-option-expander-button {
+    background-image: url("../img/btns/plus.png");
+}
+.expander-expanded .joe-panel-content-option-expander-button {
+    background-image: url("../img/btns/minus.png");
+}
+
+.expander-collapsed .joe-panel-content-option-content,
+.expander-expanded .joe-panel-content-option-content {
+    margin-left: 50px;
+}
+.joe-panel-content-option-expander {
+    display:none;
+    height:0;
+    overflow:hidden;
+    padding-left: 50px;
+    padding-bottom: 5px;
+}
+.expander-expanded .joe-panel-content-option-expander{
+    display:block;
+    height:auto;
 }
 /*-------------------------
 	List Option Buttons
@@ -1688,6 +1759,7 @@ input.joe-boolean-field {
 .joe-field-item.btn-right{  padding-right:50px;  }
 .joe-field-item.btn-left{  padding-left:50px;  }
 .joe-field-item.btn-both{  padding-left:50px; padding-right:50px;  }
+
 
 /*-------------------------
 	UPLOADER
@@ -1985,6 +2057,12 @@ display:none;
     margin:0;
     line-height: 24px;
 }
+
+.objectReference-field .joe-left-plus-button {
+    margin-top: -30px;
+    margin-bottom: 10px;
+}
+
 .joe-button.multiline {
     line-height: 16px;
 }
