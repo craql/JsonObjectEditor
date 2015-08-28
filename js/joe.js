@@ -866,7 +866,7 @@ function JsonObjectEditor(specs){
             var searchBM = new Benchmarker();
             keyword = keyword || $('.joe-submenu-search-field').val();
             var value=keyword.toLowerCase();
-            var keywords = keyword.replace(/,/g,' ').split(' ');
+            var keywords = value.replace(/,/g,' ').split(' ');
             var filters = self.generateFiltersQuery();
 
             _joe.history[_joe.history.length-1].keyword = value;
@@ -1204,7 +1204,7 @@ this.renderHTMLContent = function(specs){
                     &&(self.current.schema.table||self.current.schema.tableView)
                    // &&(self.current.schema.table||self.current.schema.tableView).cols
                 ) ||{});*/
-            html+='<table class="joe-item-table" cellspacing="0"><thead><th>&nbsp;</th>';
+            html+='<table class="joe-item-table" cellspacing="0"><thead class="joe-table-head"><th>&nbsp;</th>';
             tableSpecs.cols.map(function(c){
                 if($c.isString(c)) {
                     html += '<th>' + c + '</th>';
@@ -2502,13 +2502,24 @@ this.renderSorterField = function(prop){
 
     };
 
-    this.renderFieldListItem = function(item,contentTemplate,schema){
+    this.renderFieldListItem = function(item,contentTemplate,schema,specs){
         var schemaobj = self.schemas[schema];
         var idprop = schemaobj.idprop ||'_id';
+        var specs = $.extend({
+            deleteButton:false,
+            expander:null,
+            gotoButton:false
+        },specs);
 
-        var html = fillTemplate('<div class="joe-field-list-item" ' +
+        var deleteButton = '<div class="joe-delete-button joe-block-button left" ' +
+            'onclick="$(this).parent().remove();">&nbsp;</div>';
+        var expanderContent = renderItemExpander(item,specs.expander);
+        var html = fillTemplate('<div class="'+(!specs.gotoButton &&'joe-field-list-item' ||'joe-field-item')+'" ' +
             'onclick="goJoe(_joe.search(\'${'+idprop+'}\')[0],{schema:\''+schema+'\'})">'
-            +contentTemplate
+            +(specs.deleteButton && deleteButton || '')
+            +self._renderExpanderButton(expanderContent,item)
+            +self.propAsFuncOrValue(contentTemplate,item)
+            +expanderContent
             +'<div class="clear"></div></div>',item);
         return html;
     };
@@ -2967,9 +2978,11 @@ this.renderSorterField = function(prop){
         window.__previews[previewid] = {content:content,bodycontent:bodycontent};
         url+='?pid='+previewid;
         var html=
-            '<div class="joe-button joe-reload-button joe-iconed-button" onclick="getJoe('+self.joe_index+').rerenderField(\''+prop.name+'\');">Reload</div>'+
-            '<iframe class="joe-preview-field joe-field joe-preview-iframe" width="100%" height="'+height+'" name="'+prop.name+'" ' +
+            '<div class="joe-button joe-reload-button joe-iconed-button" onclick="getJoe('+self.joe_index+').rerenderField(\''+prop.name+'\');">Reload</div>'
+                +'<div class="joe-preview-iframe-holder" style="height:'+height+'">'
+            +'<iframe class="joe-preview-field joe-field joe-preview-iframe" width="100%" height="100%" name="'+prop.name+'" ' +
             'src="'+url+'"></iframe>'
+                +'</div>'
             //+ '<a href="'+url+'" target="_blank"> view fullscreen preview</a><p>' + url.length + ' chars</p>';
             + '<div class="joe-button joe-iconed-button joe-view-button multiline" onclick="window.open(\''+url+'\',\'joe-preview-'+previewid+'\').joeparent = window;"> view fullscreen preview <p class="joe-subtext">' + url.length + ' chars</p></div>';
         return html;
@@ -3024,7 +3037,7 @@ this.renderSorterField = function(prop){
       }
     };
     function renderItemExpander(item,contentVal){
-        var content = fillTemplate(self.propAsFuncOrValue(contentVal),item);
+        var content = fillTemplate(self.propAsFuncOrValue(contentVal,item),item);
         if(!content){return '';}
         var html = '<div class="joe-panel-content-option-expander">'+content+'</div>';
 
@@ -3157,7 +3170,7 @@ this.renderSorterField = function(prop){
             //list item content
             title="<div class='joe-panel-content-option-content ' "+action+">"+title+"<div class='clear'></div></div>";
 
-            var html = '<div class="'+(self.allSelected && 'selected' ||'')+' joe-panel-content-option trans-bgcol '+((numberHTML && 'numbered') || '' )+' joe-no-select '+((stripeColor && 'striped')||'')+' '+((listItemExpanderButton && 'expander-collapsed')||'')+'"  data-id="'+id+'" >'
+            var html = '<div class="'+(self.allSelected && 'selected' ||'')+' joe-panel-content-option trans-bgcol '+((numberHTML && 'numbered') || '' )+' joe-no-select '+((stripeColor && 'striped')||'')+' '+((listItemExpanderButton && 'expander expander-collapsed')||'')+'"  data-id="'+id+'" >'
 
                 +'<div class="joe-panel-content-option-bg" '+bgHTML+'></div>'
                 +'<div class="joe-panel-content-option-stripe" '+stripeHTML+'></div>'
@@ -3793,6 +3806,9 @@ this.renderSorterField = function(prop){
             logit('Error creating sortables:\n'+e);
         }
 
+
+        //preview
+        $('.joe-preview-iframe-holder').resizable({handles:'s'});
         //imagefield
 		self.overlay.find('input.joe-image-field').each(function(){_joe.updateImageFieldImage(this);});
         //object reference

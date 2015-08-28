@@ -4,12 +4,6 @@
  *  Created by: Corey Hadden 
  * 
  * -------------------------------------------------------- */
-/* -------------------------------------------------------- 
- * 
- *  JOE - v1.5.0 
- *  Created by: Corey Hadden 
- * 
- * -------------------------------------------------------- */
 /* required styles */
 
 .leaflet-map-pane,
@@ -656,7 +650,7 @@
     font-weight: bold;
     font-size: 1.1em;
 }
-.joe-subtext, joe-subtext{
+.joe-subtext{
     font-size:.8em;
     font-weight: normal;
     opacity: .6;
@@ -1354,7 +1348,7 @@ input.joe-submenu-search-field {
 /*-------------------------
 	List Options
 -------------------------*/
-joe-list-right{
+.joe-list-right{
     float:right;
     text-align:right;
 }
@@ -1364,7 +1358,6 @@ joe-list-right{
     /*padding: 10px 10px 10px 10px;*/
     position: relative;
     /* min-height: 30px; */
-    cursor: pointer;
     font-size: 14px;
     clear:both;
     border-bottom: 1px solid #e1e1e1;
@@ -1435,6 +1428,10 @@ joe-list-right{
 .numbered .joe-panel-content-option-content {
     padding-left: 40px;
 }
+.numbered.expander .joe-panel-content-option-content {
+    margin-left: 50px;
+    padding-left: 10px;
+}
 
 .numbered .joe-panel-content-option-icon{
     margin-left:40px;
@@ -1453,6 +1450,7 @@ joe-list-right{
     padding: 10px 10px 10px 10px;
     position:relative;
     transition:.2s;
+    cursor:pointer;
 }
 
 .joe-panel-content-option-content:hover,
@@ -1465,7 +1463,10 @@ joe-list-right{
 }
 .joe-panel-content-option-content:active h5,
 .joe-panel-content-option-content:active h4,
-.joe-panel-content-option-content:active h3{
+.joe-panel-content-option-content:active h3,
+.joe-field-list-item:active h5,
+.joe-field-list-item:active h4,
+.joe-field-list-item:active h3{
 
     color:#fff;
 }
@@ -1521,18 +1522,22 @@ joe-list-right{
 	Item Expander
 -------------------------*/
 .joe-panel-content-option-expander-button {
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     /* display: inline-block; */
     position: absolute;
     left: 5px;
     background-position:center center;
     background-repeat:no-repeat;
-
+    background-size:80%;
     top: 5px;
     opacity:.75;
     border-radius:50%;
     transition:.2s;
+    cursor:pointer;
+}
+.numbered .joe-panel-content-option-expander-button{
+    left:20px;
 }
 .joe-panel-content-option-expander-button:hover{
     background-color: rgba(0,0,0,.1);
@@ -1544,16 +1549,19 @@ joe-list-right{
     background-image: url("../img/btns/minus.png");
 }
 
-.expander-collapsed .joe-panel-content-option-content,
-.expander-expanded .joe-panel-content-option-content {
-    margin-left: 50px;
+.expander .joe-panel-content-option-content {
+    margin-left: 40px;
+    min-height: 30px;
 }
+
+/*expander content*/
 .joe-panel-content-option-expander {
     display:none;
     height:0;
     overflow:hidden;
-    padding-left: 50px;
-    padding-bottom: 5px;
+    padding: 10px;
+    border-top: 1px solid #eee;
+    background-color: #fcfcfc;
 }
 .expander-expanded .joe-panel-content-option-expander{
     display:block;
@@ -1650,9 +1658,15 @@ input.joe-boolean-field {
 .joe-field-list-item {
     padding:10px;
     cursor:pointer;
+    position: relative;
 }
 .joe-field-list-item:hover{
     background-color:rgba(0,0,0,.1);
+}
+.joe-field-list-item:active{
+    color:#fff;
+    background-color: #007ac2;
+
 }
 /*-------------------------------------------------------------------->
 	Editor Form
@@ -2388,6 +2402,14 @@ iframe.joe-preview-iframe {
 }
 .preview-field .joe-button.joe-reload-button {
     margin-bottom: 10px;
+}
+
+.joe-preview-iframe-holder{
+    position:relative;
+    background:#eee;
+    padding-bottom:20px;
+    margin-bottom:10px;
+    clear:both;
 }
 /*----------------------------->
 	Text Input Button
