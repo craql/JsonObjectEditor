@@ -903,7 +903,9 @@ function JsonObjectEditor(specs){
                     } else {
                         testable = self.renderListItem(i, true);
                     }
+                    testable = testable.toLowerCase()+id;
                     for (var k = 0, tot = keywords.length; k < tot; k++) {
+
                         if (testable.indexOf(keywords[k]) == -1) {
                             return false;
                         }
