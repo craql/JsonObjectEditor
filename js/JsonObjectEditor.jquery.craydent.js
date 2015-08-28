@@ -2523,17 +2523,19 @@ this.renderSorterField = function(prop){
     this.renderURLField = function(prop){
         var profile = self.current.profile;
             var disabled = _disableField(prop);// (prop.locked &&'disabled')||'';
+        var prefix = fillTemplate(prop.prefix||'',self.current.object);
         var html=
-            '<div class="joe-button" onclick="_joe.gotoFieldURL(this);">view</div>'
+            prefix+
+            '<div class="joe-button" onclick="_joe.gotoFieldURL(this,\''+prefix+'\');">view</div>'
             +'<input class="joe-url-field joe-field" type="text" ' +
             self.renderFieldAttributes(prop)+
             'name="'+prop.name+'" value="'+(prop.value || '')+'"  '+disabled+' />'
        + __clearDiv__;
         return html;
     };
-    this.gotoFieldURL = function(dom){
+    this.gotoFieldURL = function(dom,prefix){
         var url = $(dom).siblings('.joe-url-field').val();
-        window.open(url);
+        window.open((prefix||'')+url);
     };
 /*----------------------------->
  N | Color
@@ -2774,34 +2776,85 @@ this.renderSorterField = function(prop){
         }
 
         var values = self.getFieldValues(prop.values);
+        var dz_message = '<div style="line-height:100px;">drag files here to upload</div>';
+
+        if(prop.field && self.current.object[prop.field]){
+            var kfield = self.getField(prop.field);
+            var preview = self.current.object[prop.field]
+            if(kfield.prefix){
+                preview = fillTemplate(kfield.prefix,self.current.object)+preview;
+            }
+            dz_message = '<img src="'+preview+'"/>'
+        }
         var html=
             '<div class="joe-uploader" data-uploader_id="'+uploader_id+'">'+
                 '<div class="joe-uploader-preview"></div>'+
-                '<div class="joe-uploader-dropzone">drag files here to upload</div>'+
+                '<div class="joe-uploader-dropzone">'+dz_message+'</div>'+
                 '<div class="joe-uploader-message">add a file</div>'+
-            '</div>';
+            '<div class="joe-button joe-green-button joe-upload-cofirm-button hidden"  onclick="_joe.uploaderConfirm(\''+uploader_id+'\');">Upload File</div>'+__clearDiv__+
+            '</div>'
+            ;
         //var idprop = prop.idprop || '_id';
         //html+= __clearDiv__;
         self.uploaders[uploader_id] = {prop:prop.name};
         return html;
     };
 
-    this.onUserUpload = function(file,base64){
+    this.onUserUpload = function(file,base64) {
         var dom = $(this.dropZone).parent();
 
         var joe_uploader = self.uploaders[dom.data('uploader_id')];
         //var results = dom.find('.joe-uploader-message');
         var guid = "" || cuid();
         var field = _joe.getField(joe_uploader.prop);
+        if (file) {
+            joe_uploader.file = file;
+            joe_uploader.base64 = base64;
 
+            joe_uploader.dropzone.html('<img src="' + base64 + '">');
+            joe_uploader.message.html('<b>'+file.name+'</b> selected');
+            joe_uploader.confirmBtn.removeClass('hidden');
+        }else {
+            results.innerHTML = 'Nothing to upload.';
+        }
+    };
         //setup AWS
+    this.uploaderConfirm = function(uploader_id){
+        var joe_uploader = self.uploaders[uploader_id];
+        //var results = dom.find('.joe-uploader-message');
+        var guid = "" || cuid();
+        var field = _joe.getField(joe_uploader.prop);
+        var file = joe_uploader.file;
+        var base64 = joe_uploader.base64;
+        var callback = function(err,url){
+            if(err){
+                joe_uploader.message.append('<div>'+m+'<br/>'+err+'</div>');
+                alert('error uploading');
+            }else{
+                if(field.field){
+                    joe_uploader.message.append('<div>uploaded</div>');
+                    self.current.object[field.field] = url;
+                    self.rerenderField(field.field);
+                    self.panel.find('.joe-panel-menu').find('.joe-quicksave-button').click();
 
-        AWS.config.update({
+                }
+            }
+        }
+        var uploadFunction = field.upload || function(file,callback,base64){
+                alert('file uploaded');
+                callback(err,url);
+            };
+        if(file){
+                uploadFunction(file,callback,base64);
+        }
+       /* AWS.config.update({
             accessKeyId:'',
-            secretAccessKey:''
+            secretAccessKey:'',
+            region:''
         });
+
         // Configure your region
-        AWS.config.region = 'us-west-1';
+        //AWS.config.region = 'us-west-1';
         if (file) {
             if(field.aws && field.aws.bucket) {
                 var bucket = new AWS.S3({
@@ -2811,20 +2864,26 @@ this.renderSorterField = function(prop){
                 });
             }
             joe_uploader.message.append('Uploading '+file.name+' to s3');
-            joe_uploader.preview.append('<img src="'+base64+'">');
+
             var params = {
                 Key:guid+""+file.name,
                 ContentType:file.type,
                 Body:file
             };
             bucket.upload(params, function (err, data) {
-                var m = err ? 'ERROR!' : 'UPLOADED.';
-                joe_uploader.message.append(m);
+                if(err){
+
+                    joe_uploader.message.append('<div>'+m+'<br/>'+err+'</div>');
+                }else{
+
+                    joe_uploader.message.append('<div>uploaded</div>');
+                }
+                //var m = err ? 'ERROR!' : 'UPLOADED.';
                 logit(data);
             });
         } else {
             results.innerHTML = 'Nothing to upload.';
-        }
+        }*/
     };
     this.readyUploaders = function(){
         self.panel.find('.joe-uploader').each(function(){
@@ -2847,6 +2906,8 @@ this.renderSorterField = function(prop){
             self.uploaders[id].uploader = uploader;
             self.uploaders[id].message = $(this).find('.joe-uploader-message').html('awaiting file');
             self.uploaders[id].preview = $(this).find('.joe-uploader-preview');
+            self.uploaders[id].dropzone = $(this).find('.joe-uploader-dropzone');
+            self.uploaders[id].confirmBtn = $(this).find('.joe-upload-cofirm-button');
 
         });
     };
@@ -3006,8 +3067,13 @@ this.renderSorterField = function(prop){
 
         var btn_template = '<td class="joe-option-menu-button" onclick="${action}"> ${name}</td>';
         var html = '<div class="joe-panel-content-option-menu"><table class=""><tbody><tr>';
-            buttons.map(function(b){
-                html+= fillTemplate('<td class="joe-option-menu-button" onclick="'+(b.action||"alert('"+ b.name+"');")+'">'+ b.name+'</td>',item)
+        var oc;
+            buttons.map(function(b) {
+                if (!b.condition || self.propAsFuncOrValue(b.condition,item)) {
+                    oc = (b.url && "window.open(\'"+fillTemplate(b.url,item)+"\')" )
+                        || b.action || "alert('" + b.name + "');"
+                html += fillTemplate('<td class="joe-option-menu-button" onclick="' + oc + '">' + b.name + '</td>', item)
+                }
             });
 
             html+='</tr></tbody></table></div>';

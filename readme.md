@@ -231,6 +231,10 @@ an array of menu buttons
 
 ##itemMenu##
 as array of buttons for each item in list views
+	- name
+	- action (action string)
+	- url (instead of js action)
+	- condition
 
 ##itemExpander##
 template or run for content to be shown under the main list item block.
