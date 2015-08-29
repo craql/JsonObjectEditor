@@ -931,6 +931,9 @@ input.joe-submenu-search-field {
     float: right;
     z-index: 2;
     position: relative;
+    border-left: 1px solid #eee;
+    top: 4px;
+    margin-left: 4px;
     /* display: table-row; */
     /* height: 100%; */
 }
