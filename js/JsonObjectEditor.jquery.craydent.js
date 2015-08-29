@@ -1759,6 +1759,9 @@ this.renderHTMLContent = function(specs){
             case 'preview':
                 html+= self.renderPreviewField(prop);
                 break;
+            case 'wysiwyg':
+                html+= self.renderCKEditorField(prop);
+                break;
 			default:
 				html+= self.renderTextField(prop);
 				break;
@@ -3010,7 +3013,7 @@ this.renderSorterField = function(prop){
     };
 
 /*----------------------------->
- V | Preview Field
+ W | Preview Field
  <-----------------------------*/
     this.renderPreviewField = function(prop){
         //var locked = self.propAsFuncOrValue(prop.locked)?' disabled ':'';
@@ -3044,6 +3047,69 @@ this.renderSorterField = function(prop){
             + '<div class="joe-button joe-iconed-button joe-view-button multiline" onclick="window.open(\''+url+'\',\'joe-preview-'+previewid+'\').joeparent = window;"> view fullscreen preview <p class="joe-subtext">' + url.length + ' chars</p></div>';
         return html;
     };
+
+/*----------------------------->
+ X //TextEditor Field
+ <-----------------------------*/
+    this.renderCKEditorField = function(prop){
+        var profile = self.current.profile;
+        var locked = self.propAsFuncOrValue(prop.locked)?' disabled ':'';
+        var height = (prop.height)?'style="height:'+prop.height+';"' : '';
+        var code_language = (prop.language||'html').toLowerCase();
+        var editor_id = cuid();
+        var html=
+            '<div class="joe-ckeditor-holder joe-texteditor-field joe-field" '
+            +height+' data-ckeditor_id="'+editor_id+'" data-ftype="ckeditor" name="'+prop.name+'">'+
+            '<div id="'+editor_id+'" class="joe-ckeditor">'+(prop.value || "")+'</div>'+
+            '</div>';
+        return html;
+    };
+    var ckconfig = {};
+    ckconfig.toolbarGroups = [
+            { name: 'clipboard', groups: [ 'undo', 'clipboard' ] },
+            { name: 'editing', groups: [ 'find', 'selection', 'spellchecker', 'editing' ] },
+            { name: 'links', groups: [ 'links' ] },
+            { name: 'insert', groups: [ 'insert' ] },
+            { name: 'forms', groups: [ 'forms' ] },
+            { name: 'document', groups: [ 'mode', 'document', 'doctools' ] },
+            { name: 'tools', groups: [ 'tools' ] },
+            { name: 'others', groups: [ 'others' ] },
+            '/',
+            { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
+            { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi', 'paragraph' ] },
+            { name: 'styles', groups: [ 'styles' ] },
+            { name: 'colors', groups: [ 'colors' ] }
+        ];
+
+    ckconfig.removeButtons = 'Anchor,Subscript,Superscript,Image';
+    ckconfig.toolbarCanCollapse = true;
+    self.ck_editors = [];
+    this.readyCKEditors = function(){
+        if(typeof CKEDITOR == 'undefined'){
+            //TODO:use require
+            alert('CKEDITOR undefined');
+        }
+        var neweditors = [];
+        self.ck_editors.map(function(ck){
+            try {
+                ck.destroy && ck.destroy();
+            }catch(e){
+             logit('ckeditor "'+ck.name+'" error:'+e);
+            }
+        });
+        $('.joe-ckeditor').each(function(dom){
+            var field = self.getField($(this).parent().attr('name'))
+            var id = $(this).attr('id');
+            if(self.ck_editors.indexOf(id)==-1) {
+                var editor = CKEDITOR.replace(id,ckconfig);
+                neweditors.push(editor);
+            }
+        });
+        self.ck_editors = neweditors;
+
+    };
+
+
     function _getField(fieldname){
         var fieldobj;
         for(var f = 0,tot= self.current.fields.length; f<tot; f++){
@@ -3906,6 +3972,8 @@ this.renderSorterField = function(prop){
         //uploaders
         self.readyUploaders();
 
+        //ckeditors
+        self.readyCKEditors();
         //go back to previous item
         if(goingBackFromID){
             if(goBackListIndex != null){
@@ -4237,6 +4305,12 @@ this.renderSorterField = function(prop){
                                 var editor = _joe.ace_editors[$(this).data('ace_id')];
                                 //$(this).find('.ace_editor');
                                 object[prop] = editor.getValue();
+                                break;
+                            case 'ckeditor':
+                                var editor = CKEDITOR.instances[$(this).data('ckeditor_id')];
+                                //_joe.ace_editors[];
+                                //$(this).find('.ace_editor');
+                                object[prop] =(editor)? editor.getData():self.current.object[prop];
                                 break;
 
 
