@@ -558,15 +558,19 @@ function JsonObjectEditor(specs){
 			return html;
 		}
 		//.replace(/(<([^>]+)>)/ig,"");
+
+        var reload_button = (specs.minimode)?'':
+        '<div class="jif-panel-header-button joe-panel-reload" title="reload" '+reload_action+'><span class="jif-reload"></span></div>';
+
 		var html =
 		'<div class="joe-panel-header">'+
 			((specs.schema && specs.schema.subsets && self.renderSubsetselector(specs.schema)) || (specs.subsets && self.renderSubsetselector(specs)) || '')+
-			renderHeaderBackButton()+
+        (!specs.minimode && renderHeaderBackButton() || '')+
 			'<div class="joe-vcenter joe-panel-title-holder"><span class="joe-panel-title">'+
 				(('<div>'+title+'</div>').toDomElement().innerText || title || 'Json Object Editor')+
 			'</span></div>'+
         //'<div class="joe-panel-reload joe-panel-header-button" title="reload" '+reload_action+'></div>'+
-        '<div class="jif-panel-header-button joe-panel-reload" title="reload" '+reload_action+'><span class="jif-reload"></span></div>'+
+        reload_button+
         '<div class="jif-panel-header-button joe-panel-close" title="close" '+close_action+'>' +//joe-panel-close
         '<span class="jif-close"></span>'+
         '</div>'+
@@ -1074,10 +1078,12 @@ View Mode Buttons
 
 		}
         var submenu = '';
-        if(mode == 'list' && self.current.submenu){
-            submenu=' with-submenu ';
+        if(!specs.minimode) {
+            if ((mode == 'list' && self.current.submenu) || (self.current.submenu || renderSectionAnchors().count)) {
+                submenu = ' with-submenu '
+            }
         }
-        submenu=(self.current.submenu || renderSectionAnchors().count)?' with-submenu ':'';
+        //submenu=(self.current.submenu || renderSectionAnchors().count)?' with-submenu ':'';
         var scroll = 'onscroll="getJoe('+self.joe_index+').onListContentScroll(this);"';
         var rightC = content.right||'';
         var leftC = content.left||'';
@@ -1141,15 +1147,20 @@ this.renderHTMLContent = function(specs){
 	this.renderListContent = function(specs){
 		var wBM = new Benchmarker();
 
-        currentListItems = [];
-		self.current.selectedListItems=[];
-		self.current.anchorListItem=null;
+        if(specs.minimode) {
+            return self.renderMiniListContent(specs);
+        }
+            currentListItems = [];
+            self.current.selectedListItems = [];
+            self.current.anchorListItem = null;
+
 
 		specs = specs || {};
 		var schema = specs.schema;
 		var list = specs.list || [];
 		var html = '';
         var filteredList;
+
         if(self.current.sorter &&(($.type(self.current.sorter) != 'array') || self.current.sorter.length) ){
             list = list.sortBy(self.current.sorter);
         }
@@ -1173,6 +1184,32 @@ this.renderHTMLContent = function(specs){
 		return html;
 
 	};
+    this.renderMiniListContent = function(specs){
+        var wBM = new Benchmarker();
+
+        specs = specs || {};
+        var schema = specs.schema;
+        var list = specs.object || [];
+        var idprop = specs.idprop || '_id';
+        var html = '';
+        var sorter = specs.sorter || 'name';
+        //var click = specs.click || 'alert(\'${name}\')';
+
+        var click = 'getJoe('+self.joe_index+').minis[\''+specs.minimode+'\'].callback(\'${'+idprop+'}\')';
+
+        var template = specs.template || '<h4>${name}</h4><div>${'+idprop+'}</div>';
+            template ='<div class="joe-field-list-item" onclick="'+click+'">'+template+'</div>';
+
+        //TODO: lazy-render images
+
+        for(var li = 0,tot = list.length; li<tot;li++){
+          html+= fillTemplate(template,list[li]);
+        }
+
+        logit('minilist complete in '+wBM.stop()+' seconds');
+        return html;
+
+    };
 
     this.renderListItems = function(items,start,stop){
         var html = '';
@@ -1281,7 +1318,7 @@ this.renderHTMLContent = function(specs){
 		var fieldProp;
         self.current.fields = [];
         self.current.sections = {};
-        var schemaFields = self.propAsFuncOrValue(specs.schema.fields);
+        var schemaFields = (specs.schema)?self.propAsFuncOrValue(specs.schema.fields):false;
 		if(!specs.schema || !schemaFields){//no schema use items as own schema
 			for( var prop in object){
 				if(object.hasOwnProperty(prop)){
@@ -3612,7 +3649,8 @@ this.renderSorterField = function(prop){
 <-------------------------------------------------------------------*/
 	this.showMiniJoe = function(specs){
 		var mini = {};
-        specs = specs || {};
+        specs = $.extend({mode:'object'},
+            (specs || {}));
         var object =specs.props || specs.object ||specs.list||specs.content;
 		if(!object){
 			return;
@@ -3623,25 +3661,41 @@ this.renderSorterField = function(prop){
 		mini.id = cuid();
 
 		//var html = '<div class="joe-mini-panel joe-panel">';
-
+        var mode = specs.mode || 'object';
+        switch($.type(object)){
+            case 'object':
+                mode ='object';
+            break;
+            case 'array':
+                mode ='list';
+            break;
+        }
+        var minimode = mini.id;
         var html =
-            self.renderEditorHeader({title: title, action: 'onclick="getJoe(' + self.joe_index + ').hideMini()"'});
+            self.renderEditorHeader({title: title, minimode:minimode,
+                close_action: 'onclick="getJoe(' + self.joe_index + ').hideMini();"'});
 
-            html += self.renderEditorContent({object: object, mode: specs.mode || 'object'})
-            html += self.renderEditorFooter({minimenu: specs.menu});
+            html += self.renderEditorContent({object: object, mode: mode, minimode:minimode});
+            html += self.renderEditorFooter({minimenu: specs.menu,minimode:minimode,});
 
-		$('.joe-mini-panel').addClass('active').html(html);
+        var height = specs.height ||self.overlay.height()/2;
+        mini.panel = $('.joe-mini-panel');
+        mini.panel.addClass('active').html(html);
         if(!$('.joe-mini-panel .joe-panel-footer').find('.joe-button:visible').length){
             $('.joe-mini-panel').addClass('no-footer-menu');
         }
-        if(specs.height){
-            $('.joe-mini-panel').css('height',specs.height);
-        }
+        mini.panel.css('height',height);
 
+        mini.panel.draggable({handle:'.joe-panel-header',snap:'.joe-overlay'}).resizable({handles:'s'});
+
+        mini.callback = specs.callback || function(itemid){
+            alert(itemid);
+        }
 		self.minis[mini.id] = mini;
 	};
 
 	this.hideMini = function(){
+        $('.joe-mini-panel').resizable('destroy').draggable('destroy');
 		$('.joe-mini-panel').removeClass('active')
 	};
 

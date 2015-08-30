@@ -334,6 +334,7 @@
     width: 60%;
     min-width:300px;
     display:none;
+    z-index:10;
 }
 .joe-mini-panel.active{
     display:block;
