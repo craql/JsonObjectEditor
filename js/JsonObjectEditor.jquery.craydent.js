@@ -708,7 +708,7 @@ function JsonObjectEditor(specs){
 
         //TODO:move to subsets filter rendering function
         function renderSubsetsDiv(){
-            var sh = '<div><h4>Subsets</h4>';
+            var sh = '<div><div class="joe-menu-label">Subsets</div>';
             var act;
             [{name:'All',filter:{}}].concat(_joe.current.subsets||[]).map(function(opt){
                 //if(!opt.condition || (typeof opt.condition == 'function' && opt.condition(self.current.object)) || (typeof opt.condition != 'function' && opt.condition)) {
@@ -724,7 +724,7 @@ function JsonObjectEditor(specs){
 
 
         function renderFiltersDiv(){
-            var fh = '<div><h4>Filters</h4>';
+            var fh = '<div><div class="joe-menu-label">Filters</div>';
             var filters = self.current.schema.filters;
             filters = self.propAsFuncOrValue(filters);
             (filters||[]).map(function(opt){
@@ -1194,7 +1194,7 @@ this.renderHTMLContent = function(specs){
         var html = '';
         var sorter = specs.sorter || 'name';
         //var click = specs.click || 'alert(\'${name}\')';
-
+        list = list.sortBy(sorter);
         var click = 'getJoe('+self.joe_index+').minis[\''+specs.minimode+'\'].callback(\'${'+idprop+'}\')';
 
         var template = specs.template || '<h4>${name}</h4><div>${'+idprop+'}</div>';
@@ -2550,11 +2550,21 @@ this.renderSorterField = function(prop){
         var deleteButton = '<div class="joe-delete-button joe-block-button left" ' +
             'onclick="$(this).parent().remove();">&nbsp;</div>';
         var expanderContent = renderItemExpander(item,specs.expander);
-        var html = fillTemplate('<div class="'+(!specs.gotoButton &&'joe-field-list-item' ||'joe-field-item')+'" ' +
-            'onclick="goJoe(_joe.search(\'${'+idprop+'}\')[0],{schema:\''+schema+'\'})">'
+
+        var click = (specs.gotoButton)?'>':
+        'onclick="goJoe(_joe.search(\'${'+idprop+'}\')[0],{schema:\''+schema+'\'})">';
+
+        var html = fillTemplate('<div class="'
+            +(!specs.gotoButton &&'joe-field-list-item' ||'joe-field-item')
+            +(specs.deleteButton &&' deletable' ||'')
+            +(specs.expander &&' expander expander-collapsed' ||'')+'" '
+            +click
+            + '<div class="joe-field-item-content">'
             +(specs.deleteButton && deleteButton || '')
             +self._renderExpanderButton(expanderContent,item)
             +self.propAsFuncOrValue(contentTemplate,item)
+            +'</div>'
+            +(specs.gotoButton && '${RUN[_renderGotoButton]}' || '')
             +expanderContent
             +'<div class="clear"></div></div>',item);
         return html;
@@ -3019,11 +3029,13 @@ this.renderSorterField = function(prop){
     };
 
     this.createObjectReferenceItem = function(item,id,fieldname){
-            var field = _getField(fieldname);
-            var idprop = field.idprop||'_id';
+        var field = _getField(fieldname);
+        var idprop = field.idprop||'_id';
 
+        var gotoButton = '${RUN[_renderGotoButton]}';
+        if(field.hideGotoButton){gotoButton = '';}
         if(!item) {
-            logit('adding ' + id + ' from ' + fieldname);
+            //logit('adding ' + id + ' from ' + fieldname);
 
             //var values = self.propAsFuncOrValue(field.values);
             var values = self.getFieldValues(field.values);
@@ -3044,8 +3056,21 @@ this.renderSorterField = function(prop){
                 deleteButton + "<div>REFERENCE NOT FOUND</div><span class='subtext'>" + id + "</span>" + '</div>';
         }
         var id = id||item[idprop];
+
+
+        var expander = fillTemplate(self.propAsFuncOrValue(field.expander,item),item)||'';
         var template = self.propAsFuncOrValue(field.template, item) || "<div>${name}</div><span class='subtext'>" + id + "</span>";
-        return '<div class="joe-field-item" data-value="' + id + '">' + deleteButton + fillTemplate(template, item) + '</div>';
+        return '<div class="joe-field-item '+(expander && 'expander expander-collapsed' || '')+'" data-value="' + id + '">'
+
+            + deleteButton
+            + '<div class="joe-field-item-content">'
+
+            +self._renderExpanderButton(expander,item)
+            +fillTemplate(template, item)
+            +'</div>'
+            +fillTemplate(gotoButton,item)
+            +renderItemExpander(item, expander)
+            + '</div>';
 
     };
 
@@ -3193,9 +3218,11 @@ this.renderSorterField = function(prop){
             if(!expanderContent){return '';}
             return '<div class="joe-panel-content-option-expander-button" onclick="_joe.toggleItemExpander(this);"></div>';
     };
+
+    //window._renderExpanderButton = this._renderExpanderButton;
     this.toggleItemExpander = function(dom,itemid){
       if(dom){
-          $(dom).parents('.joe-panel-content-option')
+          $(dom).closest('.expander')
               .toggleClass('expander-collapsed')
               .toggleClass('expander-expanded');
 
@@ -3209,7 +3236,7 @@ this.renderSorterField = function(prop){
 
         return html;
     }
-
+    this.renderItemExpander = renderItemExpander;
 
     this.renderTableItem = function(listItem,quick,index) {
         //var tableSpecs = tSpecs || tableSpecs;
@@ -3994,7 +4021,7 @@ this.renderSorterField = function(prop){
         //imagefield
 		self.overlay.find('input.joe-image-field').each(function(){_joe.updateImageFieldImage(this);});
         //object reference
-        self.overlay.find('.joe-object-references-holder.sortable').sortable();
+        self.overlay.find('.joe-object-references-holder.sortable').sortable({handle:'.joe-field-item-content'});
 	    self.overlay.find('.joe-objectlist-table').each(function(){
             $(this).find('tbody').sortable(
                 {   axis:'y',
@@ -4890,7 +4917,21 @@ ANALYSIS, IMPORT AND MERGE
         logit($(window).height())*/
     };
 
+this._renderGotoButton = function(id,dataset,schema){
+    var item = {};
+    item._id = id || this._id;
+    item.dataset = dataset || this.itemtype;
+    item.schema = schema || item.dataset;
+    var idprop = self.getIDProp(schema);
+    return fillTemplate(
+        '<div class="joe-block-button goto-icon" ' +
+            //'onclick="goJoe(getNPCDataItem(\'${_id}\',\'${dataset}\'),' +
+        'onclick="goJoe(_joe.getDataItem(\'${'+idprop+'}\',\'${dataset}\'),' +
+        '{schema:\'${schema}\'})"></div>',item);
 
+};
+
+    window._renderGotoButton = this._renderGotoButton;
 
 /*-------------------------------------------------------------------->
 K | Smart Schema Values
@@ -4915,7 +4956,6 @@ K | Smart Schema Values
    // }
 	return this;
 }
-
 
 var __gotoJoeSection;
 var __clearDiv__ = '<div class="clear"></div>';

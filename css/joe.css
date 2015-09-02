@@ -1203,9 +1203,15 @@ bottom:5px;
 .joe-overlay-panel.show-filters .joe-filters-holder{
     display:block;
 }
-.joe-filters-holder h4 {
+/*.joe-filters-holder h4 {
     padding: 5px 6px;
     padding-bottom: 0px;
+}*/
+
+.joe-filters-holder .joe-menu-label {
+    padding: 5px;
+    background-color: rgba(0,0,0,.1);
+    /* -webkit-user-select: none; */
 }
 
 /*subset option */
@@ -1546,10 +1552,12 @@ input.joe-submenu-search-field {
 .joe-panel-content-option-expander-button:hover{
     background-color: rgba(0,0,0,.1);
 }
-.expander-collapsed .joe-panel-content-option-expander-button {
+.expander-collapsed > .joe-panel-content-option-expander-button,
+.expander-collapsed > div > .joe-panel-content-option-expander-button {
     background-image: url("../img/btns/plus.png");
 }
-.expander-expanded .joe-panel-content-option-expander-button {
+.expander-expanded > .joe-panel-content-option-expander-button, 
+.expander-expanded > div > .joe-panel-content-option-expander-button {
     background-image: url("../img/btns/minus.png");
 }
 
@@ -1567,7 +1575,7 @@ input.joe-submenu-search-field {
     border-top: 1px solid #eee;
     background-color: #fcfcfc;
 }
-.expander-expanded .joe-panel-content-option-expander{
+.expander-expanded > .joe-panel-content-option-expander{
     display:block;
     height:auto;
 }
@@ -1732,10 +1740,17 @@ input.joe-boolean-field {
     border-bottom: 1px solid #fff;
 }
 
-
-/*-------------------------
-	OBJECTREFERENCE
--------------------------*/
+.joe-field-item-content {
+    position: relative;
+    padding: 0px 5px;
+}
+.expander .joe-field-item-content{
+    padding-left: 50px;
+    padding-bottom: 5px;
+}
+    /*-------------------------
+        OBJECTREFERENCE
+    -------------------------*/
 .joe-references-container{
     position: relative;
 }
@@ -1754,7 +1769,7 @@ input.joe-boolean-field {
     padding: 10px 0;
 }
 .joe-object-references-holder .joe-field-item{
-    padding:5px 50px;
+    padding:5px 40px;
 }
 
 .joe-object-references-holder.disabled .joe-field-item .joe-delete-button{
