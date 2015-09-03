@@ -124,7 +124,7 @@ module.exports = function(grunt) {
 
             build_include: {
                 files: ['../js/**/*.js','../css/**/*.css'],
-                tasks: [ 'concat', 'usebanner' /*,'uglify'*/]
+                tasks: [ 'concat', 'usebanner' ,'uglify']
             }
         }
 

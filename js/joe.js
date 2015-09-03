@@ -4932,7 +4932,7 @@ this._renderGotoButton = function(id,dataset,schema){
     return fillTemplate(
         '<div class="joe-block-button goto-icon" ' +
             //'onclick="goJoe(getNPCDataItem(\'${_id}\',\'${dataset}\'),' +
-        'onclick="goJoe(_joe.getDataItem(\'${'+idprop+'}\',\'${}\'),' +
+        'onclick="goJoe(_joe.getDataItem(\'${'+idprop+'}\',\'${dataset}\'),' +
         '{schema:\'${schema}\'})"></div>',item);
 
 };
