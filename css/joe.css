@@ -1318,6 +1318,22 @@ input.joe-submenu-search-field {
     left:0;right:0;
 }
 /*-------------------------
+	list sorter
+-------------------------*/
+.joe-list-sorter {
+    float: right;
+    background-color: #ddd;
+    height: 40px;
+    line-height: 40px;
+    padding: 0 6px;
+    display:block;
+    cursor:pointer;
+}
+
+.joe-list-sorter select{
+    font-size: 16px;
+}
+/*-------------------------
 	View Modes
 -------------------------*/
 /*.joe-submenu-viewmodes {
@@ -1528,6 +1544,10 @@ input.joe-submenu-search-field {
     background:rgba(0,0,0,.1);
 }
 
+.joe-field-item .joe-panel-content-option-menu{
+    top:-3px;
+}
+
 /*-------------------------
 	Item Expander
 -------------------------*/
@@ -1540,7 +1560,7 @@ input.joe-submenu-search-field {
     background-position:center center;
     background-repeat:no-repeat;
     background-size:80%;
-    top: 5px;
+    top: 3px;
     opacity:.75;
     border-radius:50%;
     transition:.2s;
@@ -1556,7 +1576,7 @@ input.joe-submenu-search-field {
 .expander-collapsed > div > .joe-panel-content-option-expander-button {
     background-image: url("../img/btns/plus.png");
 }
-.expander-expanded > .joe-panel-content-option-expander-button, 
+.expander-expanded > .joe-panel-content-option-expander-button,
 .expander-expanded > div > .joe-panel-content-option-expander-button {
     background-image: url("../img/btns/minus.png");
 }
@@ -1740,13 +1760,21 @@ input.joe-boolean-field {
     border-bottom: 1px solid #fff;
 }
 
+
+.deletable.joe-field-item{
+    padding-left:40px;
+}
+.gotobutton.joe-field-item{
+    padding-right:40px;
+}
 .joe-field-item-content {
     position: relative;
     padding: 0px 5px;
 }
 .expander .joe-field-item-content{
     padding-left: 50px;
-    padding-bottom: 5px;
+    padding-bottom: 0px;
+    min-height:54px;
 }
     /*-------------------------
         OBJECTREFERENCE
@@ -1768,9 +1796,7 @@ input.joe-boolean-field {
 .joe-object-references-holder {
     padding: 10px 0;
 }
-.joe-object-references-holder .joe-field-item{
-    padding:5px 40px;
-}
+
 
 .joe-object-references-holder.disabled .joe-field-item .joe-delete-button{
     display:none;
@@ -2097,8 +2123,10 @@ display:none;
 }
 
 .objectReference-field .joe-left-plus-button {
-    margin-top: -30px;
+    /*margin-top: -30px;*/
     margin-bottom: 10px;
+    float: none;
+    font-size: 16px;
 }
 
 .joe-button.multiline {
@@ -2195,6 +2223,11 @@ textarea.joe-rendering-field{
 .joe-text-autocomplete.active{
     display:block;
 }
+.joe-content-sidebar .joe-text-autocomplete.active {
+    max-width: 100%;
+    width: 100%;
+}
+
 .joe-text-autocomplete-option {
     padding: 5px;
     cursor: pointer;

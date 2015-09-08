@@ -682,7 +682,9 @@ function JsonObjectEditor(specs){
             //right side
                 + self.renderViewModeButtons(subSpecs)
                 + self.renderColumnCountSelector(subSpecs.numCols)
-            //left side
+                + self.renderSorter()
+
+                    //left side
                 + ((subSpecs.filters && self.renderSubmenuFilters(subSpecs.filter)) || '')
                 + ((subSpecs.search && self.renderSubmenuSearch(subSpecs.search)) || '')
                 + ((subSpecs.itemcount && self.renderSubmenuItemcount(subSpecs.itemcount)) || '')
@@ -1037,14 +1039,44 @@ View Mode Buttons
         return h;
         //return submenuitem;
     };
-
     this.setColumnCount = function(mode){
         self.overlay[0].className = self.overlay[0].className.replace(/cols-[0-9]/,'cols-'+mode);
         if(mode){colCount = mode;}
         //self.reload(true,{colCount:mode});
     };
+
+
+/*------------------------------------------------------>
+    Submenu Sorter
+ <-----------------------------------------------------*/
+
+
+ this.renderSorter = function(subspecs){
+     var sorter = (self.current.subset && self.current.subset.sorter)
+         ||(self.current.schema && self.current.schema.sorter)|| 'name';
+     if($.type(sorter) == 'string'){sorter = sorter.split(',');}
+     if(sorter.indexOf('name') == -1 && sorter.indexOf('!name') == -1){
+         sorter.push('name');
+     }
+     var newsorter = subspecs;
+     var current;
+     return '<label for="joe-'+self.joe_index+'-sorter" class="joe-list-sorter">sort ' +
+         '<select name="joe-'+self.joe_index+'-sorter" onchange="getJoe('+self.joe_index+').resort(this.value);">' +
+         sorter.map(function(s){
+             current = (s == self.current.sorter[0]) ?'selected':'';
+             /* if(self.current.sorter[0] == s){
+              return '<option value="!'+s+'">!'+s+'</option>';
+              }*/
+             return '<option '+current+' value="'+s+'">'+s+'</option>';
+         })+
+         '</select></label>';
+ };
+
+this.resort = function(sorter){
+    self.reload(false,{sorter:sorter})
+};
     /*----------------------------->
-        C | Content
+        C | Editor Content
     <-----------------------------*/
 	this.renderEditorContent = function(specs){
 		//specs = specs || {};
@@ -2544,26 +2576,33 @@ this.renderSorterField = function(prop){
         var specs = $.extend({
             deleteButton:false,
             expander:null,
-            gotoButton:false
+            gotoButton:false,
+            itemMenu:false
         },specs);
+        var hasMenu = specs.itemMenu && specs.itemMenu.length;
 
+        var clickablelistitem = !(specs.gotoButton || hasMenu);
         var deleteButton = '<div class="joe-delete-button joe-block-button left" ' +
             'onclick="$(this).parent().remove();">&nbsp;</div>';
         var expanderContent = renderItemExpander(item,specs.expander);
 
-        var click = (specs.gotoButton)?'>':
+        var click = (!clickablelistitem)?'>':
         'onclick="goJoe(_joe.search(\'${'+idprop+'}\')[0],{schema:\''+schema+'\'})">';
 
         var html = fillTemplate('<div class="'
-            +(!specs.gotoButton &&'joe-field-list-item' ||'joe-field-item')
+            +((clickablelistitem && 'joe-field-list-item') ||'joe-field-item')
             +(specs.deleteButton &&' deletable' ||'')
+            +(specs.gotoButton &&' gotobutton' ||'')
+            +(specs.itemMenu &&' itemmenu' ||'')
             +(specs.expander &&' expander expander-collapsed' ||'')+'" '
             +click
+            +((hasMenu && renderItemMenu(item,specs.itemMenu)) || '')
             + '<div class="joe-field-item-content">'
             +(specs.deleteButton && deleteButton || '')
             +self._renderExpanderButton(expanderContent,item)
             +self.propAsFuncOrValue(contentTemplate,item)
             +'</div>'
+
             +(specs.gotoButton && '${RUN[_renderGotoButton]}' || '')
             +expanderContent
             +'<div class="clear"></div></div>',item);
@@ -2880,7 +2919,7 @@ this.renderSorterField = function(prop){
         var base64 = joe_uploader.base64;
         var callback = function(err,url){
             if(err){
-                joe_uploader.message.append('<div>'+m+'<br/>'+err+'</div>');
+                joe_uploader.message.append('<div>'+(err.message||err)+'<br/>'+err+'</div>');
                 alert('error uploading');
             }else{
                 if(field.field){
@@ -3052,7 +3091,7 @@ this.renderSorterField = function(prop){
         var deleteButton = '<div class="joe-delete-button joe-block-button left" ' +
             'onclick="$(this).parent().remove();">&nbsp;</div>';
         if(!item) {
-            return '<div class="joe-field-item" data-value="' + id + '">' +
+            return '<div class="joe-field-item deletable" data-value="' + id + '">' +
                 deleteButton + "<div>REFERENCE NOT FOUND</div><span class='subtext'>" + id + "</span>" + '</div>';
         }
         var id = id||item[idprop];
@@ -3060,7 +3099,7 @@ this.renderSorterField = function(prop){
 
         var expander = fillTemplate(self.propAsFuncOrValue(field.expander,item),item)||'';
         var template = self.propAsFuncOrValue(field.template, item) || "<div>${name}</div><span class='subtext'>" + id + "</span>";
-        return '<div class="joe-field-item '+(expander && 'expander expander-collapsed' || '')+'" data-value="' + id + '">'
+        return '<div class="joe-field-item deletable '+(expander && 'expander expander-collapsed' || '')+'" data-value="' + id + '">'
 
             + deleteButton
             + '<div class="joe-field-item-content">'

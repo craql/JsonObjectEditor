@@ -124,7 +124,7 @@ module.exports = function(grunt) {
 
             build_include: {
                 files: ['../js/**/*.js','../css/**/*.css'],
-                tasks: [ 'concat', 'usebanner' ,'uglify']
+                tasks: [ 'concat', 'usebanner' /*,'uglify'*/]
             }
         }
 
@@ -137,7 +137,7 @@ module.exports = function(grunt) {
    // grunt.loadNpmTasks('grunt-contrib-concat');
 
     // Watch for changes
-    grunt.registerTask('default', [ 'concat', 'usebanner', 'uglify',  'watch' ]);
+    grunt.registerTask('default', [ 'concat', 'usebanner', /*'uglify',*/  'watch' ]);
 
 
 };
