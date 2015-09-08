@@ -6,6 +6,7 @@
 ---------------------------------------------------------/*/
 //render field - self.renderObjectPropFieldUI
 //render list item - self.renderListItems()
+//single field list item -renderFieldListItem()
 /*TODO:
 
     -make autoinit true
@@ -2571,6 +2572,7 @@ this.renderSorterField = function(prop){
     };
 
     this.renderFieldListItem = function(item,contentTemplate,schema,specs){
+        var contentTemplate = contentTemplate || '<h4>${name}</h4><div class="joe-subtext">${itemtype}</div>';
         var schemaobj = self.schemas[schema];
         var idprop = schemaobj.idprop ||'_id';
         var specs = $.extend({
