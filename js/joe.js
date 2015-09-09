@@ -2589,31 +2589,40 @@ this.renderSorterField = function(prop){
         },specs);
         var hasMenu = specs.itemMenu && specs.itemMenu.length;
 
-        var clickablelistitem = !(specs.gotoButton || hasMenu);
+        var clickablelistitem = (!specs.gotoButton/* && !hasMenu*/);
         var deleteButton = '<div class="joe-delete-button joe-block-button left" ' +
             'onclick="$(this).parent().remove();">&nbsp;</div>';
         var expanderContent = renderItemExpander(item,specs.expander);
 
-        var click = (!clickablelistitem)?'>':
-        'onclick="goJoe(_joe.search(\'${'+idprop+'}\')[0],{schema:\''+schema+'\'})">';
+        var click = (!clickablelistitem)?'':
+        ' onclick="goJoe(_joe.search(\'${'+idprop+'}\')[0],{schema:\''+schema+'\'})" ';
 
         var html = fillTemplate('<div class="'
-            +((clickablelistitem && 'joe-field-list-item') ||'joe-field-item')
+            +((clickablelistitem && 'joe-field-list-item clickable') ||'joe-field-item')
             +(specs.deleteButton &&' deletable' ||'')
             +(specs.gotoButton &&' gotobutton' ||'')
             +(specs.itemMenu &&' itemmenu' ||'')
-            +(specs.expander &&' expander expander-collapsed' ||'')+'" '
-            +click
-            +((hasMenu && renderItemMenu(item,specs.itemMenu)) || '')
-            + '<div class="joe-field-item-content">'
-            +(specs.deleteButton && deleteButton || '')
-            +self._renderExpanderButton(expanderContent,item)
-            +self.propAsFuncOrValue(contentTemplate,item)
-            +'</div>'
+            +(specs.expander &&' expander expander-collapsed' ||'')+'" >'
 
-            +(specs.gotoButton && '${RUN[_renderGotoButton]}' || '')
-            +expanderContent
-            +'<div class="clear"></div></div>',item);
+                    //if(clickableListItem){
+                        +((hasMenu && renderItemMenu(item, specs.itemMenu)) || '')
+                        + '<div class="joe-field-item-content" ' + click + '>'
+                        + (specs.deleteButton && deleteButton || '')
+                        + self.propAsFuncOrValue(contentTemplate+__clearDiv__, item)
+                        + '</div>'
+                        + self._renderExpanderButton(expanderContent, item)
+                   /* }else {
+                        //+click
+                        +((hasMenu && renderItemMenu(item, specs.itemMenu)) || '')
+                        + '<div class="joe-field-item-content" ' + click + '>'
+                        + (specs.deleteButton && deleteButton || '')
+                        + self._renderExpanderButton(expanderContent, item)
+                        + self.propAsFuncOrValue(contentTemplate, item)
+                        + '</div>'
+                    }*/
+                +(specs.gotoButton && '${RUN[_renderGotoButton]}' || '')
+                +expanderContent
+            +'</div>',item);
         return html;
     };
 /*----------------------------->

@@ -1531,6 +1531,9 @@ input.joe-submenu-search-field {
     /* display: table-row; */
     /* height: 100%; */
 }
+.joe-field-list-item > .joe-panel-content-option-menu {
+    top: 0;
+}
 .joe-option-menu-button{
     text-align: center;
     padding: 10px 0;
@@ -1565,6 +1568,9 @@ input.joe-submenu-search-field {
     border-radius:50%;
     transition:.2s;
     cursor:pointer;
+}
+.joe-field-list-item > .joe-panel-content-option-expander-button {
+    top: 4px;
 }
 .numbered .joe-panel-content-option-expander-button{
     left:20px;
@@ -1688,13 +1694,14 @@ input.joe-boolean-field {
 -------------------------*/
 
 .joe-field-list-item {
-    padding:10px;
+    padding:5px;
     cursor:pointer;
     position: relative;
+    border-bottom:1px solid #eee;
 }
-.joe-field-list-item:hover{
+/*.joe-field-list-item:hover > .joe-field-item-content{
     background-color:rgba(0,0,0,.1);
-}
+}*/
 .joe-field-list-item:active{
     color:#fff;
     background-color: #007ac2;
@@ -1760,6 +1767,11 @@ input.joe-boolean-field {
     border-bottom: 1px solid #fff;
 }
 
+.joe-panel-content-option .joe-field-item {
+    background-color: transparent;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 4px;
+}
 
 .deletable.joe-field-item{
     padding-left:40px;
@@ -1769,10 +1781,18 @@ input.joe-boolean-field {
 }
 .joe-field-item-content {
     position: relative;
-    padding: 0px 5px;
+    padding: 5px;
+    transition:.2s;
 }
-.expander .joe-field-item-content{
-    padding-left: 50px;
+.clickable > .joe-field-item-content:hover {
+    background:rgba(0,0,0,.1);
+}
+
+/*
+FIeld Item Content
+*/
+.expander  > .joe-field-item-content{
+    margin-left: 40px;
     padding-bottom: 0px;
     min-height:54px;
 }
