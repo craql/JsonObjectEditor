@@ -693,7 +693,7 @@ function JsonObjectEditor(specs){
                 + '</div>'
                 + "<div class='joe-filters-holder'>"
                 + renderSubsetsDiv()
-                + (self.current.schema && (self.propAsFuncOrValue(self.current.schema.filters) && renderFiltersDiv()) || '')
+                + (self.current.schema && (self.propAsFuncOrValue(self.current.schema.filters,self.current.list) && renderFiltersDiv()) || '')
                     // +'<span class="jif-arrow-left"></span>'
                 + "</div>";
         }else{
@@ -3114,10 +3114,9 @@ this.renderSorterField = function(prop){
 
             + deleteButton
             + '<div class="joe-field-item-content">'
-
-            +self._renderExpanderButton(expander,item)
-            +fillTemplate(template, item)
+                +fillTemplate(template, item)
             +'</div>'
+            +self._renderExpanderButton(expander,item)
             +fillTemplate(gotoButton,item)
             +renderItemExpander(item, expander)
             + '</div>';

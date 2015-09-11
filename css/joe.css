@@ -1572,6 +1572,12 @@ input.joe-submenu-search-field {
 .joe-field-list-item > .joe-panel-content-option-expander-button {
     top: 4px;
 }
+
+.joe-field-item.deletable > .joe-panel-content-option-expander-button {
+    margin-left: 37px;
+    top: 5px;
+}
+
 .numbered .joe-panel-content-option-expander-button{
     left:20px;
 }
