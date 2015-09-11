@@ -15,6 +15,7 @@
 }
 .joe-overlay{
     font-family:Cambria, "Hoefler Text", "Liberation Serif", Times, "Times New Roman", serif;
+    /* font-family:'Segoe UI', 'Segoe UI Web Regular', 'Segoe UI Symbol', 'Helvetica Neue', 'BBAlpha Sans', 'S60 Sans', Arial, sans-serif;*/
     color: #068;
     letter-spacing: .05em;
     background-color: rgba(0,0,0,.7);
@@ -33,7 +34,8 @@
 }
 
 .joe-overlay.sans {
-    font-family: "Trebuchet MS", Helvetica, sans-serif;
+    font-family:'Segoe UI', 'Segoe UI Web Regular', 'Segoe UI Symbol', 'Helvetica Neue', 'BBAlpha Sans', 'S60 Sans', Arial, sans-serif;
+   /* font-family: "Trebuchet MS", Helvetica, sans-serif;*/
 }
 @-webkit-keyframes fadeOut {
     0%   {background-color: rgba(0,0,0,.7);}
@@ -1107,6 +1109,7 @@ input.joe-boolean-field {
     background-color: #fff;
   /*  left: 5px;*/
     left: 2px;
+    font-size:13px;
 }
 
 .joe-tooltip{
@@ -1347,7 +1350,7 @@ display:none;
     padding: 0 8px;
 }
 .joe-submenu-section:hover{
-    background:rgba(0,0,0,.2);
+    background:rgba(0,0,0,.1);
 }
 
 /*-------------------------
@@ -1465,7 +1468,9 @@ display:none;
 }
 /*select fields*/
 .joe-content-sidebar select.joe-select-field.joe-field {
-    width: 260px;
+   /* width: 260px;*/
+    width: 100%;
+    min-width: auto;
 }
 .large-size .joe-content-sidebar .select-field .joe-iconed-button {
     display: block;

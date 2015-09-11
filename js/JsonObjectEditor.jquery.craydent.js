@@ -262,7 +262,7 @@ function JsonObjectEditor(specs){
 	this.renderFramework = function(content){
 		var style = 'style-variant1';
         var html =
-		'<div class="joe-overlay cols-'+colCount+' '+style+' '
+		'<div class="joe-overlay sans cols-'+colCount+' '+style+' '
             +((self.specs.compact && ' compact ') || '')
             +((self.specs.sans && ' sans ') || '')
             +'" data-joeindex="'+this.joe_index+'">'+
@@ -748,7 +748,7 @@ function JsonObjectEditor(specs){
         var scount = 0;
         var template =
             //'<div class="joe-submenu-section" onclick="$(\'.joe-content-section[data-section=${id}]\').removeClass(\'collapsed\')[0].scrollIntoView()">${name}</div>';
-            '<div class="joe-submenu-section" onclick="_joe.gotoSection(\'${id}\','+self.joe_index+');">${name}</div>';
+            '<div class="joe-submenu-section f${renderTo}" onclick="_joe.gotoSection(\'${id}\','+self.joe_index+');">${name}</div>';
 
         var section;
         for(var secname in self.current.sections){
@@ -1506,7 +1506,7 @@ this.renderHTMLContent = function(specs){
             '<div class="joe-content-section-label" '+toggle_action+'>'+secname+'</div>'+
             '<div class="joe-content-section-content">';
         //add to current sections
-        self.current.sections[secID]={open:true,name:secname,id:secID,hidden:hidden};
+        self.current.sections[secID]={open:true,name:secname,id:secID,hidden:hidden,renderTo:renderFieldTo};
         return section_html;
     };
     self.renderPropSectionEnd = function(prop){
