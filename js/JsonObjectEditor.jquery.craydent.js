@@ -119,6 +119,8 @@ function JsonObjectEditor(specs){
 <--------------------------------------------------------------------*/
 	this.init = function() {
         if(initialized){return false;}
+
+        beginLogGroup('JOE init');
         self.current = {filters:{}};
         var html = self.renderFramework(
                 self.renderEditorHeader() +
@@ -248,6 +250,7 @@ function JsonObjectEditor(specs){
             //self.respond
         });
         initialized = true;
+        endLogGroup();
 	};
 
 
@@ -280,8 +283,8 @@ function JsonObjectEditor(specs){
 	this.populateFramework = function(data,setts){
 		self.overlay.removeClass('multi-edit');
 		var joePopulateBenchmarker = new Benchmarker();
-
-		logit('------Beginning joe population');
+        beginLogGroup('JOE population');
+		//logit('------Beginning joe population');
 		var specs = setts || {};
 		self.current.specs = setts;
 		self.current.data = data;
@@ -494,14 +497,21 @@ function JsonObjectEditor(specs){
     /*-------------------------------------------------------------------->
      Framework Rendering
      <--------------------------------------------------------------------*/
-        var content =
-            self.renderEditorContent(specs);
+        var contentBM = new Benchmarker();
+        beginLogGroup('Content');
+        var content = self.renderEditorContent(specs);
+        endLogGroup();
+        _bmResponse(contentBM,'JOE Content');
+        var chromeBM = new Benchmarker();
 		var html =
+
 			self.renderEditorHeader(specs)+
             self.renderEditorSubmenu(specs)+
             content+
 			self.renderEditorFooter(specs)+
 			self.renderMessageContainer();
+
+        _bmResponse(chromeBM,'JOE Chrome');
 		    self.overlay.find('.joe-overlay-panel').html(html);
 		//$('.joe-overlay-panel').html(html);
 
@@ -521,6 +531,7 @@ function JsonObjectEditor(specs){
         self.updateHashLink();
 		//logit('Joe Populated in '+joePopulateBenchmarker.stop()+' seconds');
         _bmResponse(joePopulateBenchmarker,'----Joe Populated');
+        endLogGroup();
 		return html;
 	};
 /*-------------------------------------------------------------------->
@@ -536,6 +547,7 @@ function JsonObjectEditor(specs){
 	A | Header
 <-----------------------------*/
 	this.renderEditorHeader = function(specs){
+        var BM = new Benchmarker();
 		specs = specs || {};
 		var titleObj = self.current.object;
 		if(specs.list){
@@ -577,8 +589,11 @@ function JsonObjectEditor(specs){
         '</div>'+
 			'<div class="clear"></div>'+
 		'</div>';
+        _bmResponse(BM,'[Header] rendered');
 		return html;
 	};
+
+    //What happens when the user clicks the close button.
 	this.closeButtonAction = function(){
 		self.history = [];
         self.panel.addClass('centerscreen-collapse');
@@ -659,6 +674,7 @@ function JsonObjectEditor(specs){
  B | SubMenu
  <-----------------------------*/
     this.renderEditorSubmenu = function(specs) {
+        var BM = new Benchmarker();
         var sectionAnchors =renderSectionAnchors();
         if(!self.current.submenu && !sectionAnchors.count){
             return '';
@@ -740,6 +756,8 @@ function JsonObjectEditor(specs){
             fh+='</div>';
             return fh;
         }
+
+        _bmResponse(BM,'[Submenu] rendered');
         return submenu;
     };
     function renderSectionAnchors(){
@@ -879,7 +897,8 @@ function JsonObjectEditor(specs){
             var id;
             var listables = (self.current.subset)?self.current.list.where(self.current.subset.filter):self.current.list;
             var searchables = self.current.schema && self.current.schema.searchables;
-            logit('search where in '+searchBM.stop()+' seconds');
+            //logit('search where in '+searchBM.stop()+' seconds');
+            _bmResponse(searchBM,'search where');
             currentListItems = listables.where(filters).filter(function(i){
                 id = i[idprop];
                 testable = '';
@@ -916,7 +935,8 @@ function JsonObjectEditor(specs){
                 return true;
             });
 
-            logit('search filter found '+currentListItems.length+' items in '+searchBM.stop()+' seconds');
+            //logit('search filter found '+currentListItems.length+' items in '+searchBM.stop()+' seconds');
+            _bmResponse(searchBM,'search filter found '+currentListItems.length+' items')
             self.overlay.find('.joe-submenu-itemcount').html(currentListItems.length+' item'+((currentListItems.length > 1 &&'s') ||''));
             self.panel.find('.joe-panel-content').html(self.renderListItems(currentListItems,0,self.specs.dynamicDisplay));
             var titleObj = $.extend({},self.current.object,{_listCount:currentListItems.length||'0'});
@@ -1198,7 +1218,8 @@ this.renderHTMLContent = function(specs){
             list = list.sortBy(self.current.sorter);
         }
         //list = list.sortBy(self.current.sorter);
-		logit('list sort complete in '+wBM.stop()+' seconds');
+		//logit('list sort complete in '+wBM.stop()+' seconds');
+        _bmResponse(wBM,'list sort complete');
 		var numItemsToRender;
         if(!self.current.subset){
             currentListItems = list;
@@ -1206,14 +1227,15 @@ this.renderHTMLContent = function(specs){
 		else{
             filteredList = list.where(self.current.subset.filter);
             currentListItems = filteredList;
-			logit('list where complete in '+wBM.stop()+' seconds');
+            _bmResponse(wBM,'list where complete');
+			//logit('list where complete in '+wBM.stop()+' seconds');
 		}
-
+        _bmResponse(wBM,'list prerender');
         numItemsToRender = self.specs.dynamicDisplay || currentListItems.length;
         html+= self.renderListItems(currentListItems,0,numItemsToRender);
 
-
-		logit('list complete in '+wBM.stop()+' seconds');
+        _bmResponse(wBM,'list complete');
+		//logit('list complete in '+wBM.stop()+' seconds');
 		return html;
 
 	};
@@ -1238,8 +1260,8 @@ this.renderHTMLContent = function(specs){
         for(var li = 0,tot = list.length; li<tot;li++){
           html+= fillTemplate(template,list[li]);
         }
-
-        logit('minilist complete in '+wBM.stop()+' seconds');
+        _bmResponse(wBM,'minilist complete');
+        //logit('minilist complete in '+wBM.stop()+' seconds');
         return html;
 
     };
@@ -1564,7 +1586,7 @@ this.renderHTMLContent = function(specs){
 			'</div>'+
 		'</div>';
 
-        logit('joe footer generated in '+fBM.stop()+' secs');
+        _bmResponse(fBM,'[Footer] rendered');
 		return html;
 	};
 
@@ -1591,7 +1613,7 @@ this.renderHTMLContent = function(specs){
         if(prop.hasOwnProperty('condition') && !self.propAsFuncOrValue(prop.condition)){
             return '';
         }
-
+        var joeFieldBenchmarker = new Benchmarker();
 		//field requires {name,type}
         self.current.fields.push(prop);
         prop.value = self.propAsFuncOrValue(prop.value);
@@ -1671,7 +1693,7 @@ this.renderHTMLContent = function(specs){
 	//	}
 
 		preProp = prop;
-
+        _bmResponse(joeFieldBenchmarker,'field '+prop.name+ ' '+prop.type);
 		return html;
 	};
 
@@ -1737,7 +1759,7 @@ this.renderHTMLContent = function(specs){
 	};
 
 	this.selectAndRenderFieldType = function(prop){
-		var joeFieldBenchmarker = new Benchmarker();
+		//var joeFieldBenchmarker = new Benchmarker();
 
 		var html = '';
 		switch(prop.type.toLowerCase()){
@@ -1837,7 +1859,8 @@ this.renderHTMLContent = function(specs){
 				break;
 		}
 
-		logit('Joe rendered '+(prop.name||"a field")+' in '+joeFieldBenchmarker.stop()+' seconds');
+        //_bmResponse(joeFieldBenchmarker,'Joe rendered '+(prop.name||"a field"));
+		//logit('Joe rendered '+(prop.name||"a field")+' in '+joeFieldBenchmarker.stop()+' seconds');
 		return html;
 
 	};
@@ -3973,6 +3996,7 @@ this.renderSorterField = function(prop){
 	};
 
     this.reload = function(hideMessage,specs){
+        logit('reloading joe '+self.joe_index);
         var specs = specs || {};
         var reloadBM = new Benchmarker();
         var info = self.history.pop();
@@ -4025,6 +4049,7 @@ this.renderSorterField = function(prop){
 
 	var sortable_index;
 	this.onPanelShow = function(){
+        var BM = new Benchmarker();
         self.respond();
 
 		//init datepicker
@@ -4138,8 +4163,8 @@ this.renderSorterField = function(prop){
 /*        if($(window).height() > 700) {
             self.overlay.find('.joe-submenu-search-field').focus();
         }*/
-
-        _bmResponse(self.showBM,'----Joe Shown')
+        _bmResponse(BM,'on panel show complete');
+        _bmResponse(self.showBM,'----Joe Shown');
     };
 /*-------------------------------------------------------------------->
  J | MESSAGING
@@ -4751,6 +4776,7 @@ ANALYSIS, IMPORT AND MERGE
         self._mergeAnalyzeResults = data;
 
         logit('Joe Analyzed in '+aimBM.stop()+' seconds');
+
         var analysisOK = confirm('Run Merge? \n'+JSON.stringify(data.results,null,'\n'));
         if(analysisOK) {
             specs.callback(data);
@@ -5043,9 +5069,29 @@ function _COUNT(array){
 };
 
 function _bmResponse(benchmarker,message){
-    logit(message +' in '+benchmarker.stop()+' secs');
+    var t = benchmarker.stop();
+    var m = message + ' in ' + t + ' secs';
+    if($c.DEBUG_MODE && window.console && window.console.warn){
+        if(t > .4){
+            window.console.warn(m);
+        }else {
+            logit(m);
+        }
+    }else {
+        logit(m);
+    }
 }
 
+function beginLogGroup(name,expanded){
+    if(expanded){
+        window.console && window.console.group && console.group(name);
+    }else{
+        window.console && window.console.groupCollapsed && console.groupCollapsed(name);
+    }
+}
+function endLogGroup(){
+    window.console && window.console.groupEnd &&console.groupEnd();
+}
 function _renderUserCube(user,cssclass){
     var css = cssclass||'fleft';
     var u = user;
