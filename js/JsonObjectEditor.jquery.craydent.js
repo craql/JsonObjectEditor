@@ -1100,6 +1100,8 @@ this.resort = function(sorter){
         C | Editor Content
     <-----------------------------*/
 	this.renderEditorContent = function(specs){
+
+        self.current.sidebars = {left:{collapsed:false},right:{collapsed:false}};
 		//specs = specs || {};
 		var content;
 
@@ -1149,7 +1151,8 @@ this.resort = function(sorter){
 		+'</div>'
         +self.renderSideBar('left',leftC,{css:submenu})
         +self.renderSideBar('right',rightC,{css:submenu});
-        self.current.sidebars = {left:leftC,right:rightC};
+        self.current.sidebars.left.content = leftC;
+        self.current.sidebars.right.content = rightC;
 		return html;
 	};
 
@@ -1473,7 +1476,15 @@ this.renderHTMLContent = function(specs){
                 //renderFieldTo = 'main';
             }else if(prop.sidebar_start){
                 //fields += self.renderPropSectionStart(prop);
+
+
                 renderFieldTo = prop.sidebar_side || prop.sidebar_start || 'main';
+                if(renderFieldTo != 'main'){
+                    //self.current.sidebars[renderFieldTo].collapsed = false;
+                    if(prop.hasOwnProperty('collapsed')){
+                        self.current.sidebars[renderFieldTo].collapsed = self.propAsFuncOrValue(prop.collapsed);
+                    }
+                }
             }
             else if(prop.sidebar_end){
                 renderFieldTo = 'main';
@@ -4116,12 +4127,15 @@ this.renderSorterField = function(prop){
 
         //sidebars
         if(self.current.sidebars){
-            self.panel.find('.joe-sidebar_left-button').toggleClass('active',self.current.sidebars.left != '');
-            self.panel.find('.joe-sidebar_right-button').toggleClass('active',self.current.sidebars.right != '');
+            var lsb = self.current.sidebars.left;
+            var rsb = self.current.sidebars.right;
+
+            self.panel.find('.joe-sidebar_left-button').toggleClass('active',lsb.content != '');
+            self.panel.find('.joe-sidebar_right-button').toggleClass('active',rsb.content != '');
             if(self.sizeClass != 'small-size'){
-                self.panel.toggleClass('right-sidebar',self.current.sidebars.right != '');
+                self.panel.toggleClass('right-sidebar',(rsb.content && !rsb.collapsed || false));
             }
-            self.panel.toggleClass('left-sidebar',self.current.sidebars.left != '');
+            self.panel.toggleClass('left-sidebar',(lsb.content && !lsb.collapsed || false));
         }
         //self.toggleSidebar('right',false);
         //uploaders

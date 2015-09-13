@@ -1912,7 +1912,10 @@ display:none;
 .joe-submenu-section-anchors {
     height: 38px;
     line-height: 38px;
+    margin-right:40px;
 }
+.right-sidebar .joe-submenu-section-anchors{  margin-right:0;}
+.left-sidebar .joe-submenu-section-anchors{  margin-left:0;}
 
 .joe-submenu-section {
     cursor: pointer;
