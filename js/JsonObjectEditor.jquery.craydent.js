@@ -2608,13 +2608,15 @@ this.renderSorterField = function(prop){
     this.renderFieldListItem = function(item,contentTemplate,schema,specs){
         var contentTemplate = contentTemplate || '<h4>${name}</h4><div class="joe-subtext">${itemtype}</div>';
         var schemaobj = self.schemas[schema];
-        var idprop = schemaobj.idprop ||'_id';
+
         var specs = $.extend({
             deleteButton:false,
             expander:null,
             gotoButton:false,
-            itemMenu:false
+            itemMenu:false,
+            value:''
         },specs);
+        var idprop = specs.idprop || (schemaobj && schemaobj.idprop) ||'_id';
         var hasMenu = specs.itemMenu && specs.itemMenu.length;
 
         var clickablelistitem = (!specs.gotoButton/* && !hasMenu*/);
@@ -2630,7 +2632,9 @@ this.renderSorterField = function(prop){
             +(specs.deleteButton &&' deletable' ||'')
             +(specs.gotoButton &&' gotobutton' ||'')
             +(specs.itemMenu &&' itemmenu' ||'')
-            +(specs.expander &&' expander expander-collapsed' ||'')+'" >'
+            +(specs.expander &&' expander expander-collapsed' ||'')+'" '
+            +(specs.value &&'data-value="' + specs.value + '"' ||'')
+            +'>'
 
                     //if(clickableListItem){
                         +((hasMenu && renderItemMenu(item, specs.itemMenu)) || '')
@@ -3111,11 +3115,39 @@ this.renderSorterField = function(prop){
         $('.joe-object-references-holder[data-field='+field+']').append(self.createObjectReferenceItem(null,id,field));
 
     };
+    this.createObjectReferenceItem = function(item,id,fieldname){
+        var field = _getField(fieldname);
+        var idprop = field.idprop||'_id';
+        if(!item) {
+            var values = self.getFieldValues(field.values);
+            var item;
+            for(var i = 0,tot = values.length; i <tot; i++){
+                if(values[i][idprop] == id){
+                    item = values[i];
+                    break;
+                }
+            }
+        }
+        if(!item) {
+            return '<div class="joe-field-item deletable" data-value="' + id + '">' +
+                deleteButton + "<div>REFERENCE NOT FOUND</div><span class='subtext'>" + id + "</span>" + '</div>';
+        }
+        var template = self.propAsFuncOrValue(field.template, item) || "<div>${name}</div><span class='subtext'>" + id + "</span>";
+        var specs = {
+            deleteButton:true,
+            expander:field.expander,
+            gotoButton:field.gotoButton,
+            itemMenu:field.itemMenu,
+            value:'${_id}',
+            idprop:field.idprop
+        };
+        return self.renderFieldListItem(item,template,'',specs);
+
+    };
 
     this.createObjectReferenceItem = function(item,id,fieldname){
         var field = _getField(fieldname);
         var idprop = field.idprop||'_id';
-
         var gotoButton = '${RUN[_renderGotoButton]}';
         if(field.hideGotoButton){gotoButton = '';}
         if(!item) {
@@ -3141,6 +3173,7 @@ this.renderSorterField = function(prop){
         }
         var id = id||item[idprop];
 
+        var itemMenu = self.propAsFuncOrValue(field.itemMenu,item);
 
         var expander = fillTemplate(self.propAsFuncOrValue(field.expander,item),item)||'';
         var template = self.propAsFuncOrValue(field.template, item) || "<div>${name}</div><span class='subtext'>" + id + "</span>";
@@ -3149,7 +3182,8 @@ this.renderSorterField = function(prop){
             + deleteButton
             + '<div class="joe-field-item-content">'
                 +fillTemplate(template, item)
-            +'</div>'
+            + '</div>'
+            +(itemMenu && renderItemMenu(item,itemMenu) || '')
             +self._renderExpanderButton(expander,item)
             +fillTemplate(gotoButton,item)
             +renderItemExpander(item, expander)

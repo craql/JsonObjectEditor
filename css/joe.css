@@ -1538,12 +1538,13 @@ input.joe-submenu-search-field {
 }
 .joe-option-menu-button{
     text-align: center;
-    padding: 10px 0;
+    padding: 10px;
     cursor: pointer;
-    border-radius: 50%;
-    width: 50px;
+    border-radius: 25px;
+    width: 30px;
     line-height: 30px;
-    transition:.2s;
+    transition: .2s;
+    white-space: nowrap;
 }
 .joe-option-menu-button:hover{
     background:rgba(0,0,0,.1);
