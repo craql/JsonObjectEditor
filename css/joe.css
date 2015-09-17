@@ -1581,6 +1581,17 @@ input.joe-submenu-search-field {
     top: 5px;
 }
 
+.joe-field-list-item.deletable > .joe-field-item-content {
+    margin-left: 40px;
+}
+.joe-field-list-item.expander.deletable > .joe-field-item-content {
+    margin-left: 80px;
+}
+
+.joe-field-list-item.deletable > .joe-panel-content-option-expander-button {
+    left: 44px;
+}
+
 .numbered .joe-panel-content-option-expander-button{
     left:20px;
 }
@@ -1613,6 +1624,9 @@ input.joe-submenu-search-field {
 .expander-expanded > .joe-panel-content-option-expander{
     display:block;
     height:auto;
+}
+.deletable > .joe-panel-content-option-expander {
+    margin-left: 33px;
 }
 /*-------------------------
 	List Option Buttons

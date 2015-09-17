@@ -2606,26 +2606,31 @@ this.renderSorterField = function(prop){
     };
 
     this.renderFieldListItem = function(item,contentTemplate,schema,specs){
-        var contentTemplate = contentTemplate || '<h4>${name}</h4><div class="joe-subtext">${itemtype}</div>';
-        var schemaobj = self.schemas[schema];
+
 
         var specs = $.extend({
             deleteButton:false,
             expander:null,
             gotoButton:false,
             itemMenu:false,
+            schemaprop:false,
+            callback:false,
             value:''
         },specs);
+        var contentTemplate = contentTemplate || '<h4>${name}</h4><div class="joe-subtext">${itemtype}</div>';
+        var schema = (self.propAsFuncOrValue(specs.schemaprop,item)||schema||item.itemtype||item.type);
+        var schemaobj = self.schemas[schema];
+
         var idprop = specs.idprop || (schemaobj && schemaobj.idprop) ||'_id';
         var hasMenu = specs.itemMenu && specs.itemMenu.length;
-
+        var action = specs.action || ' onclick="goJoe(_joe.search(\'${'+idprop+'}\')[0],{schema:\''+schema+'\'})" ';
         var clickablelistitem = (!specs.gotoButton/* && !hasMenu*/);
+        //var clickablelistitem = !!clickable && (!specs.gotoButton && !hasMenu);
         var deleteButton = '<div class="joe-delete-button joe-block-button left" ' +
             'onclick="$(this).parent().remove();">&nbsp;</div>';
         var expanderContent = renderItemExpander(item,specs.expander);
 
-        var click = (!clickablelistitem)?'':
-        ' onclick="goJoe(_joe.search(\'${'+idprop+'}\')[0],{schema:\''+schema+'\'})" ';
+        var click = (!clickablelistitem)?'':action;
 
         var html = fillTemplate('<div class="'
             +((clickablelistitem && 'joe-field-list-item clickable') ||'joe-field-item')
@@ -2638,8 +2643,9 @@ this.renderSorterField = function(prop){
 
                     //if(clickableListItem){
                         +((hasMenu && renderItemMenu(item, specs.itemMenu)) || '')
-                        + '<div class="joe-field-item-content" ' + click + '>'
+
                         + (specs.deleteButton && deleteButton || '')
+                        + '<div class="joe-field-item-content" ' + click + '>'
                         + self.propAsFuncOrValue(contentTemplate+__clearDiv__, item)
                         + '</div>'
                         + self._renderExpanderButton(expanderContent, item)
@@ -3129,6 +3135,8 @@ this.renderSorterField = function(prop){
             }
         }
         if(!item) {
+            var deleteButton = '<div class="joe-delete-button joe-block-button left" ' +
+                'onclick="$(this).parent().remove();">&nbsp;</div>';
             return '<div class="joe-field-item deletable" data-value="' + id + '">' +
                 deleteButton + "<div>REFERENCE NOT FOUND</div><span class='subtext'>" + id + "</span>" + '</div>';
         }
@@ -3139,13 +3147,14 @@ this.renderSorterField = function(prop){
             gotoButton:field.gotoButton,
             itemMenu:field.itemMenu,
             value:'${_id}',
-            idprop:field.idprop
+            idprop:field.idprop,
+            schemaprop:field.schemaprop
         };
         return self.renderFieldListItem(item,template,'',specs);
 
     };
 
-    this.createObjectReferenceItem = function(item,id,fieldname){
+    this.createObjectReferenceItem2 = function(item,id,fieldname){
         var field = _getField(fieldname);
         var idprop = field.idprop||'_id';
         var gotoButton = '${RUN[_renderGotoButton]}';
@@ -4541,7 +4550,7 @@ this.renderSorterField = function(prop){
                             case 'objectReference':
                                 var vals = [];
                                 object[prop] = 'objectReference';
-                                $('.objectReference-field[data-name="'+prop+'"]').find('.joe-field-item')
+                                $('.objectReference-field[data-name="'+prop+'"]').find('.joe-field-list-item')
                                     .each(function(){
                                         vals.push($(this).data().value);
                                     });
