@@ -1726,7 +1726,7 @@ input.joe-boolean-field {
 /*.joe-field-list-item:hover > .joe-field-item-content{
     background-color:rgba(0,0,0,.1);
 }*/
-.joe-field-list-item:active{
+.joe-field-item-content:active{
     color:#fff;
     background-color: #007ac2;
 

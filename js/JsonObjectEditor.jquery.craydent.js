@@ -1305,7 +1305,7 @@ this.renderHTMLContent = function(specs){
             });
 
             html+='</thead><tbody>';
-            stop = currentListItems.length-1;
+            stop = currentListItems.length;
             for (var i = start; i < stop; i++) {
                 listItem = items[i];
                 if (listItem) {
