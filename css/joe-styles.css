@@ -1125,6 +1125,7 @@ input.joe-boolean-field {
   /*  left: 5px;*/
     left: 2px;
     font-size:13px;
+    font-weight:700;
 }
 
 .joe-tooltip{
@@ -1139,6 +1140,16 @@ input.joe-boolean-field {
     letter-spacing: .8px;
     line-height: 16px;
 }
+
+.joe-overlay.sans .joe-field-comment {
+    font-size: 12px;
+    padding: 5px 1px;
+    letter-spacing: .8px;
+    line-height: 16px;
+    padding-top: 0;
+    padding-bottom: 8px;
+}
+
 .joe-field-comment .joe-button{
     z-index:10;
 }
@@ -1633,6 +1644,7 @@ display:none;
     max-width: 300px;
     text-align: center;
     float: none;
+    display:block;
 }
 .joe-object-field input[type=text].joe-number-field {
     width: 200px;

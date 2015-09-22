@@ -248,6 +248,22 @@ function JsonObjectEditor(specs){
             }
         }
         self.readHashLink();
+/*        $(window).on('hashChange',function(h,i,c){
+            logit(h,i,c);
+
+        });*/
+        window.addEventListener("hashchange", function(newH,oldH){
+            logit(newH);
+            logit(oldH);
+            var useHash = $GET('!') || location.hash;
+            if (!useHash || self.joe_index != 0) {
+                return false;
+            }
+            var useHash = useHash.replace('#','');
+            var hashBreakdown = useHash.split(hash_delimiter).condense();
+            console.log('hash',hashBreakdown);
+
+        }, false);
         var respond_timeout;
         //self.respond();
         $(window).on('resize',function(){
@@ -3238,7 +3254,7 @@ this.renderSorterField = function(prop){
             'src="'+url+'"></iframe>'
                 +'</div>'
             //+ '<a href="'+url+'" target="_blank"> view fullscreen preview</a><p>' + url.length + ' chars</p>';
-            + '<div class="joe-button joe-iconed-button joe-view-button multiline" onclick="window.open(\''+url+'\',\'joe-preview-'+previewid+'\').joeparent = window;"> view fullscreen preview <p class="joe-subtext">' + url.length + ' chars</p></div>';
+            + '<div class="joe-button joe-iconed-button joe-view-button multiline" onclick="window.open(\''+url+'\',\'joe-preview-'+previewid+'\').joeparent = window;"> view fullscreen preview <p class="joe-subtext">' + url.length + ' chars</p></div>'+__clearDiv__;
         return html;
     };
 
@@ -4954,7 +4970,7 @@ ANALYSIS, IMPORT AND MERGE
                 return false;
             }
             var useHash = useHash.replace('#','');
-            var hashBreakdown = useHash.split(hash_delimiter);
+            var hashBreakdown = useHash.split(hash_delimiter).condense();
             hashBreakdown.removeAll('');
             if(!hashBreakdown.length){
                 return false;
@@ -5002,7 +5018,7 @@ ANALYSIS, IMPORT AND MERGE
                     }
                     var section = $GET('section')||hashBreakdown[2];
                     if(section) {
-                        $DEL('section');
+                        //$DEL('section');
                         self.updateHashLink();
                         self.gotoSection(section);
                     }
