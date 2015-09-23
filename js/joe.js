@@ -4401,7 +4401,66 @@ this.renderSorterField = function(prop){
 
     };
 
-	this.updateObject = function(dom,callback,stayOnItem,overwrites,skipValidation){
+    this.updateObject2 = function(dom,callback,stayOnItem,overwrites,skipValidation){
+        var oldObj = $.extend({},self.current.object);
+        var objChanged = self.current.object;
+        function defaultCallback(data){
+            self.showMessage(data.name +' updated successfully');
+        }
+        var callback = callback || self.current.callback || (self.current.schema && self.current.schema.callback) || defaultCallback; //logit;
+        var newObj = self.constructObjectFromFields(self.joe_index);
+        newObj.joeUpdated = new Date();
+        overwrites = overwrites || {};
+        var obj = $.extend(newObj,overwrites);
+        var ts = now();
+        obj.joeUpdated = ts;
+        obj.created = obj.created || ts;
+
+//check required fields()
+        var skipVal = _joe.propAsFuncOrValue(skipValidation);
+        if(!skipVal) {
+            var valid = self.validateObject(obj);
+            if(!valid){return false;}
+
+        }
+    //end validation
+        callback(obj,oldObj,oldObj.changes(obj),function(err){
+            if (err) {
+                return self.showMessage("Error Saving object:" + err);
+            }
+            objChanged.joeUpdated = ts;
+            objChanged.created = objChanged.created || ts;
+            
+            obj = $.extend(objChanged,newObj);
+        //update object list
+            var index = (self.current.list && self.current.list.indexOf(obj));
+            var isNew = objChanged.joeUpdated == objChanged.created;
+            if(isNew && /*self.current.list &&*/ (index == -1 || index == undefined)){
+              //  object not in current list
+                self.current.list.push(obj);
+            }
+
+        //update object in dataset
+            var dsname = self.current.schema.__schemaname;
+            var idprop = self.getIDProp();
+            if(self.Data[dsname]){
+                if(self.getDataItem(obj[idprop],dsname)) {
+
+                }else{
+                    self.Data[dsname].push(obj);
+                }
+                logit('item matches current schema, updating...');
+            }
+        //run callback
+
+            logit('object updated');
+            if(!stayOnItem){self.goBack(obj);}	
+            
+        });
+    };
+
+
+    this.updateObject = function(dom,callback,stayOnItem,overwrites,skipValidation){
         var oldObj = $.extend({},self.current.object);
 		function defaultCallback(data){
 			self.showMessage(data.name +' updated successfully');
