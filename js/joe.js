@@ -1972,6 +1972,7 @@ this.renderHTMLContent = function(specs){
 		var html=
             ((autocomplete && '<div class="joe-text-autocomplete-label"></div>')||'')+
 		'<input class="joe-text-field joe-field '+((prop.skip && 'skip-prop')||'')+'" ' +
+            ((prop.placeholder && 'placeholder="'+self.propAsFuncOrValue(prop.placeholder)+'"')||'')+ //add placeholder
             'type="text"  '+disabled+' name="'+prop.name+'" value="'+cleanString(prop.value || '')+'" maxlength="'+(prop.maxlength || '')+'" '
 			+self.renderFieldAttributes(prop)
 			+((autocomplete &&
@@ -3103,7 +3104,8 @@ this.renderSorterField = function(prop){
                 values:values,
                 skip:true,
                 name:prop.name,
-                ftype:'objectReference'
+                ftype:'objectReference',
+                placeholder:prop.placeholder
 
             }
         ); //,{onblur:'_joe.showMessage($(this).val());'})
