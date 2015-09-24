@@ -3338,14 +3338,17 @@ this.renderSorterField = function(prop){
         if(!buttons){
             return '';
         }
-
+        buttons = self.propAsFuncOrValue(buttons,item);
+        if(!buttons){
+            return '';
+        }
         var btn_template = '<td class="joe-option-menu-button" onclick="${action}"> ${name}</td>';
         var html = '<div class="joe-panel-content-option-menu"><table class=""><tbody><tr>';
         var oc;
             buttons.map(function(b) {
-                if (!b.condition || self.propAsFuncOrValue(b.condition,item)) {
+                if (!b.hasOwnProperty('condition') || self.propAsFuncOrValue(b.condition,item)) {
                     oc = (b.url && "window.open(\'"+fillTemplate(b.url,item)+"\')" )
-                        || b.action || "alert('" + b.name + "');"
+                        || b.action || "alert('" + b.name + "');";
                 html += fillTemplate('<td class="joe-option-menu-button" onclick="' + oc + '">' + b.name + '</td>', item)
                 }
             });
