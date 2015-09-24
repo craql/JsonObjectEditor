@@ -1,0 +1,25 @@
+{
+  "name": "JsonObjectEditor",
+  "version": "1.0.0",
+  "description": "Json Object Editor",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://craql@github.com/craql/JsonObjectEditor.git"
+  },
+  "author": "Corey Hadden",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/craql/JsonObjectEditor/issues"
+  },
+  "homepage": "https://github.com/craql/JsonObjectEditor",
+  "devDependencies": {
+    "del": "^2.0.1",
+    "gulp": "^3.9.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-notify": "^2.2.0"
+  }
+}

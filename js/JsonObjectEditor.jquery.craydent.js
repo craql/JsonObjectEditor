@@ -6,6 +6,7 @@
 ---------------------------------------------------------/*/
 //render field - self.renderObjectPropFieldUI
 //render list item - self.renderListItems()
+//single field list item -renderFieldListItem()
 /*TODO:
 
     -make autoinit true
@@ -23,7 +24,9 @@ if (!!window.Worker) {
 
 $c.TEMPLATE_VARS.push(
     {variable:'/textarea',value:'</textarea>'},
-    {variable:'textarea',value:'<textarea>'}
+    {variable:'textarea',value:'<textarea>'},
+    {variable:'SERVER',value:'//'+$c.SERVER}
+
 );
 
 
@@ -46,7 +49,9 @@ var __joeFieldTypes = [
 function JsonObjectEditor(specs){
 	var self = this;
     initialized = false;
+    var colCount = 1;
 	var listMode = false;
+
     var gridMode = false;
     var tableMode = false,tableSpecs;
     var multiEdit = false;
@@ -114,6 +119,8 @@ function JsonObjectEditor(specs){
 <--------------------------------------------------------------------*/
 	this.init = function() {
         if(initialized){return false;}
+
+        beginLogGroup('JOE init');
         self.current = {filters:{}};
         var html = self.renderFramework(
                 self.renderEditorHeader() +
@@ -158,7 +165,9 @@ function JsonObjectEditor(specs){
 
 
                 }else if([38,40,13,16,17].indexOf(code) == -1){//set focus for alphanumeric keys
+
                     if(!listMode)return;
+
                     var inSearchfield = false;
                     if ($(document.activeElement) && $(document.activeElement)[0] != $('.joe-submenu-search-field')[0]) {
                         self.overlay.find('.joe-submenu-search-field').focus();
@@ -166,22 +175,49 @@ function JsonObjectEditor(specs){
                         $('.joe-panel-content-option.keyboard-selected').removeClass('keyboard-selected');
                     }
                 }else{
+                    //38 up, 40 dn,13 enter
+                    var autocompleteField = $('.joe-text-autocomplete.active').length;
+
+                    if(autocompleteField){
+                        var sel = '.joe-text-autocomplete-option.visible'+'.keyboard-selected';
+                        //$('.joe-text-autocomplete-option.visible').length();
+                        var keyboardSelectedIndex = ($(sel).length)? $(sel).index():-1;
+                        switch(code){
+                            case 38://up
+                                keyboardSelectedIndex--;
+                                if(keyboardSelectedIndex > -1) {
+                                    keyboardSelectOption('.joe-text-autocomplete-option.visible');
+                                }
+                                break;
+                            case 40://down
+                                keyboardSelectedIndex++;
+                                if(keyboardSelectedIndex < $('.joe-text-autocomplete-option.visible').length) {
+                                    keyboardSelectOption('.joe-text-autocomplete-option.visible');
+                                }
+                                break;
+                            case 13://enter
+                                if(keyboardSelectedIndex != -1){
+                                    $(sel).click();
+                                }
+                                break;
+                        }
+                    }
                     if(!listMode)return;
                     var keyboardSelectedIndex = ($('.joe-panel-content-option.keyboard-selected').length)?
                         $('.joe-panel-content-option.keyboard-selected').index():-1;
-                    logit(keyboardSelectedIndex);
+                    //logit(keyboardSelectedIndex);
 
                     switch(code){
                         case 38://up
                             keyboardSelectedIndex--;
                             if(keyboardSelectedIndex > -1) {
-                                keyboardSelectOption();
+                                keyboardSelectOption('.joe-panel-content-option',top);
                             }
                         break;
                         case 40://down
                             keyboardSelectedIndex++;
                             if(keyboardSelectedIndex < currentListItems.length) {
-                                keyboardSelectOption();
+                                keyboardSelectOption('.joe-panel-content-option',top);
                             }
                         break;
                         case 13://enter
@@ -190,13 +226,13 @@ function JsonObjectEditor(specs){
                             }
                         break;
                     }
-                    function keyboardSelectOption(){
-                        $('.joe-panel-content-option.keyboard-selected').toggleClass('keyboard-selected');
-                        var el = $('.joe-panel-content-option').eq(keyboardSelectedIndex);
+                    function keyboardSelectOption(selector,top){
+                        $(selector+'.keyboard-selected').toggleClass('keyboard-selected');
+                        var el = $(selector).eq(keyboardSelectedIndex);
                         el.addClass('keyboard-selected');
                         self.overlay.find('.joe-submenu-search-field').blur();
                        // $('.joe-panel-content').scrollTop($('.joe-panel-content-option.keyboard-selected').offset().top);
-                        el[0].scrollIntoView(true);
+                        el[0].scrollIntoView(top);
                         //var panel_content = self.overlay.find('.joe-panel-content');
                         //panel_content.animate({ scrollTop: panel_content.scrollTop()-10 });
 
@@ -206,6 +242,22 @@ function JsonObjectEditor(specs){
             }
         }
         self.readHashLink();
+/*        $(window).on('hashChange',function(h,i,c){
+            logit(h,i,c);
+
+        });*/
+        window.addEventListener("hashchange", function(newH,oldH){
+            logit(newH);
+            logit(oldH);
+            var useHash = $GET('!') || location.hash;
+            if (!useHash || self.joe_index != 0) {
+                return false;
+            }
+            var useHash = useHash.replace('#','');
+            var hashBreakdown = useHash.split(hash_delimiter).condense();
+            console.log('hash',hashBreakdown);
+
+        }, false);
         var respond_timeout;
         //self.respond();
         $(window).on('resize',function(){
@@ -214,6 +266,7 @@ function JsonObjectEditor(specs){
             //self.respond
         });
         initialized = true;
+        endLogGroup();
 	};
 
 
@@ -221,9 +274,14 @@ function JsonObjectEditor(specs){
 /*-------------------------------------------------------------------->
 	2 | FRAMEWORK START
 <--------------------------------------------------------------------*/
+    this.getMode = function(){
+        if(listMode){return 'list';}
+        return 'details';
+    };
 	this.renderFramework = function(content){
-		var html =
-		'<div class="joe-overlay '
+		var style = 'style-variant1';
+        var html =
+		'<div class="joe-overlay sans cols-'+colCount+' '+style+' '
             +((self.specs.compact && ' compact ') || '')
             +((self.specs.sans && ' sans ') || '')
             +'" data-joeindex="'+this.joe_index+'">'+
@@ -241,8 +299,8 @@ function JsonObjectEditor(specs){
 	this.populateFramework = function(data,setts){
 		self.overlay.removeClass('multi-edit');
 		var joePopulateBenchmarker = new Benchmarker();
-
-		logit('------Beginning joe population');
+        beginLogGroup('JOE population');
+		//logit('------Beginning joe population');
 		var specs = setts || {};
 		self.current.specs = setts;
 		self.current.data = data;
@@ -250,7 +308,7 @@ function JsonObjectEditor(specs){
 		self.current.userSpecs = $.extend({},setts);
         gridMode = (self.current.specs.viewMode == 'grid')?true:false;
         tableMode = (self.current.specs.viewMode == 'table')?true:false;
-
+        colCount = self.current.specs.colCount || colCount || 1;
 
 	//update history 1/2
 		if(!self.current.specs.noHistory){
@@ -455,14 +513,21 @@ function JsonObjectEditor(specs){
     /*-------------------------------------------------------------------->
      Framework Rendering
      <--------------------------------------------------------------------*/
-        var content =
-            self.renderEditorContent(specs);
+        var contentBM = new Benchmarker();
+        beginLogGroup('Content');
+        var content = self.renderEditorContent(specs);
+        endLogGroup();
+        _bmResponse(contentBM,'JOE Content');
+        var chromeBM = new Benchmarker();
 		var html =
+
 			self.renderEditorHeader(specs)+
             self.renderEditorSubmenu(specs)+
             content+
 			self.renderEditorFooter(specs)+
 			self.renderMessageContainer();
+
+        _bmResponse(chromeBM,'JOE Chrome');
 		    self.overlay.find('.joe-overlay-panel').html(html);
 		//$('.joe-overlay-panel').html(html);
 
@@ -482,6 +547,7 @@ function JsonObjectEditor(specs){
         self.updateHashLink();
 		//logit('Joe Populated in '+joePopulateBenchmarker.stop()+' seconds');
         _bmResponse(joePopulateBenchmarker,'----Joe Populated');
+        endLogGroup();
 		return html;
 	};
 /*-------------------------------------------------------------------->
@@ -497,6 +563,7 @@ function JsonObjectEditor(specs){
 	A | Header
 <-----------------------------*/
 	this.renderEditorHeader = function(specs){
+        var BM = new Benchmarker();
 		specs = specs || {};
 		var titleObj = self.current.object;
 		if(specs.list){
@@ -520,22 +587,29 @@ function JsonObjectEditor(specs){
 			return html;
 		}
 		//.replace(/(<([^>]+)>)/ig,"");
+
+        var reload_button = (specs.minimode)?'':
+        '<div class="jif-panel-header-button joe-panel-reload" title="reload" '+reload_action+'><span class="jif-reload"></span></div>';
+
 		var html =
 		'<div class="joe-panel-header">'+
 			((specs.schema && specs.schema.subsets && self.renderSubsetselector(specs.schema)) || (specs.subsets && self.renderSubsetselector(specs)) || '')+
-			renderHeaderBackButton()+
+        (!specs.minimode && renderHeaderBackButton() || '')+
 			'<div class="joe-vcenter joe-panel-title-holder"><span class="joe-panel-title">'+
 				(('<div>'+title+'</div>').toDomElement().innerText || title || 'Json Object Editor')+
 			'</span></div>'+
         //'<div class="joe-panel-reload joe-panel-header-button" title="reload" '+reload_action+'></div>'+
-        '<div class="jif-panel-header-button joe-panel-reload" title="reload" '+reload_action+'><span class="jif-reload"></span></div>'+
+        reload_button+
         '<div class="jif-panel-header-button joe-panel-close" title="close" '+close_action+'>' +//joe-panel-close
         '<span class="jif-close"></span>'+
         '</div>'+
 			'<div class="clear"></div>'+
 		'</div>';
+        _bmResponse(BM,'[Header] rendered');
 		return html;
 	};
+
+    //What happens when the user clicks the close button.
 	this.closeButtonAction = function(){
 		self.history = [];
         self.panel.addClass('centerscreen-collapse');
@@ -616,6 +690,7 @@ function JsonObjectEditor(specs){
  B | SubMenu
  <-----------------------------*/
     this.renderEditorSubmenu = function(specs) {
+        var BM = new Benchmarker();
         var sectionAnchors =renderSectionAnchors();
         if(!self.current.submenu && !sectionAnchors.count){
             return '';
@@ -628,7 +703,8 @@ function JsonObjectEditor(specs){
         var subSpecs = {
             search:true,
             itemcount:true,
-            filters:showFilters
+            filters:showFilters,
+            numCols:['1','2','3']
         };
         var userSubmenu = ($.type(self.current.submenu) != 'object')?{}:self.current.submenu;
         $.extend(subSpecs,userSubmenu);
@@ -636,17 +712,20 @@ function JsonObjectEditor(specs){
         if(specs.mode == 'list') {
             var submenu =
                 '<div class="joe-panel-submenu">'
+            //right side
+                + self.renderViewModeButtons(subSpecs)
+                + self.renderColumnCountSelector(subSpecs.numCols)
+                + self.renderSorter()
 
-                +self.renderViewModeButtons(subSpecs)
-                + ((subSpecs.itemcount && self.renderSubmenuItemcount(subSpecs.itemcount)) || '')
+                    //left side
                 + ((subSpecs.filters && self.renderSubmenuFilters(subSpecs.filter)) || '')
                 + ((subSpecs.search && self.renderSubmenuSearch(subSpecs.search)) || '')
-
+                + ((subSpecs.itemcount && self.renderSubmenuItemcount(subSpecs.itemcount)) || '')
 
                 + '</div>'
                 + "<div class='joe-filters-holder'>"
                 + renderSubsetsDiv()
-                + (self.current.schema && (self.propAsFuncOrValue(self.current.schema.filters) && renderFiltersDiv()) || '')
+                + (self.current.schema && (self.propAsFuncOrValue(self.current.schema.filters,self.current.list) && renderFiltersDiv()) || '')
                     // +'<span class="jif-arrow-left"></span>'
                 + "</div>";
         }else{
@@ -664,7 +743,7 @@ function JsonObjectEditor(specs){
 
         //TODO:move to subsets filter rendering function
         function renderSubsetsDiv(){
-            var sh = '<div><h4>Subsets</h4>';
+            var sh = '<div><div class="joe-menu-label">Subsets</div>';
             var act;
             [{name:'All',filter:{}}].concat(_joe.current.subsets||[]).map(function(opt){
                 //if(!opt.condition || (typeof opt.condition == 'function' && opt.condition(self.current.object)) || (typeof opt.condition != 'function' && opt.condition)) {
@@ -680,7 +759,7 @@ function JsonObjectEditor(specs){
 
 
         function renderFiltersDiv(){
-            var fh = '<div><h4>Filters</h4>';
+            var fh = '<div><div class="joe-menu-label">Filters</div>';
             var filters = self.current.schema.filters;
             filters = self.propAsFuncOrValue(filters);
             (filters||[]).map(function(opt){
@@ -693,6 +772,8 @@ function JsonObjectEditor(specs){
             fh+='</div>';
             return fh;
         }
+
+        _bmResponse(BM,'[Submenu] rendered');
         return submenu;
     };
     function renderSectionAnchors(){
@@ -701,7 +782,7 @@ function JsonObjectEditor(specs){
         var scount = 0;
         var template =
             //'<div class="joe-submenu-section" onclick="$(\'.joe-content-section[data-section=${id}]\').removeClass(\'collapsed\')[0].scrollIntoView()">${name}</div>';
-            '<div class="joe-submenu-section" onclick="_joe.gotoSection(\'${id}\','+self.joe_index+');">${name}</div>';
+            '<div class="joe-submenu-section f${renderTo}" onclick="_joe.gotoSection(\'${id}\','+self.joe_index+');">${name}</div>';
 
         var section;
         for(var secname in self.current.sections){
@@ -820,6 +901,7 @@ function JsonObjectEditor(specs){
             var searchBM = new Benchmarker();
             keyword = keyword || $('.joe-submenu-search-field').val();
             var value=keyword.toLowerCase();
+            var keywords = value.replace(/,/g,' ').split(' ');
             var filters = self.generateFiltersQuery();
 
             _joe.history[_joe.history.length-1].keyword = value;
@@ -831,7 +913,8 @@ function JsonObjectEditor(specs){
             var id;
             var listables = (self.current.subset)?self.current.list.where(self.current.subset.filter):self.current.list;
             var searchables = self.current.schema && self.current.schema.searchables;
-            logit('search where in '+searchBM.stop()+' seconds');
+            //logit('search where in '+searchBM.stop()+' seconds');
+            _bmResponse(searchBM,'search where');
             currentListItems = listables.where(filters).filter(function(i){
                 id = i[idprop];
                 testable = '';
@@ -839,22 +922,37 @@ function JsonObjectEditor(specs){
                     searchables.map(function(s){
                         testable+=i[s]+' ';
                     });
-                    return (testable.toLowerCase().indexOf(value) != -1);
-                    //return (testable+' '+i[idprop].toLowerCase().indexOf(value) != -1);
-                }
-                    if(tableMode){
-                        testable = self.renderTableItem(i,true);
-                    }else if(gridMode){
-                    //testable = self.renderListItem(i,true);
-                    }else{
-                        testable = self.renderListItem(i,true);
+                    testable = testable.toLowerCase()+id;
+                    for(var k = 0,tot = keywords.length; k<tot;k++){
+                        if(testable.indexOf(keywords[k]) == -1){
+                            return false;
+                        }
                     }
-                    //return (__removeTags(testable).toLowerCase().indexOf(value) != -1);
-                    return ((__removeTags(testable)+id).toLowerCase().indexOf(value) != -1);
+                    //return (testable.toLowerCase().indexOf(value) != -1);
 
+                    //return (testable+' '+i[idprop].toLowerCase().indexOf(value) != -1);
+                }else {
+                    if (tableMode) {
+                        testable = self.renderTableItem(i, true);
+                    } else if (gridMode) {
+                        //testable = self.renderListItem(i,true);
+                    } else {
+                        testable = self.renderListItem(i, true);
+                    }
+                    testable = testable.toLowerCase()+id;
+                    for (var k = 0, tot = keywords.length; k < tot; k++) {
+
+                        if (testable.indexOf(keywords[k]) == -1) {
+                            return false;
+                        }
+                    }
+                    //return ((__removeTags(testable)+id).toLowerCase().indexOf(value) != -1);
+                }
+                return true;
             });
 
-            logit('search filter found '+currentListItems.length+' items in '+searchBM.stop()+' seconds');
+            //logit('search filter found '+currentListItems.length+' items in '+searchBM.stop()+' seconds');
+            _bmResponse(searchBM,'search filter found '+currentListItems.length+' items')
             self.overlay.find('.joe-submenu-itemcount').html(currentListItems.length+' item'+((currentListItems.length > 1 &&'s') ||''));
             self.panel.find('.joe-panel-content').html(self.renderListItems(currentListItems,0,self.specs.dynamicDisplay));
             var titleObj = $.extend({},self.current.object,{_listCount:currentListItems.length||'0'});
@@ -876,13 +974,47 @@ function JsonObjectEditor(specs){
         return submenuitem;
     };
 
+/*------------------------------------------------------>
+    //SUBMENU SELECTORS
+ <-----------------------------------------------------*/
+    function renderSubmenuSelectors(specs){
+        var specs = $.extend({
+                options:[],
+                content:'',
+                action:'nothing',
+                buttonTemplate: "<div class='selection-label'>${label}</div>${name}",
+                label:'label',
+                value:'v'
+            },(specs||{}));
+
+        var selectionTemplate =
+            "<div data-colcount='${name}' " +
+                "onclick='getJoe("+self.joe_index+")" + "."+specs.action+"(${name});' "
+                +"class='jif-panel-button selector-button-${name} joe-selector-button " +
+                //"${RUN{checkSubmenuSelector;${name}}}" +
+                "'>"
+                +specs.buttonTemplate
+            +'</div>';
+
+
+        var content = specs.content ||
+            "<div class='joe-selector-button selector-label'>"+specs.label+"</div>"+
+            fillTemplate(selectionTemplate,specs.options);
+
+        var html="<div class='joe-submenu-selector opts-"+specs.options.length+"' >"+ content+ "</div>";
+
+        /*function checkSubmenuSelector(value){
+            var submenuValue = value || this.value;
+            return ''
+        }*/
+        return html;
+    }
+    this.nothing = function(nothing){
+        alert(value);
+    };
 /*------------------>
 View Mode Buttons
 <------------------*/
-    function renderViewModeButton(mode){
-        var html ="<div data-view='"+mode+"' class='joe-button joe-viewmode-button'>"+mode+"</div>";
-        return html;
-    }
     this.renderViewModeButtons = function(subspecs){
         var gridspecs = self.current.schema && self.current.schema.grid;
         var tablespecs = tableSpecs; //self.current.schema && (self.current.schema.table||self.current.schema.tableView);
@@ -896,21 +1028,96 @@ View Mode Buttons
 
         var modeTemplate="<div data-view='${name}' " +
             "onclick='getJoe("+self.joe_index+")" + ".setViewMode(\"${name}\");' " +
-            "class='jif-panel-button joe-viewmode-button ${name}-button'>&nbsp;</div>";
+            "class='jif-panel-button joe-viewmode-button ${name}-button joe-selector-button'>&nbsp;</div>";
         var submenuitem =
-            "<div class='joe-submenu-viewmodes' >"+//onhover='$(this).toggleClass(\"expanded\")'
+            "<div class='joe-submenu-selector opts-"+modes.length+"' >"+//onhover='$(this).toggleClass(\"expanded\")'
+                "<div class='joe-selector-button selector-label'>view</div>"+
                 fillTemplate(modeTemplate,modes)+
             "</div>";
+        //return '';
         return submenuitem;
     };
 
     this.setViewMode = function(mode){
         self.reload(true,{viewMode:mode});
     };
+
+
+
+/*------------------------------------------------------>
+ Column Count Buttons
+ <-----------------------------------------------------*/
+    this.renderColumnCountSelector = function(subspecs){
+        if(!subspecs){
+            return '';
+        }
+        var modes = [
+            {name:'1'},
+            {name:'2'},
+            {name:'3'}
+        ];
+
+/*        var modeTemplate="<div data-colcount='${name}' " +
+            "onclick='getJoe("+self.joe_index+")" + ".setColumnCount(${name});' " +
+            "class='jif-panel-button selector-button-${name} joe-selector-button'>" +
+            "<div class='selection-label'>cols</div>${name}</div>";
+        var submenuitem =
+            "<div class='joe-submenu-selector opts-"+modes.length+"'' >"+
+            fillTemplate(modeTemplate,modes)+
+            "</div>";*/
+
+        var h = renderSubmenuSelectors({
+            options:modes,
+            //buttonTemplate:"<div class='selection-label'>cols</div>${name}",
+            label:'cols',
+            value:colCount,
+            action:'setColumnCount'
+        });
+        return h;
+        //return submenuitem;
+    };
+    this.setColumnCount = function(mode){
+        self.overlay[0].className = self.overlay[0].className.replace(/cols-[0-9]/,'cols-'+mode);
+        if(mode){colCount = mode;}
+        //self.reload(true,{colCount:mode});
+    };
+
+
+/*------------------------------------------------------>
+    Submenu Sorter
+ <-----------------------------------------------------*/
+
+
+ this.renderSorter = function(subspecs){
+     var sorter = (self.current.subset && self.current.subset.sorter)
+         ||(self.current.schema && self.current.schema.sorter)|| 'name';
+     if($.type(sorter) == 'string'){sorter = sorter.split(',');}
+     if(sorter.indexOf('name') == -1 && sorter.indexOf('!name') == -1){
+         sorter.push('name');
+     }
+     var newsorter = subspecs;
+     var current;
+     return '<label for="joe-'+self.joe_index+'-sorter" class="joe-list-sorter">sort ' +
+         '<select name="joe-'+self.joe_index+'-sorter" onchange="getJoe('+self.joe_index+').resort(this.value);">' +
+         sorter.map(function(s){
+             current = (s == self.current.sorter[0]) ?'selected':'';
+             /* if(self.current.sorter[0] == s){
+              return '<option value="!'+s+'">!'+s+'</option>';
+              }*/
+             return '<option '+current+' value="'+s+'">'+s+'</option>';
+         })+
+         '</select></label>';
+ };
+
+this.resort = function(sorter){
+    self.reload(false,{sorter:sorter})
+};
     /*----------------------------->
-        C | Content
+        C | Editor Content
     <-----------------------------*/
 	this.renderEditorContent = function(specs){
+
+        self.current.sidebars = {left:{collapsed:false},right:{collapsed:false}};
 		//specs = specs || {};
 		var content;
 
@@ -942,10 +1149,12 @@ View Mode Buttons
 
 		}
         var submenu = '';
-        if(mode == 'list' && self.current.submenu){
-            submenu=' with-submenu ';
+        if(!specs.minimode) {
+            if ((mode == 'list' && self.current.submenu) || (self.current.submenu || renderSectionAnchors().count)) {
+                submenu = ' with-submenu '
+            }
         }
-        submenu=(self.current.submenu || renderSectionAnchors().count)?' with-submenu ':'';
+        //submenu=(self.current.submenu || renderSectionAnchors().count)?' with-submenu ':'';
         var scroll = 'onscroll="getJoe('+self.joe_index+').onListContentScroll(this);"';
         var rightC = content.right||'';
         var leftC = content.left||'';
@@ -958,7 +1167,8 @@ View Mode Buttons
 		+'</div>'
         +self.renderSideBar('left',leftC,{css:submenu})
         +self.renderSideBar('right',rightC,{css:submenu});
-        self.current.sidebars = {left:leftC,right:rightC};
+        self.current.sidebars.left.content = leftC;
+        self.current.sidebars.right.content = rightC;
 		return html;
 	};
 
@@ -1009,20 +1219,26 @@ this.renderHTMLContent = function(specs){
 	this.renderListContent = function(specs){
 		var wBM = new Benchmarker();
 
-        currentListItems = [];
-		self.current.selectedListItems=[];
-		self.current.anchorListItem=null;
+        if(specs.minimode) {
+            return self.renderMiniListContent(specs);
+        }
+            currentListItems = [];
+            self.current.selectedListItems = [];
+            self.current.anchorListItem = null;
+
 
 		specs = specs || {};
 		var schema = specs.schema;
 		var list = specs.list || [];
 		var html = '';
         var filteredList;
+
         if(self.current.sorter &&(($.type(self.current.sorter) != 'array') || self.current.sorter.length) ){
             list = list.sortBy(self.current.sorter);
         }
         //list = list.sortBy(self.current.sorter);
-		logit('list sort complete in '+wBM.stop()+' seconds');
+		//logit('list sort complete in '+wBM.stop()+' seconds');
+        _bmResponse(wBM,'list sort complete');
 		var numItemsToRender;
         if(!self.current.subset){
             currentListItems = list;
@@ -1030,17 +1246,44 @@ this.renderHTMLContent = function(specs){
 		else{
             filteredList = list.where(self.current.subset.filter);
             currentListItems = filteredList;
-			logit('list where complete in '+wBM.stop()+' seconds');
+            _bmResponse(wBM,'list where complete');
+			//logit('list where complete in '+wBM.stop()+' seconds');
 		}
-
+        _bmResponse(wBM,'list prerender');
         numItemsToRender = self.specs.dynamicDisplay || currentListItems.length;
         html+= self.renderListItems(currentListItems,0,numItemsToRender);
 
-
-		logit('list complete in '+wBM.stop()+' seconds');
+        _bmResponse(wBM,'list complete');
+		//logit('list complete in '+wBM.stop()+' seconds');
 		return html;
 
 	};
+    this.renderMiniListContent = function(specs){
+        var wBM = new Benchmarker();
+
+        specs = specs || {};
+        var schema = specs.schema;
+        var list = specs.object || [];
+        var idprop = specs.idprop || '_id';
+        var html = '';
+        var sorter = specs.sorter || 'name';
+        //var click = specs.click || 'alert(\'${name}\')';
+        list = list.sortBy(sorter);
+        var click = 'getJoe('+self.joe_index+').minis[\''+specs.minimode+'\'].callback(\'${'+idprop+'}\')';
+
+        var template = specs.template || '<h4>${name}</h4><div>${'+idprop+'}</div>';
+            template ='<div class="joe-field-list-item" onclick="'+click+'">'+template+'</div>';
+
+        //TODO: lazy-render images
+
+        for(var li = 0,tot = list.length; li<tot;li++){
+          html+= fillTemplate(template,list[li]);
+        }
+        _bmResponse(wBM,'minilist complete');
+        //logit('minilist complete in '+wBM.stop()+' seconds');
+        return html;
+
+    };
 
     this.renderListItems = function(items,start,stop){
         var html = '';
@@ -1068,7 +1311,7 @@ this.renderHTMLContent = function(specs){
                     &&(self.current.schema.table||self.current.schema.tableView)
                    // &&(self.current.schema.table||self.current.schema.tableView).cols
                 ) ||{});*/
-            html+='<table class="joe-item-table" cellspacing="0"><thead><th>&nbsp;</th>';
+            html+='<table class="joe-item-table" cellspacing="0"><thead class="joe-table-head"><th>&nbsp;</th>';
             tableSpecs.cols.map(function(c){
                 if($c.isString(c)) {
                     html += '<th>' + c + '</th>';
@@ -1078,7 +1321,7 @@ this.renderHTMLContent = function(specs){
             });
 
             html+='</thead><tbody>';
-            stop = currentListItems.length-1;
+            stop = currentListItems.length;
             for (var i = start; i < stop; i++) {
                 listItem = items[i];
                 if (listItem) {
@@ -1149,7 +1392,7 @@ this.renderHTMLContent = function(specs){
 		var fieldProp;
         self.current.fields = [];
         self.current.sections = {};
-        var schemaFields = self.propAsFuncOrValue(specs.schema.fields);
+        var schemaFields = (specs.schema)?self.propAsFuncOrValue(specs.schema.fields):false;
 		if(!specs.schema || !schemaFields){//no schema use items as own schema
 			for( var prop in object){
 				if(object.hasOwnProperty(prop)){
@@ -1182,8 +1425,9 @@ this.renderHTMLContent = function(specs){
 		var html ='<div class="joe-object-content">'+fields.main+'<div class="clear"></div></div>';
 		return fields;
 	};
-
+    var rerenderingField = false;
 	this.rerenderField = function(fieldname){
+        rerenderingField = true;
         if($c.isArray(fieldname)){
             fieldname = fieldname.join(',');
         }
@@ -1191,6 +1435,7 @@ this.renderHTMLContent = function(specs){
             var fields = self.renderObjectPropFieldUI(f);
             $('.joe-object-field[data-name='+f+']').parent().replaceWith(fields);
         })
+        rerenderingField = false;
 
 	};
 
@@ -1247,7 +1492,15 @@ this.renderHTMLContent = function(specs){
                 //renderFieldTo = 'main';
             }else if(prop.sidebar_start){
                 //fields += self.renderPropSectionStart(prop);
+
+
                 renderFieldTo = prop.sidebar_side || prop.sidebar_start || 'main';
+                if(renderFieldTo != 'main'){
+                    //self.current.sidebars[renderFieldTo].collapsed = false;
+                    if(prop.hasOwnProperty('collapsed')){
+                        self.current.sidebars[renderFieldTo].collapsed = self.propAsFuncOrValue(prop.collapsed);
+                    }
+                }
             }
             else if(prop.sidebar_end){
                 renderFieldTo = 'main';
@@ -1302,7 +1555,7 @@ this.renderHTMLContent = function(specs){
             '<div class="joe-content-section-label" '+toggle_action+'>'+secname+'</div>'+
             '<div class="joe-content-section-content">';
         //add to current sections
-        self.current.sections[secID]={open:true,name:secname,id:secID,hidden:hidden};
+        self.current.sections[secID]={open:true,name:secname,id:secID,hidden:hidden,renderTo:renderFieldTo};
         return section_html;
     };
     self.renderPropSectionEnd = function(prop){
@@ -1360,7 +1613,7 @@ this.renderHTMLContent = function(specs){
 			'</div>'+
 		'</div>';
 
-        logit('joe footer generated in '+fBM.stop()+' secs');
+        _bmResponse(fBM,'[Footer] rendered');
 		return html;
 	};
 
@@ -1387,7 +1640,7 @@ this.renderHTMLContent = function(specs){
         if(prop.hasOwnProperty('condition') && !self.propAsFuncOrValue(prop.condition)){
             return '';
         }
-
+        var joeFieldBenchmarker = new Benchmarker();
 		//field requires {name,type}
         self.current.fields.push(prop);
         prop.value = self.propAsFuncOrValue(prop.value);
@@ -1467,7 +1720,7 @@ this.renderHTMLContent = function(specs){
 	//	}
 
 		preProp = prop;
-
+        _bmResponse(joeFieldBenchmarker,'field '+prop.name+ ' '+prop.type);
 		return html;
 	};
 
@@ -1484,9 +1737,6 @@ this.renderHTMLContent = function(specs){
               //var values= self.getField(prop.name);
 
           }
-          /*else if(goto === true){
-              action = 'goJoe(getNPCDataItem(${_id},"element"),schema:"element");'
-          }*/
           var btnHtml = '';
           switch(style||prop.type){
               case 'select':
@@ -1536,7 +1786,7 @@ this.renderHTMLContent = function(specs){
 	};
 
 	this.selectAndRenderFieldType = function(prop){
-		var joeFieldBenchmarker = new Benchmarker();
+		//var joeFieldBenchmarker = new Benchmarker();
 
 		var html = '';
 		switch(prop.type.toLowerCase()){
@@ -1628,12 +1878,16 @@ this.renderHTMLContent = function(specs){
             case 'preview':
                 html+= self.renderPreviewField(prop);
                 break;
+            case 'wysiwyg':
+                html+= self.renderCKEditorField(prop);
+                break;
 			default:
 				html+= self.renderTextField(prop);
 				break;
 		}
 
-		logit('Joe rendered '+(prop.name||"a field")+' in '+joeFieldBenchmarker.stop()+' seconds');
+        //_bmResponse(joeFieldBenchmarker,'Joe rendered '+(prop.name||"a field"));
+		//logit('Joe rendered '+(prop.name||"a field")+' in '+joeFieldBenchmarker.stop()+' seconds');
 		return html;
 
 	};
@@ -1690,6 +1944,9 @@ this.renderHTMLContent = function(specs){
 /*----------------------------->
 	A | Text Input
 <-----------------------------*/
+    function cleanString(value){
+        return ((value || '')+'').replace(/\"/g,"&quot;");
+    }
 	this.renderTextField = function(prop){
 		var autocomplete;
 		if(prop.autocomplete && prop.values){
@@ -1709,7 +1966,8 @@ this.renderHTMLContent = function(specs){
 		var html=
             ((autocomplete && '<div class="joe-text-autocomplete-label"></div>')||'')+
 		'<input class="joe-text-field joe-field '+((prop.skip && 'skip-prop')||'')+'" ' +
-            'type="text"  '+disabled+' name="'+prop.name+'" value="'+(prop.value || '')+'" '
+            ((prop.placeholder && 'placeholder="'+self.propAsFuncOrValue(prop.placeholder)+'"')||'')+ //add placeholder
+            'type="text"  '+disabled+' name="'+prop.name+'" value="'+cleanString(prop.value || '')+'" maxlength="'+(prop.maxlength || '')+'" '
 			+self.renderFieldAttributes(prop)
 			+((autocomplete &&
 				//' onblur="getJoe('+self.joe_index+').hideTextFieldAutoComplete($(this));"'
@@ -2340,17 +2598,87 @@ this.renderSorterField = function(prop){
 		var constructedItem = self.constructObjectFromFields();
 		if(!self.current.object[idProp] ||(constructedItem[idProp] && constructedItem[idProp] == self.current.object[idProp])){
 			itemObj = constructedItem;
+
             if(self.current.object[idProp] && constructedItem[idProp] == self.current.object[idProp]){
-                itemObj = $.extend({}, constructedItem, self.current.object);
+                if(rerenderingField){
+
+                    itemObj = $.extend({},  self.current.object,constructedItem);
+                }else{
+
+                    itemObj = $.extend({}, constructedItem, self.current.object);
+                }
             }
 		}
-        if(prop.run){
-            html+= prop.run(itemObj,prop)||'';
-        }else if(prop.template){
-            html += fillTemplate(prop.template,itemObj);
+        try {
+            if (prop.run) {
+                html += prop.run(itemObj, prop) || '';
+            } else if (prop.template) {
+                html += fillTemplate(prop.template, itemObj);
+            }
+        }catch(e){
+            return 'error rendering field:'+e;
         }
         return html;
 
+    };
+
+    this.renderFieldListItem = function(item,contentTemplate,schema,specs){
+
+
+        var specs = $.extend({
+            deleteButton:false,
+            expander:null,
+            gotoButton:false,
+            itemMenu:false,
+            schemaprop:false,
+            callback:false,
+            value:''
+        },specs);
+        var contentTemplate = contentTemplate || '<h4>${name}</h4><div class="joe-subtext">${itemtype}</div>';
+        var schema = (self.propAsFuncOrValue(specs.schemaprop,item)||schema||item.itemtype||item.type);
+        var schemaobj = self.schemas[schema];
+
+        var idprop = specs.idprop || (schemaobj && schemaobj.idprop) ||'_id';
+        var hasMenu = specs.itemMenu && specs.itemMenu.length;
+        var action = specs.action || ' onclick="goJoe(_joe.search(\'${'+idprop+'}\')[0],{schema:\''+schema+'\'})" ';
+        var clickablelistitem = (!specs.gotoButton/* && !hasMenu*/);
+        //var clickablelistitem = !!clickable && (!specs.gotoButton && !hasMenu);
+        var deleteButton = '<div class="joe-delete-button joe-block-button left" ' +
+            'onclick="$(this).parent().remove();">&nbsp;</div>';
+        var expanderContent = renderItemExpander(item,specs.expander);
+
+        var click = (!clickablelistitem)?'':action;
+
+        var html = fillTemplate('<div class="'
+            +((clickablelistitem && 'joe-field-list-item clickable') ||'joe-field-item')
+            +(specs.deleteButton &&' deletable' ||'')
+            +(specs.gotoButton &&' gotobutton' ||'')
+            +(specs.itemMenu &&' itemmenu' ||'')
+            +(specs.expander &&' expander expander-collapsed' ||'')+'" '
+            +(specs.value &&'data-value="' + specs.value + '"' ||'')
+            +'>'
+
+                    //if(clickableListItem){
+                        +((hasMenu && renderItemMenu(item, specs.itemMenu)) || '')
+
+                        + (specs.deleteButton && deleteButton || '')
+                        + '<div class="joe-field-item-content" ' + click + '>'
+                        + self.propAsFuncOrValue(contentTemplate+__clearDiv__, item)
+                        + '</div>'
+                        + self._renderExpanderButton(expanderContent, item)
+                   /* }else {
+                        //+click
+                        +((hasMenu && renderItemMenu(item, specs.itemMenu)) || '')
+                        + '<div class="joe-field-item-content" ' + click + '>'
+                        + (specs.deleteButton && deleteButton || '')
+                        + self._renderExpanderButton(expanderContent, item)
+                        + self.propAsFuncOrValue(contentTemplate, item)
+                        + '</div>'
+                    }*/
+                +(specs.gotoButton && '${RUN[_renderGotoButton]}' || '')
+                +expanderContent
+            +'</div>',item);
+        return html;
     };
 /*----------------------------->
  M | URL
@@ -2358,17 +2686,19 @@ this.renderSorterField = function(prop){
     this.renderURLField = function(prop){
         var profile = self.current.profile;
             var disabled = _disableField(prop);// (prop.locked &&'disabled')||'';
+        var prefix = fillTemplate(prop.prefix||'',self.current.object);
         var html=
-            '<div class="joe-button" onclick="_joe.gotoFieldURL(this);">view</div>'
+            prefix+
+            '<div class="joe-button" onclick="_joe.gotoFieldURL(this,\''+prefix+'\');">view</div>'
             +'<input class="joe-url-field joe-field" type="text" ' +
             self.renderFieldAttributes(prop)+
             'name="'+prop.name+'" value="'+(prop.value || '')+'"  '+disabled+' />'
        + __clearDiv__;
         return html;
     };
-    this.gotoFieldURL = function(dom){
+    this.gotoFieldURL = function(dom,prefix){
         var url = $(dom).siblings('.joe-url-field').val();
-        window.open(url);
+        window.open((prefix||'')+url);
     };
 /*----------------------------->
  N | Color
@@ -2441,7 +2771,7 @@ this.renderSorterField = function(prop){
 
 //render objects
     this.renderObjectListObjects = function(prop){
-        var objects = self.current.object[prop.name] || prop.default || [];
+        var objects = self.current.object[prop.name] || prop['default'] || [];
         var properties = prop.properties || self.objectlistdefaultproperties;
 
         var html = '<tbody id="joe-objectist-table">';
@@ -2462,14 +2792,7 @@ this.renderSorterField = function(prop){
         //var html = "<tr class='joe-object-list-row' data-index='"+index+"'><td class='joe-objectlist-object-row-handle'>|||</td>";
         var html = "<tr class='joe-object-list-row' data-index='"+index+"'><td><div class='joe-panel-button joe-objectlist-object-row-handle' "+delaction+">|||</div></td>";
 
-
-        function renderTextInput(prop){
-            var html = '<input type="text" class="joe-objectlist-object-input" style="width:auto;" value="'+prop.value+'"/>';
-            return html;
-        }
-
         var renderInput = {
-         //   'text':renderTextInput,
             'text':self.renderTextField,
             select:self.renderSelectField,
             'date':self.renderDateField
@@ -2611,50 +2934,119 @@ this.renderSorterField = function(prop){
                 '<script>function none(){return; }</script>' +
                 '<script type="text/javascript" src="https://sdk.amazonaws.com/js/aws-sdk-2.1.34.min.js"></script>'+
                 //'<script src="http://webapps-cdn.esri.com/CDN/jslibs/craydent-1.7.37.js"></script>'+
-                '<script src="'+joe_web_dir+'js/craydent-upload-1.1.0.js" type="text/javascript"></script>'+
+                '<script src="'+joe_web_dir+'js/libs/craydent-upload-1.1.0.js" type="text/javascript"></script>'+
                 '');
         }
-        //var profile = self.current.profile;
-        /* var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];*/
+
         var values = self.getFieldValues(prop.values);
+        var dz_message = '<div style="line-height:100px;">drag files here to upload</div>';
+
+        if(prop.field && self.current.object[prop.field]){
+            var kfield = self.getField(prop.field);
+            var preview = self.current.object[prop.field]
+            if(kfield.prefix){
+                preview = fillTemplate(kfield.prefix,self.current.object)+preview;
+            }
+            dz_message = '<img src="'+preview+'"/>'
+        }
         var html=
             '<div class="joe-uploader" data-uploader_id="'+uploader_id+'">'+
                 '<div class="joe-uploader-preview"></div>'+
-                '<div class="joe-uploader-dropzone">drag files here to upload</div>'+
+                '<div class="joe-uploader-dropzone">'+dz_message+'</div>'+
                 '<div class="joe-uploader-message">add a file</div>'+
-            '</div>';
+            '<div class="joe-button joe-green-button joe-upload-cofirm-button hidden"  onclick="_joe.uploaderConfirm(\''+uploader_id+'\');">Upload File</div>'+__clearDiv__+
+            '</div>'
+            ;
         //var idprop = prop.idprop || '_id';
         //html+= __clearDiv__;
         self.uploaders[uploader_id] = {prop:prop.name};
         return html;
     };
 
-    this.onUserUpload = function(file,base64){
+    this.onUserUpload = function(file,base64) {
         var dom = $(this.dropZone).parent();
 
         var joe_uploader = self.uploaders[dom.data('uploader_id')];
         //var results = dom.find('.joe-uploader-message');
         var guid = "" || cuid();
+        var field = _joe.getField(joe_uploader.prop);
         if (file) {
-           /* var bucket = new AWS.S3({
-                params:{
-                    Bucket:'patterns.esri.com/uploaded'
+            joe_uploader.file = file;
+            joe_uploader.base64 = base64;
+
+            joe_uploader.dropzone.html('<img src="' + base64 + '">');
+            joe_uploader.message.html('<b>'+file.name+'</b> selected');
+            joe_uploader.confirmBtn.removeClass('hidden');
+        }else {
+            results.innerHTML = 'Nothing to upload.';
+        }
+    };
+        //setup AWS
+    this.uploaderConfirm = function(uploader_id){
+        var joe_uploader = self.uploaders[uploader_id];
+        //var results = dom.find('.joe-uploader-message');
+        var guid = "" || cuid();
+        var field = _joe.getField(joe_uploader.prop);
+        var file = joe_uploader.file;
+        var base64 = joe_uploader.base64;
+        var callback = function(err,url){
+            if(err){
+                joe_uploader.message.append('<div>'+(err.message||err)+'<br/>'+err+'</div>');
+                alert('error uploading');
+            }else{
+                if(field.field){
+                    joe_uploader.message.append('<div>uploaded</div>');
+                    self.current.object[field.field] = url;
+                    self.rerenderField(field.field);
+                    self.panel.find('.joe-panel-menu').find('.joe-quicksave-button').click();
+
                 }
-            });*/
-            joe_uploader.message.html('Uploading '+file.name+' to s3');
-            joe_uploader.preview.html('<img src="'+base64+'">');
-           /* var params = {
+            }
+        }
+        var uploadFunction = field.upload || function(file,callback,base64){
+                alert('file uploaded');
+                callback(err,url);
+            };
+        if(file){
+                uploadFunction(file,callback,base64);
+        }
+       /* AWS.config.update({
+            accessKeyId:'',
+            secretAccessKey:'',
+            region:''
+        });
+
+        // Configure your region
+        //AWS.config.region = 'us-west-1';
+        if (file) {
+            if(field.aws && field.aws.bucket) {
+                var bucket = new AWS.S3({
+                    params: {
+                        Bucket: field.aws.bucket//'patterns.esri.com/uploaded'
+                    }
+                });
+            }
+            joe_uploader.message.append('Uploading '+file.name+' to s3');
+
+            var params = {
                 Key:guid+""+file.name,
                 ContentType:file.type,
                 Body:file
             };
             bucket.upload(params, function (err, data) {
-                results.innerHTML = err ? 'ERROR!' : 'UPLOADED.';
+                if(err){
+
+                    joe_uploader.message.append('<div>'+m+'<br/>'+err+'</div>');
+                }else{
+
+                    joe_uploader.message.append('<div>uploaded</div>');
+                }
+                //var m = err ? 'ERROR!' : 'UPLOADED.';
                 logit(data);
-            });*/
+            });
         } else {
             results.innerHTML = 'Nothing to upload.';
-        }
+        }*/
     };
     this.readyUploaders = function(){
         self.panel.find('.joe-uploader').each(function(){
@@ -2677,6 +3069,8 @@ this.renderSorterField = function(prop){
             self.uploaders[id].uploader = uploader;
             self.uploaders[id].message = $(this).find('.joe-uploader-message').html('awaiting file');
             self.uploaders[id].preview = $(this).find('.joe-uploader-preview');
+            self.uploaders[id].dropzone = $(this).find('.joe-uploader-dropzone');
+            self.uploaders[id].confirmBtn = $(this).find('.joe-upload-cofirm-button');
 
         });
     };
@@ -2688,7 +3082,7 @@ this.renderSorterField = function(prop){
         var values = self.getFieldValues(prop.values);
         var value = self.current.object[prop.name] ||
             prop.value ||
-            (!self.current.object.hasOwnProperty(prop.name) && prop.default) ||
+            (!self.current.object.hasOwnProperty(prop.name) && prop['default']) ||
             [];
         if($.type(value) != 'array'){
             value = (value != null)?[value]:[];
@@ -2704,7 +3098,8 @@ this.renderSorterField = function(prop){
                 values:values,
                 skip:true,
                 name:prop.name,
-                ftype:'objectReference'
+                ftype:'objectReference',
+                placeholder:prop.placeholder
 
             }
         ); //,{onblur:'_joe.showMessage($(this).val());'})
@@ -2744,13 +3139,46 @@ this.renderSorterField = function(prop){
         $('.joe-object-references-holder[data-field='+field+']').append(self.createObjectReferenceItem(null,id,field));
 
     };
-
     this.createObjectReferenceItem = function(item,id,fieldname){
-            var field = _getField(fieldname);
-            var idprop = field.idprop||'_id';
-
+        var field = _getField(fieldname);
+        var idprop = field.idprop||'_id';
         if(!item) {
-            logit('adding ' + id + ' from ' + fieldname);
+            var values = self.getFieldValues(field.values);
+            var item;
+            for(var i = 0,tot = values.length; i <tot; i++){
+                if(values[i][idprop] == id){
+                    item = values[i];
+                    break;
+                }
+            }
+        }
+        if(!item) {
+            var deleteButton = '<div class="joe-delete-button joe-block-button left" ' +
+                'onclick="$(this).parent().remove();">&nbsp;</div>';
+            return '<div class="joe-field-item deletable" data-value="' + id + '">' +
+                deleteButton + "<div>REFERENCE NOT FOUND</div><span class='subtext'>" + id + "</span>" + '</div>';
+        }
+        var template = self.propAsFuncOrValue(field.template, item) || "<div>${name}</div><span class='subtext'>" + id + "</span>";
+        var specs = {
+            deleteButton:true,
+            expander:field.expander,
+            gotoButton:field.gotoButton,
+            itemMenu:field.itemMenu,
+            value:'${_id}',
+            idprop:field.idprop,
+            schemaprop:field.schemaprop
+        };
+        return self.renderFieldListItem(item,template,'',specs);
+
+    };
+
+    this.createObjectReferenceItem2 = function(item,id,fieldname){
+        var field = _getField(fieldname);
+        var idprop = field.idprop||'_id';
+        var gotoButton = '${RUN[_renderGotoButton]}';
+        if(field.hideGotoButton){gotoButton = '';}
+        if(!item) {
+            //logit('adding ' + id + ' from ' + fieldname);
 
             //var values = self.propAsFuncOrValue(field.values);
             var values = self.getFieldValues(field.values);
@@ -2767,17 +3195,31 @@ this.renderSorterField = function(prop){
         var deleteButton = '<div class="joe-delete-button joe-block-button left" ' +
             'onclick="$(this).parent().remove();">&nbsp;</div>';
         if(!item) {
-            return '<div class="joe-field-item" data-value="' + id + '">' +
+            return '<div class="joe-field-item deletable" data-value="' + id + '">' +
                 deleteButton + "<div>REFERENCE NOT FOUND</div><span class='subtext'>" + id + "</span>" + '</div>';
         }
         var id = id||item[idprop];
+
+        var itemMenu = self.propAsFuncOrValue(field.itemMenu,item);
+
+        var expander = fillTemplate(self.propAsFuncOrValue(field.expander,item),item)||'';
         var template = self.propAsFuncOrValue(field.template, item) || "<div>${name}</div><span class='subtext'>" + id + "</span>";
-        return '<div class="joe-field-item" data-value="' + id + '">' + deleteButton + fillTemplate(template, item) + '</div>';
+        return '<div class="joe-field-item deletable '+(expander && 'expander expander-collapsed' || '')+'" data-value="' + id + '">'
+
+            + deleteButton
+            + '<div class="joe-field-item-content">'
+                +fillTemplate(template, item)
+            + '</div>'
+            +(itemMenu && renderItemMenu(item,itemMenu) || '')
+            +self._renderExpanderButton(expander,item)
+            +fillTemplate(gotoButton,item)
+            +renderItemExpander(item, expander)
+            + '</div>';
 
     };
 
 /*----------------------------->
- V | Preview Field
+ W | Preview Field
  <-----------------------------*/
     this.renderPreviewField = function(prop){
         //var locked = self.propAsFuncOrValue(prop.locked)?' disabled ':'';
@@ -2802,13 +3244,78 @@ this.renderSorterField = function(prop){
         window.__previews[previewid] = {content:content,bodycontent:bodycontent};
         url+='?pid='+previewid;
         var html=
-            '<div class="joe-button joe-reload-button joe-iconed-button" onclick="getJoe('+self.joe_index+').rerenderField(\''+prop.name+'\');">Reload</div>'+
-            '<iframe class="joe-preview-field joe-field joe-preview-iframe" width="100%" height="'+height+'" name="'+prop.name+'" ' +
+            '<div class="joe-button joe-reload-button joe-iconed-button" onclick="getJoe('+self.joe_index+').rerenderField(\''+prop.name+'\');">Reload</div>'
+                +'<div class="joe-preview-iframe-holder" style="height:'+height+'">'
+            +'<iframe class="joe-preview-field joe-field joe-preview-iframe" width="100%" height="100%" name="'+prop.name+'" ' +
             'src="'+url+'"></iframe>'
+                +'</div>'
             //+ '<a href="'+url+'" target="_blank"> view fullscreen preview</a><p>' + url.length + ' chars</p>';
-            + '<div class="joe-button joe-iconed-button joe-view-button multiline" onclick="window.open(\''+url+'\',\'joe-preview-'+previewid+'\').joeparent = window;"> view fullscreen preview <p class="joe-subtext">' + url.length + ' chars</p></div>';
+            + '<div class="joe-button joe-iconed-button joe-view-button multiline" onclick="window.open(\''+url+'\',\'joe-preview-'+previewid+'\').joeparent = window;"> view fullscreen preview <p class="joe-subtext">' + url.length + ' chars</p></div>'+__clearDiv__;
         return html;
     };
+
+/*----------------------------->
+ X //TextEditor Field
+ <-----------------------------*/
+    this.renderCKEditorField = function(prop){
+        var profile = self.current.profile;
+        var locked = self.propAsFuncOrValue(prop.locked)?' disabled ':'';
+        var height = (prop.height)?'style="height:'+prop.height+';"' : '';
+        var code_language = (prop.language||'html').toLowerCase();
+        var editor_id = cuid();
+        var html=
+            '<div class="joe-ckeditor-holder joe-texteditor-field joe-field" '
+            +height+' data-ckeditor_id="'+editor_id+'" data-ftype="ckeditor" name="'+prop.name+'">'+
+            '<div id="'+editor_id+'" class="joe-ckeditor">'+(prop.value || "")+'</div>'+
+            '</div>';
+        return html;
+    };
+    var ckconfig = {};
+    ckconfig.toolbarGroups = [
+            { name: 'clipboard', groups: [ 'undo', 'clipboard' ] },
+            { name: 'editing', groups: [ 'find', 'selection', 'spellchecker', 'editing' ] },
+            { name: 'links', groups: [ 'links' ] },
+            { name: 'insert', groups: [ 'insert' ] },
+            { name: 'forms', groups: [ 'forms' ] },
+            { name: 'document', groups: [ 'mode', 'document', 'doctools' ] },
+            { name: 'tools', groups: [ 'tools' ] },
+            { name: 'others', groups: [ 'others' ] },
+            '/',
+            { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
+            { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi', 'paragraph' ] },
+            { name: 'styles', groups: [ 'styles' ] },
+            { name: 'colors', groups: [ 'colors' ] }
+        ];
+
+    ckconfig.removeButtons = 'Anchor,Subscript,Superscript,Image';
+    ckconfig.toolbarCanCollapse = true;
+    self.ck_editors = [];
+    this.readyCKEditors = function(){
+        if(typeof CKEDITOR == 'undefined'){
+            //TODO:use require
+            alert('CKEDITOR undefined');
+        }
+        var neweditors = [];
+        self.ck_editors.map(function(ck){
+            try {
+                ck.destroy && ck.destroy();
+            }catch(e){
+             logit('ckeditor "'+ck.name+'" error:'+e);
+            }
+        });
+        $('.joe-ckeditor').each(function(dom){
+            var field = self.getField($(this).parent().attr('name'))
+            var id = $(this).attr('id');
+            if(self.ck_editors.indexOf(id)==-1) {
+                var editor = CKEDITOR.replace(id,ckconfig);
+                neweditors.push(editor);
+            }
+        });
+        self.ck_editors = neweditors;
+
+    };
+
+
     function _getField(fieldname){
         var fieldobj;
         for(var f = 0,tot= self.current.fields.length; f<tot; f++){
@@ -2824,6 +3331,60 @@ this.renderSorterField = function(prop){
 /*-------------------------------------------------------------------->
 	4 | OBJECT LISTS
 <--------------------------------------------------------------------*/
+
+    //ITEM MENU
+
+    function renderItemMenu(item,buttons){
+        if(!buttons){
+            return '';
+        }
+        buttons = self.propAsFuncOrValue(buttons,item);
+        if(!buttons){
+            return '';
+        }
+        var btn_template = '<td class="joe-option-menu-button" onclick="${action}"> ${name}</td>';
+        var html = '<div class="joe-panel-content-option-menu"><table class=""><tbody><tr>';
+        var oc;
+            buttons.map(function(b) {
+                if (!b.hasOwnProperty('condition') || self.propAsFuncOrValue(b.condition,item)) {
+                    oc = (b.url && "window.open(\'"+fillTemplate(b.url,item)+"\')" )
+                        || b.action || "alert('" + b.name + "');";
+                html += fillTemplate('<td class="joe-option-menu-button" onclick="' + oc + '">' + b.name + '</td>', item)
+                }
+            });
+
+            html+='</tr></tbody></table></div>';
+
+
+        return html;
+    }
+
+
+    //ITEM EXPANDER
+    this._renderExpanderButton =function(expanderContent,item){
+            if(!expanderContent){return '';}
+            return '<div class="joe-panel-content-option-expander-button" onclick="_joe.toggleItemExpander(this);"></div>';
+    };
+
+    //window._renderExpanderButton = this._renderExpanderButton;
+    this.toggleItemExpander = function(dom,itemid){
+      if(dom){
+          $(dom).closest('.expander')
+              .toggleClass('expander-collapsed')
+              .toggleClass('expander-expanded');
+
+      }
+    };
+    function renderItemExpander(item,contentVal){
+        var content = fillTemplate(self.propAsFuncOrValue(contentVal,item),item);
+        if(!content){return '';}
+        var html = '<div class="joe-panel-content-option-expander">'+content+'</div>';
+
+
+        return html;
+    }
+    this.renderItemExpander = renderItemExpander;
+
     this.renderTableItem = function(listItem,quick,index) {
         //var tableSpecs = tSpecs || tableSpecs;
         var idprop = self.getIDProp();// listSchema._listID;
@@ -2843,8 +3404,14 @@ this.renderSorterField = function(prop){
             });
             return searchable;
         }
+        var action;
         //var action = 'onclick="_joe.editObjectFromList(\''+id+'\');"';
-        var action = 'onclick="getJoe('+self.joe_index+').listItemClickHandler({dom:this,id:\''+id+'\'});"';
+        var schemaprop = self.current.schema && (self.current.schema.listView && self.current.schema.listView.schemaprop);
+        if(schemaprop){
+            action = 'onclick="getJoe('+self.joe_index+').listItemClickHandler({dom:this,id:\''+id+'\',schema:\''+schemaprop+'\'});"';
+        }else{
+            action = 'onclick="getJoe('+self.joe_index+').listItemClickHandler({dom:this,id:\''+id+'\'});"';
+        }
 
         var ghtml = '<tr class="joe-panel-content-option trans-bgcol" '+action+'>';
         ghtml +='<td class="joe-table-checkbox">' +
@@ -2886,7 +3453,14 @@ this.renderSorterField = function(prop){
 		var idprop = self.getIDProp();// listSchema._listID;
 		var id = listItem[idprop] || null;
 		//var action = 'onclick="_joe.editObjectFromList(\''+id+'\');"';
-		var action = 'onclick="getJoe('+self.joe_index+').listItemClickHandler({dom:this,id:\''+id+'\'});"';
+        var schemaprop = self.current.schema && (self.current.schema.listView && self.current.schema.listView.schemaprop);
+        if(schemaprop){
+            action = 'onclick="getJoe('+self.joe_index+')' +
+                '.listItemClickHandler({dom:this,id:\''+id+'\',schema:\''+listItem[schemaprop]+'\',idprop:\'_id\'});"';
+        }else{
+            action = 'onclick="getJoe('+self.joe_index+')' +
+                '.listItemClickHandler({dom:this,id:\''+id+'\'});"';
+        }
 
     //add stripe color
         var stripeColor = ($.type(listSchema.stripeColor)=='function')?listSchema.stripeColor(listItem):fillTemplate(listSchema.stripeColor,listItem);
@@ -2911,6 +3485,8 @@ this.renderSorterField = function(prop){
             var quicktitle = template || title || '';
             return fillTemplate(quicktitle,listItem);
         }
+
+    //add background color
         var numberHTML = '';
         if(index && !listSchema.hideNumbers){
             numberHTML = index;
@@ -2918,21 +3494,31 @@ this.renderSorterField = function(prop){
 
         if(!template){
 			var title = title || listItem.name || id || 'untitled';
-            var listItemButtons = '';//<div class="joe-panel-content-option-button fleft">#</div><div class="joe-panel-content-option-button fright">#</div>';
+
+            var menu = (listSchema.listView && listSchema.listView.itemMenu)||listSchema.itemMenu;
+            var listItemMenu = renderItemMenu(listItem,menu);//<div class="joe-panel-content-option-button fleft">#</div><div class="joe-panel-content-option-button fright">#</div>';
+
+            var expander = (listSchema.listView && listSchema.listView.itemExpander)||listSchema.itemExpander;
+
+            var listItemExpander = renderItemExpander(listItem,expander);
+            var listItemExpanderButton = self._renderExpanderButton(listItemExpander,listItem);
             var icon = //getProperty('listSchema.'+listSchemaObjIndicator+'.icon')
                 (listSchema.listView && listSchema.listView.icon)||listSchema.icon || listSchema._icon || '';
 
             var listItemIcon = (icon && renderIcon(icon,listItem)) || '';
             //list item content
             title="<div class='joe-panel-content-option-content ' "+action+">"+title+"<div class='clear'></div></div>";
-			var html = '<div class="'+(self.allSelected && 'selected' ||'')+' joe-panel-content-option trans-bgcol '+((numberHTML && 'numbered') || '' )+' joe-no-select '+((stripeColor && 'striped')||'')+'"  data-id="'+id+'" >'
+
+            var html = '<div class="'+(self.allSelected && 'selected' ||'')+' joe-panel-content-option trans-bgcol '+((numberHTML && 'numbered') || '' )+' joe-no-select '+((stripeColor && 'striped')||'')+' '+((listItemExpanderButton && 'expander expander-collapsed')||'')+'"  data-id="'+id+'" >'
 
                 +'<div class="joe-panel-content-option-bg" '+bgHTML+'></div>'
                 +'<div class="joe-panel-content-option-stripe" '+stripeHTML+'></div>'
                 +(numberHTML && '<div class="joe-panel-content-option-number" >'+numberHTML+'</div>' || numberHTML)
-                    +listItemIcon
-                +listItemButtons
+                +listItemExpanderButton
+                +listItemIcon
+                +listItemMenu
                 +fillTemplate(title,listItem)
+                +listItemExpander
                 +'</div>';
 		}
 		//if there is a list template
@@ -2955,6 +3541,7 @@ this.renderSorterField = function(prop){
         }
 		return html;
 	};
+
 	this.shiftSelecting = false;
     var goBackListIndex;
 	this.listItemClickHandler=function(specs){
@@ -2979,7 +3566,7 @@ this.renderSorterField = function(prop){
 
 			$('.joe-panel-content-option.selected').map(function(i,listitem){
 				self.current.selectedListItems.push($(listitem).data('id'));
-			})
+			});
 
         /*    if(!window.event.shiftKey){
                 self.shiftSelecting = false;
@@ -3052,7 +3639,7 @@ this.renderSorterField = function(prop){
 		self.current.schema = specs.schema || self.current.schema || null;
 		var list = specs.list || self.current.list;
 		var id = specs.id;
-		var idprop = self.getIDProp();//(self.current.schema && self.current.schema._listID) || 'id';
+		var idprop = specs.idprop || self.getIDProp();//(self.current.schema && self.current.schema._listID) || 'id';
 
 		var object = list.filter(function(li){return li[idprop] == id;})[0]||false;
 
@@ -3061,7 +3648,7 @@ this.renderSorterField = function(prop){
 			return;
 		}
 
-		var setts ={schema:self.current.schema,callback:specs.callback};
+		var setts ={schema:specs.schema||self.current.schema,callback:specs.callback};
 		/*self.populateFramework(object,setts);
 		self.overlay.addClass('active');*/
 		goJoe(object,setts);
@@ -3236,7 +3823,8 @@ this.renderSorterField = function(prop){
 <-------------------------------------------------------------------*/
 	this.showMiniJoe = function(specs){
 		var mini = {};
-        specs = specs || {};
+        specs = $.extend({mode:'object'},
+            (specs || {}));
         var object =specs.props || specs.object ||specs.list||specs.content;
 		if(!object){
 			return;
@@ -3247,25 +3835,41 @@ this.renderSorterField = function(prop){
 		mini.id = cuid();
 
 		//var html = '<div class="joe-mini-panel joe-panel">';
-
+        var mode = specs.mode || 'object';
+        switch($.type(object)){
+            case 'object':
+                mode ='object';
+            break;
+            case 'array':
+                mode ='list';
+            break;
+        }
+        var minimode = mini.id;
         var html =
-            self.renderEditorHeader({title: title, action: 'onclick="getJoe(' + self.joe_index + ').hideMini()"'});
+            self.renderEditorHeader({title: title, minimode:minimode,
+                close_action: 'onclick="getJoe(' + self.joe_index + ').hideMini();"'});
 
-            html += self.renderEditorContent({object: object, mode: specs.mode || 'object'})
-            html += self.renderEditorFooter({minimenu: specs.menu});
+            html += self.renderEditorContent({object: object, mode: mode, minimode:minimode});
+            html += self.renderEditorFooter({minimenu: specs.menu,minimode:minimode,});
 
-		$('.joe-mini-panel').addClass('active').html(html);
+        var height = specs.height ||self.overlay.height()/2;
+        mini.panel = $('.joe-mini-panel');
+        mini.panel.addClass('active').html(html);
         if(!$('.joe-mini-panel .joe-panel-footer').find('.joe-button:visible').length){
             $('.joe-mini-panel').addClass('no-footer-menu');
         }
-        if(specs.height){
-            $('.joe-mini-panel').css('height',specs.height);
-        }
+        mini.panel.css('height',height);
 
+        mini.panel.draggable({handle:'.joe-panel-header',snap:'.joe-overlay'}).resizable({handles:'s'});
+
+        mini.callback = specs.callback || function(itemid){
+            alert(itemid);
+        }
 		self.minis[mini.id] = mini;
 	};
 
 	this.hideMini = function(){
+        $('.joe-mini-panel').resizable('destroy').draggable('destroy');
 		$('.joe-mini-panel').removeClass('active')
 	};
 
@@ -3437,7 +4041,7 @@ this.renderSorterField = function(prop){
 
         self.overlay.removeClass('hidden');
 		self.overlay.addClass('active');
-		setTimeout(self.onPanelShow(),0);
+		setTimeout(self.onPanelShow,0);
 /*        var evt = new Event('JoeEvent');
         evt.initEvent("showJoe",true,true);
 
@@ -3467,6 +4071,7 @@ this.renderSorterField = function(prop){
 	};
 
     this.reload = function(hideMessage,specs){
+        logit('reloading joe '+self.joe_index);
         var specs = specs || {};
         var reloadBM = new Benchmarker();
         var info = self.history.pop();
@@ -3503,7 +4108,13 @@ this.renderSorterField = function(prop){
 		return (window._joes[index] || false)
 	};
 	$(document).keyup(function(e) {
-		if (e.keyCode == 27) { self.closeButtonAction(); }   // esc
+		if (e.keyCode == 27) {
+        if($('.joe-text-autocomplete.active').length){//close autocoomplete first
+            $('.joe-text-autocomplete.active').removeClass('active');
+        }else {
+            self.closeButtonAction();
+        }
+        }   // esc
         //TODO:if the joe is also current main joe.
 	//ctrl + enter
 		else if(e.ctrlKey && e.keyCode == 13 && self.specs.useControlEnter){
@@ -3513,13 +4124,15 @@ this.renderSorterField = function(prop){
 
 	var sortable_index;
 	this.onPanelShow = function(){
+        var BM = new Benchmarker();
         self.respond();
 
 		//init datepicker
 		self.overlay.find('.joe-date-field').Zebra_DatePicker({offset:[5,20],format:'m/d/Y',first_day_of_week:0});
 
+
         //itemcount
-        if(currentListItems){
+        if(currentListItems && self.overlay.find('.joe-submenu-search-field').length){
             if(goingBackQuery  || (!$c.isEmpty(self.current.userSpecs.filters) && listMode) ){
                 self.overlay.find('.joe-submenu-search-field').val(goingBackQuery);
                 self.filterListFromSubmenu(self.overlay.find('.joe-submenu-search-field')[0].value,true);
@@ -3551,10 +4164,13 @@ this.renderSorterField = function(prop){
             logit('Error creating sortables:\n'+e);
         }
 
+
+        //preview
+        $('.joe-preview-iframe-holder').resizable({handles:'s'});
         //imagefield
 		self.overlay.find('input.joe-image-field').each(function(){_joe.updateImageFieldImage(this);});
         //object reference
-        self.overlay.find('.joe-object-references-holder.sortable').sortable();
+        self.overlay.find('.joe-object-references-holder.sortable').sortable({handle:'.joe-field-item-content'});
 	    self.overlay.find('.joe-objectlist-table').each(function(){
             $(this).find('tbody').sortable(
                 {   axis:'y',
@@ -3575,17 +4191,22 @@ this.renderSorterField = function(prop){
 
         //sidebars
         if(self.current.sidebars){
-            self.panel.find('.joe-sidebar_left-button').toggleClass('active',self.current.sidebars.left != '');
-            self.panel.find('.joe-sidebar_right-button').toggleClass('active',self.current.sidebars.right != '');
+            var lsb = self.current.sidebars.left;
+            var rsb = self.current.sidebars.right;
+
+            self.panel.find('.joe-sidebar_left-button').toggleClass('active',lsb.content != '');
+            self.panel.find('.joe-sidebar_right-button').toggleClass('active',rsb.content != '');
             if(self.sizeClass != 'small-size'){
-                self.panel.toggleClass('right-sidebar',self.current.sidebars.right != '');
+                self.panel.toggleClass('right-sidebar',(rsb.content && !rsb.collapsed || false));
             }
-            self.panel.toggleClass('left-sidebar',self.current.sidebars.left != '');
+            self.panel.toggleClass('left-sidebar',(lsb.content && !lsb.collapsed || false));
         }
         //self.toggleSidebar('right',false);
         //uploaders
         self.readyUploaders();
 
+        //ckeditors
+        self.readyCKEditors();
         //go back to previous item
         if(goingBackFromID){
             if(goBackListIndex != null){
@@ -3611,12 +4232,17 @@ this.renderSorterField = function(prop){
         }
         self._currentListItems = currentListItems;
 
+        if(listMode) {
+            //self.overlay[0].className.replace()
+            self.setColumnCount(colCount);
+            self.panel.toggleClass('list-mode',listMode);
+        }
         self.panel.toggleClass('show-filters',leftMenuShowing && listMode);
 /*        if($(window).height() > 700) {
             self.overlay.find('.joe-submenu-search-field').focus();
         }*/
-
-        _bmResponse(self.showBM,'----Joe Shown')
+        _bmResponse(BM,'on panel show complete');
+        _bmResponse(self.showBM,'----Joe Shown');
     };
 /*-------------------------------------------------------------------->
  J | MESSAGING
@@ -3802,6 +4428,17 @@ this.renderSorterField = function(prop){
             self.current.list.push(obj);
         }
 
+    //update object in dataset
+        var dsname = self.current.schema.__schemaname;
+        var idprop = self.getIDProp();
+        if(self.Data[dsname]){
+            if(self.getDataItem(obj[idprop],dsname)) {
+
+            }else{
+                self.Data[dsname].push(obj);
+            }
+            logit('item matches current schema, updating...');
+        }
     //run callback
 
 		logit('object updated');
@@ -3902,6 +4539,12 @@ this.renderSorterField = function(prop){
                                 //$(this).find('.ace_editor');
                                 object[prop] = editor.getValue();
                                 break;
+                            case 'ckeditor':
+                                var editor = CKEDITOR.instances[$(this).data('ckeditor_id')];
+                                //_joe.ace_editors[];
+                                //$(this).find('.ace_editor');
+                                object[prop] =(editor)? editor.getData():self.current.object[prop];
+                                break;
 
 
                             case 'multisorter':
@@ -3928,7 +4571,7 @@ this.renderSorterField = function(prop){
                             case 'objectReference':
                                 var vals = [];
                                 object[prop] = 'objectReference';
-                                $('.objectReference-field[data-name="'+prop+'"]').find('.joe-field-item')
+                                $('.objectReference-field[data-name="'+prop+'"]').find('.joe-field-list-item')
                                     .each(function(){
                                         vals.push($(this).data().value);
                                     });
@@ -4211,6 +4854,7 @@ ANALYSIS, IMPORT AND MERGE
         self._mergeAnalyzeResults = data;
 
         logit('Joe Analyzed in '+aimBM.stop()+' seconds');
+
         var analysisOK = confirm('Run Merge? \n'+JSON.stringify(data.results,null,'\n'));
         if(analysisOK) {
             specs.callback(data);
@@ -4325,7 +4969,7 @@ ANALYSIS, IMPORT AND MERGE
                 return false;
             }
             var useHash = useHash.replace('#','');
-            var hashBreakdown = useHash.split(hash_delimiter);
+            var hashBreakdown = useHash.split(hash_delimiter).condense();
             hashBreakdown.removeAll('');
             if(!hashBreakdown.length){
                 return false;
@@ -4347,7 +4991,7 @@ ANALYSIS, IMPORT AND MERGE
                         if(hashItemID.indexOf(':') == -1) {
 
                             if (collectionName) {
-                                var collectionItem = getNPCDataItem(hashItemID, collectionName);
+                                var collectionItem = self.getDataItem(hashItemID, collectionName);
                                 if (collectionItem) {
                                     goJoe(collectionItem, {schema: hashSchema});
                                 }else {//SHOW LIST, NO item
@@ -4360,7 +5004,7 @@ ANALYSIS, IMPORT AND MERGE
 
                             //var collectionName = hashSchema.__collection || hashSchema.__schemaname;
                             if (collectionName) {
-                                var collectionItem = getNPCDataItem(value, collectionName,key);
+                                var collectionItem = self.getDataItem(value, collectionName,key);
                                 if (collectionItem) {
                                     goJoe(collectionItem, {schema: hashSchema});
                                 }
@@ -4373,7 +5017,7 @@ ANALYSIS, IMPORT AND MERGE
                     }
                     var section = $GET('section')||hashBreakdown[2];
                     if(section) {
-                        $DEL('section');
+                        //$DEL('section');
                         self.updateHashLink();
                         self.gotoSection(section);
                     }
@@ -4431,6 +5075,35 @@ ANALYSIS, IMPORT AND MERGE
         logit($(window).height())*/
     };
 
+this._renderGotoButton = function(id,dataset,schema){
+    var item = {};
+    item._id = id || this._id;
+    item.dataset = dataset || this.itemtype;
+    item.schema = schema || item.dataset;
+    var idprop = self.getIDProp(schema);
+    return fillTemplate(
+        '<div class="joe-block-button goto-icon" ' +
+            //'onclick="goJoe(getNPCDataItem(\'${_id}\',\'${dataset}\'),' +
+        'onclick="goJoe(_joe.getDataItem(\'${'+idprop+'}\',\'${dataset}\'),' +
+        '{schema:\'${schema}\'})"></div>',item);
+
+};
+
+    window._renderGotoButton = this._renderGotoButton;
+
+/*-------------------------------------------------------------------->
+K | Smart Schema Values
+ <--------------------------------------------------------------------*/
+    this.smartSave = function(item,newItem,schema){
+        //find schema
+        //look for save function
+
+    };
+
+/*-------------------------------------------------------------------->
+     //AUTOINIT
+ <--------------------------------------------------------------------*/
+
 	if(self.specs.autoInit){
 		self.init();
 	}
@@ -4441,7 +5114,6 @@ ANALYSIS, IMPORT AND MERGE
    // }
 	return this;
 }
-
 
 var __gotoJoeSection;
 var __clearDiv__ = '<div class="clear"></div>';
@@ -4468,16 +5140,41 @@ function __removeTags(str){
 }
 
 function _COUNT(array){
+    if(!array){
+        return 0;
+    }
 	if(array.isArray()) {
 		return array.length;
-	}
+	}else if(array.isString()){
+        return 'str';
+    }
 	return 0;
 };
 
 function _bmResponse(benchmarker,message){
-    logit(message +' in '+benchmarker.stop()+' secs');
+    var t = benchmarker.stop();
+    var m = message + ' in ' + t + ' secs';
+    if($c.DEBUG_MODE && window.console && window.console.warn){
+        if(t > .4){
+            window.console.warn(m);
+        }else {
+            logit(m);
+        }
+    }else {
+        logit(m);
+    }
 }
 
+function beginLogGroup(name,expanded){
+    if(expanded){
+        window.console && window.console.group && console.group(name);
+    }else{
+        window.console && window.console.groupCollapsed && console.groupCollapsed(name);
+    }
+}
+function endLogGroup(){
+    window.console && window.console.groupEnd &&console.groupEnd();
+}
 function _renderUserCube(user,cssclass){
     var css = cssclass||'fleft';
     var u = user;
@@ -4501,7 +5198,7 @@ function _renderUserCube(user,cssclass){
  * Public Domain.
  * NO WARRANTY EXPRESSED OR IMPLIED. USE AT YOUR OWN RISK.
  */
-
+/*
 // object.watch
 if (!Object.prototype.observeProp && Object.defineProperty) {
     Object.defineProperty(Object.prototype, "watch", {
@@ -4549,7 +5246,7 @@ if (!Object.prototype.observeProp && Object.defineProperty) {
             this[prop] = val;
         }
     });
-}
+}*/
 /*-------------------------------------------------------------------->
 CRAYDENT UPDATES
  <--------------------------------------------------------------------*/

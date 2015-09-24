@@ -101,6 +101,7 @@ Properties for all Fields
 - `text`: default single line text.
 	- autocomplete: boolean // obj of specs (template, idprop)
 		- values:array of possibilities
+	-maxlength:string
 - `int`: integer field
 - `number`: number (float) field
 - `select`: select list. 
@@ -227,6 +228,17 @@ an array of menu buttons
     condition:function(field,object) to call
     self = Joe object
     var __saveBtn__ = {name:'save',label:'Save', action:'_joe.updateObject(this);', css:'joe-save-button'};
+
+##itemMenu##
+as array of buttons for each item in list views
+	- name
+	- action (action string)
+	- url (instead of js action)
+	- condition
+
+##itemExpander##
+template or run for content to be shown under the main list item block.
+
 
 ###Addition properties
 **Changing the schema on the fly?**
