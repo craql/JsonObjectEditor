@@ -3374,7 +3374,7 @@ this.renderSorterField = function(prop){
         if(!id){
             return '';
         }
-//    var item = getNPCData(dataset,{filter:{_id:id},single:true});
+
         var item = self.getDataItem(id,dataset);
         if(item){
             return item[prop];
@@ -4332,15 +4332,15 @@ ANALYSIS, IMPORT AND MERGE
             }
             var hashSchema = self.schemas[hashBreakdown[0]];
             var hashItemID = hashBreakdown[1]||'';
-            if (hashSchema && (hashSchema.dataset || (!$.isEmptyObject(NPC.Data) && NPC.Data[hashSchema.__schemaname]))) {
+            if (hashSchema && (hashSchema.dataset || (!$.isEmptyObject(self.Data) && self.Data[hashSchema.__schemaname]))) {
                 var dataset;
                 if(hashSchema.dataset) {
                     dataset = (typeof(hashSchema.dataset) == "function") ? hashSchema.dataset() : hashSchema.dataset;
                 }else{
-                    dataset =  NPC.Data[hashSchema.__schemaname] || [];
+                    dataset =  self.Data[hashSchema.__schemaname] || [];
                 }
                 //SINGLE ITEM
-                if(!$.isEmptyObject(NPC.Data)) {
+                if(!$.isEmptyObject(self.Data)) {
                     if(hashItemID ){
                         var collectionName = hashSchema.__collection || hashSchema.__schemaname;
                     //using standard id
@@ -4380,6 +4380,9 @@ ANALYSIS, IMPORT AND MERGE
 
                 }
             }
+            else{
+                throw(error,'dataset for "'+hashSchema+'" note found');
+            }
         }catch(e){
             logit('error reading hashlink:'+e);
             return false;
@@ -4397,9 +4400,11 @@ ANALYSIS, IMPORT AND MERGE
         return false;
     };
 
-/*<------------------------------------------------------------->*/
+/*<-----------------s-------------------------------------------->*/
 
-
+/*-------------------------------------------------------------------->
+ I.2 | HashCHangeHandler
+ <--------------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------->
  J | RESPOND
