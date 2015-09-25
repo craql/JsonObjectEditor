@@ -788,7 +788,7 @@ function JsonObjectEditor(specs){
         var scount = 0;
         var template =
             //'<div class="joe-submenu-section" onclick="$(\'.joe-content-section[data-section=${id}]\').removeClass(\'collapsed\')[0].scrollIntoView()">${name}</div>';
-            '<div class="joe-submenu-section f${renderTo}" onclick="_joe.gotoSection(\'${id}\','+self.joe_index+');">${name}</div>';
+            '<div class="joe-submenu-section f${renderTo}" onclick="getJoe('+self.joe_index+').gotoSection(\'${id}\');">${name}</div>';
 
         var section;
         for(var secname in self.current.sections){
@@ -802,7 +802,7 @@ function JsonObjectEditor(specs){
         return {count:scount,code:anchorhtml};
     }
 
-    self.gotoSection =function(section,index){
+    self.gotoSection =function(section,closeSiblings,index){
         if (section){
             var i = index || self.joe_index;
             var sectionDom = $('.joe-overlay[data-joeindex='+i+']')
@@ -813,6 +813,7 @@ function JsonObjectEditor(specs){
             if(sidebar && sidebar.length){
                 var s = sidebar.data('side');
                 self.toggleSidebar(s,true);
+                sectionDom.siblings('.joe-content-section').addClass('collapsed');
             }else if(self.sizeClass == "small-size"){
                 self.toggleSidebar('left',false);
                 self.toggleSidebar('right',false);
@@ -1654,17 +1655,9 @@ this.renderHTMLContent = function(specs){
 		if(prop.value == undefined && prop['default'] != undefined){
 			prop.value = prop['default'];
 		}
-/*        if($.type(prop.value) == "function"){
-			try {
-				prop.value = prop.value(self.current.object);
-			}catch(e){
-				logit('error with propoerty "'+(prop.name||'')+'": '+e);
-				prop.value= prop.value;
-			}
-		}*/
+
     //hidden
 		var hidden = '';
-        //if(prop.hidden && (typeof prop.hidden != 'function' && prop.hidden) || (typeof prop.hidden == 'function' && prop.hidden())){
         var qHidden = self.propAsFuncOrValue(prop.hidden);
         if(qHidden){
             if(parseBoolean(qHidden) === undefined){
@@ -1678,7 +1671,6 @@ this.renderHTMLContent = function(specs){
 
     //required
         var required = '';
-        //if(prop.required && (typeof prop.required != 'function' && prop.required) || (typeof prop.required == 'function' && prop.required(self.current.object))){
         if(self.propAsFuncOrValue(prop.required)){
             required = 'joe-required';
         }
@@ -1719,12 +1711,20 @@ this.renderHTMLContent = function(specs){
 
 		html += self.selectAndRenderFieldType(prop);
         html += self.renderGotoLink(prop);
-		html+='</div>';
+        html+= renderFieldAfter();
+        html+='</div>';//close object field;
+
 		//if(prop.width){
         //close field container
 			html+='</div>';
 	//	}
 
+
+        function renderFieldAfter(){
+            return (prop.after &&
+            '<div class="joe-field-after">'+fillTemplate(self.propAsFuncOrValue(prop.after),self.current.object)+'</div>'
+            ||'');
+        }
 		preProp = prop;
         _bmResponse(joeFieldBenchmarker,'field '+prop.name+ ' '+prop.type);
 		return html;
@@ -1886,6 +1886,9 @@ this.renderHTMLContent = function(specs){
                 break;
             case 'wysiwyg':
                 html+= self.renderCKEditorField(prop);
+                break;
+            case 'passthrough':
+                html+= self.renderPassthroughField(prop);
                 break;
 			default:
 				html+= self.renderTextField(prop);
@@ -2930,7 +2933,7 @@ this.renderSorterField = function(prop){
 	};
 
 /*----------------------------->
- U | Uploader Group
+ U | Uploader Field
  <-----------------------------*/
     this.uploaders = {};
     this.renderUploaderField = function(prop){
@@ -3334,6 +3337,14 @@ this.renderSorterField = function(prop){
 
     }
     this.getField = _getField;
+
+/*----------------------------->
+ Z | Passthrough
+ <-----------------------------*/
+    this.renderPassthroughField = function(prop){
+        var html= 'passthrough';
+        return html;
+    };
 /*-------------------------------------------------------------------->
 	4 | OBJECT LISTS
 <--------------------------------------------------------------------*/
@@ -4539,6 +4550,9 @@ this.renderSorterField = function(prop){
 					prop = $(this).attr('name');
 					if(prop && prop != 'undefined') {//make sure it's suppoesed to be a prop field
                         switch ($(this).data('ftype')) {
+                            case 'passthrough':
+                                object[prop] = object[prop] || false;
+                                break;
                             //ace editor
                             case 'ace':
                                 var editor = _joe.ace_editors[$(this).data('ace_id')];
