@@ -52,7 +52,7 @@ var demo_config = {
                     evalString = 'Could not evalutate: \n'+e;
                 }
 
-                return '<pre>'+evalString+'</pre>';
+                return '<code><pre>'+evalString+'</pre></code>';
             }
         }
 
@@ -86,7 +86,7 @@ var demo_config = {
     //filters:true,
     useBackButton:true,
     listSubMenu:{filters:true},
-    //useHashlink:true,
+    useHashlink:true,
     _title:'${itemtype} | ${name}'
 
 };
