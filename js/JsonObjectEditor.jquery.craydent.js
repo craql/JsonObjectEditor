@@ -130,117 +130,7 @@ function JsonObjectEditor(specs){
         self.container.append(html);
         self.overlay = $('.joe-overlay[data-joeindex=' + self.joe_index + ']');
         self.panel = self.overlay.find('.joe-overlay-panel');
-        if (self.specs.useBackButton) {
-            window.onkeydown = function (e) {
-                var code = e.keyCode
-                var nonBackElements = ['input','select','textarea'];
-                var isInputElement = nonBackElements.indexOf(e.target.tagName.toLowerCase()) != -1;
-                if (code == 8) {//BACKBUTTON PRESSED
-                    if(isInputElement){
-                        //return false;
-                    }
-                    else{
-                        self.goBack();
-                        return false;
-                    }
-
-                   /* if(self.history.length) {
-
-                        //if in editor fields, don't go back
-                        if (nonBackElements.indexOf(e.target.tagName.toLowerCase()) != -1) {
-                            /!*if(e.target.className.indexOf('joe-submenu-search-field') != -1){
-                                //self.goBack();
-                                //return false;
-                            }*!/
-                        } else {//otherwise, go back.
-                            self.goBack();
-                            return false;
-                        }
-                    }else{//no history
-                        var leavePage = confirm('Are you sure you want to leave the project dashboard?');
-                        if(!leavePage){
-                            return false;
-                        }
-                    }*/
-
-
-                }else if([38,40,13,16,17].indexOf(code) == -1){//set focus for alphanumeric keys
-
-                    if(!listMode)return;
-
-                    var inSearchfield = false;
-                    if ($(document.activeElement) && $(document.activeElement)[0] != $('.joe-submenu-search-field')[0]) {
-                        self.overlay.find('.joe-submenu-search-field').focus();
-                        inSearchfield = true;
-                        $('.joe-panel-content-option.keyboard-selected').removeClass('keyboard-selected');
-                    }
-                }else{
-                    //38 up, 40 dn,13 enter
-                    var autocompleteField = $('.joe-text-autocomplete.active').length;
-
-                    if(autocompleteField){
-                        var sel = '.joe-text-autocomplete-option.visible'+'.keyboard-selected';
-                        //$('.joe-text-autocomplete-option.visible').length();
-                        var keyboardSelectedIndex = ($(sel).length)? $(sel).index():-1;
-                        switch(code){
-                            case 38://up
-                                keyboardSelectedIndex--;
-                                if(keyboardSelectedIndex > -1) {
-                                    keyboardSelectOption('.joe-text-autocomplete-option.visible');
-                                }
-                                break;
-                            case 40://down
-                                keyboardSelectedIndex++;
-                                if(keyboardSelectedIndex < $('.joe-text-autocomplete-option.visible').length) {
-                                    keyboardSelectOption('.joe-text-autocomplete-option.visible');
-                                }
-                                break;
-                            case 13://enter
-                                if(keyboardSelectedIndex != -1){
-                                    $(sel).click();
-                                }
-                                break;
-                        }
-                    }
-                    if(!listMode)return;
-                    var keyboardSelectedIndex = ($('.joe-panel-content-option.keyboard-selected').length)?
-                        $('.joe-panel-content-option.keyboard-selected').index():-1;
-                    //logit(keyboardSelectedIndex);
-
-                    switch(code){
-                        case 38://up
-                            keyboardSelectedIndex--;
-                            if(keyboardSelectedIndex > -1) {
-                                keyboardSelectOption('.joe-panel-content-option',top);
-                            }
-                        break;
-                        case 40://down
-                            keyboardSelectedIndex++;
-                            if(keyboardSelectedIndex < currentListItems.length) {
-                                keyboardSelectOption('.joe-panel-content-option',top);
-                            }
-                        break;
-                        case 13://enter
-                            if(keyboardSelectedIndex != -1){
-                                $('.joe-panel-content-option.keyboard-selected').find('.joe-panel-content-option-content').click();
-                            }
-                        break;
-                    }
-                    function keyboardSelectOption(selector,top){
-                        $(selector+'.keyboard-selected').toggleClass('keyboard-selected');
-                        var el = $(selector).eq(keyboardSelectedIndex);
-                        el.addClass('keyboard-selected');
-                        self.overlay.find('.joe-submenu-search-field').blur();
-                       // $('.joe-panel-content').scrollTop($('.joe-panel-content-option.keyboard-selected').offset().top);
-                        el[0].scrollIntoView(top);
-                        //var panel_content = self.overlay.find('.joe-panel-content');
-                        //panel_content.animate({ scrollTop: panel_content.scrollTop()-10 });
-
-                        //panel_content.scrollTop(panel_content.scrollTop()-10);
-                    }
-                }
-            }
-        }
+        self.initKeyHandlers();
         self.readHashLink();
 /*        $(window).on('hashChange',function(h,i,c){
             logit(h,i,c);
@@ -269,8 +159,128 @@ function JsonObjectEditor(specs){
         endLogGroup();
 	};
 
+/*-------------------------------------------------------------------->
+     INIT KEY HANDLERS
+ <--------------------------------------------------------------------*/
+    this.initKeyHandlers = function(){
+        if (self.specs.useBackButton) {
+            window.onkeydown = function (e) {
+                var code = e.keyCode
+                var nonBackElements = ['input','select','textarea'];
+                var isInputElement = nonBackElements.indexOf(e.target.tagName.toLowerCase()) != -1;
+                if (code == 8) {//BACKBUTTON PRESSED
+                    if(isInputElement){
+                        //return false;
+                    }
+                    else{
+                        self.goBack();
+                        return false;
+                    }
+                }else if([37,39,38,40,13,16,17].indexOf(code) == -1){//set focus for alphanumeric keys
+                    if(listMode) {
+                        var inSearchfield = false;
+                        if ($(document.activeElement) && $(document.activeElement)[0] != $('.joe-submenu-search-field')[0]) {
+                            self.overlay.find('.joe-submenu-search-field').focus();
+                            inSearchfield = true;
+                            $('.joe-panel-content-option.keyboard-selected').removeClass('keyboard-selected');
+                        }
+                    }else{//NOT LIST MODE, DETAILS MODE
+                        //is control key down
+                        if(e.ctrlKey) {
+                            switch (code) {
+                                case 83://look for control save
+                                    if(self.container.find('.joe-button.joe-quicksave-button').length) {
+                                        self.updateObject(null, null, true);
+                                        if (e.stopPropagation) e.stopPropagation();
+                                        if (e.preventDefault) e.preventDefault();
+                                    }
+                                break;
+                            }
+                        }
+                    }
+                }else{
+                    //38 up, 40 dn,13 enter,37 left, 39 right
+                    var autocompleteField = $('.joe-text-autocomplete.active').length;
 
+                    if(autocompleteField){
+                        var sel = '.joe-text-autocomplete-option.visible'+'.keyboard-selected';
+                        //$('.joe-text-autocomplete-option.visible').length();
+                        var keyboardSelectedIndex = ($(sel).length)? $(sel).index():-1;
+                        switch(code){
+                            case 38://up
+                                keyboardSelectedIndex--;
+                                if(keyboardSelectedIndex > -1) {
+                                    keyboardSelectOption('.joe-text-autocomplete-option.visible');
+                                }
+                                break;
+                            case 40://down
+                                keyboardSelectedIndex++;
+                                if(keyboardSelectedIndex < $('.joe-text-autocomplete-option.visible').length) {
+                                    keyboardSelectOption('.joe-text-autocomplete-option.visible');
+                                }
+                                break;
+                            case 13://enter
+                                if(keyboardSelectedIndex != -1){
+                                    $(sel).click();
+                                }
+                                break;
+                        }
+                    }
+                    if(listMode){
+                        var keyboardSelectedIndex = ($('.joe-panel-content-option.keyboard-selected').length)?
+                            $('.joe-panel-content-option.keyboard-selected').index():-1;
+                        //logit(keyboardSelectedIndex);
 
+                        switch(code) {
+                            case 38://up
+                                keyboardSelectedIndex--;
+                                if (keyboardSelectedIndex > -1) {
+                                    keyboardSelectOption('.joe-panel-content-option', top);
+                                }
+                                break;
+                            case 40://down
+                                keyboardSelectedIndex++;
+                                if (keyboardSelectedIndex < currentListItems.length) {
+                                    keyboardSelectOption('.joe-panel-content-option', top);
+                                }
+                                break;
+                            case 13://enter
+                                if (keyboardSelectedIndex != -1) {
+                                    $('.joe-panel-content-option.keyboard-selected').find('.joe-panel-content-option-content').click();
+                                }
+                                break;
+                        }
+                    }else{
+                        if(e.ctrlKey) {
+                            switch(code) {
+                                case 37://left
+                                case 39://right
+                                    var sside = (code ==37)?'left':'right';
+                                    if(self.current.sidebars[sside].content){
+                                        self.toggleSidebar(sside)
+                                    }
+                                break;
+
+                            }
+                        }
+
+                    }
+                    function keyboardSelectOption(selector,top){
+                        $(selector+'.keyboard-selected').toggleClass('keyboard-selected');
+                        var el = $(selector).eq(keyboardSelectedIndex);
+                        el.addClass('keyboard-selected');
+                        self.overlay.find('.joe-submenu-search-field').blur();
+                        // $('.joe-panel-content').scrollTop($('.joe-panel-content-option.keyboard-selected').offset().top);
+                        el[0].scrollIntoView(top);
+                        //var panel_content = self.overlay.find('.joe-panel-content');
+                        //panel_content.animate({ scrollTop: panel_content.scrollTop()-10 });
+
+                        //panel_content.scrollTop(panel_content.scrollTop()-10);
+                    }
+                }
+            }
+        }
+    };
 /*-------------------------------------------------------------------->
 	2 | FRAMEWORK START
 <--------------------------------------------------------------------*/
@@ -1188,11 +1198,11 @@ this.resort = function(sorter){
         self.panel.toggleClass(side+'-sidebar',hardset);
         /*        $('.joe-panel-content').toggleClass(side+'-sidebar',hardset)
          $('.joe-content-sidebar.'+side+'-side').toggleClass('expanded',hardset)*/
-    }
+    };
 
     function renderSidebarToggle(side){
         var html='<div class="jif-panel-submenu-button joe-sidebar-button joe-sidebar_'+side+'-button" ' +
-            'title="toggle sidebar" onclick="getJoe('+self.joe_index+').toggleSidebar(\''+side+'\')"></div>';
+            'title="toggle sidebar (ctrl + '+side+' arrow)" onclick="getJoe('+self.joe_index+').toggleSidebar(\''+side+'\')"></div>';
 
         return html;
     }
@@ -1428,6 +1438,7 @@ this.renderHTMLContent = function(specs){
 	};
     var rerenderingField = false;
 	this.rerenderField = function(fieldname){
+        self.current.constructed = self.constructObjectFromFields();
         rerenderingField = true;
         if($c.isArray(fieldname)){
             fieldname = fieldname.join(',');
@@ -1435,8 +1446,9 @@ this.renderHTMLContent = function(specs){
         fieldname.split(',').map(function(f){
             var fields = self.renderObjectPropFieldUI(f);
             $('.joe-object-field[data-name='+f+']').parent().replaceWith(fields);
-        })
+        });
         rerenderingField = false;
+        self.current.constructed = null;
 
 	};
 
@@ -1444,7 +1456,13 @@ this.renderHTMLContent = function(specs){
 		//var prop = fieldname;
 		var fields = '';
 
-		var schemaspec = specs || self.current.schema;
+        var schemaspec = specs || self.current.schema;
+        var existingProp =
+            (self.propAsFuncOrValue(schemaspec.fields)||[]).filter(function(s){return s.name == prop || s.extend == prop})[0]
+        if(existingProp){
+            prop = existingProp;
+        }
+
 		if($.type(prop) == "string") {
 			//var fieldProp = self.fields[prop] || {};
             var propObj = self.fields[prop] || self.current.fields.filter(function(f){return f.name ==prop;})[0]||{};
@@ -1715,8 +1733,9 @@ this.renderHTMLContent = function(specs){
 
 
         function renderFieldAfter(){
+            var obj = (rerenderingField)?self.current.constructed:self.current.object;
             return (prop.after &&
-            '<div class="joe-field-after">'+fillTemplate(self.propAsFuncOrValue(prop.after),self.current.object)+'</div>'
+            '<div class="joe-field-after">'+fillTemplate(self.propAsFuncOrValue(prop.after),obj)+'</div>'
             ||'');
         }
 		preProp = prop;
@@ -2598,7 +2617,7 @@ this.renderSorterField = function(prop){
         var html = '';
 		var itemObj = self.current.object;
 		var idProp = self.getIDProp();
-		var constructedItem = self.constructObjectFromFields();
+		var constructedItem =self.current.constructed || {};
 		if(!self.current.object[idProp] ||(constructedItem[idProp] && constructedItem[idProp] == self.current.object[idProp])){
 			itemObj = constructedItem;
 
@@ -3001,7 +3020,8 @@ this.renderSorterField = function(prop){
                     joe_uploader.message.append('<div>uploaded</div>');
                     self.current.object[field.field] = url;
                     self.rerenderField(field.field);
-                    self.panel.find('.joe-panel-menu').find('.joe-quicksave-button').click();
+                    self.updateObject(null, null, true);
+                   // self.panel.find('.joe-panel-menu').find('.joe-quicksave-button').click();
 
                 }
             }
@@ -4452,7 +4472,7 @@ this.renderSorterField = function(prop){
         }
     //run callback
 
-		logit('object updated');
+		logit((obj.name||'object')+' updated');
         callback(obj,oldObj,oldObj.changes(obj));
 		if(!stayOnItem){self.goBack(obj);}
 
