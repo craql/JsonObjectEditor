@@ -5,7 +5,10 @@
     clear:both;
 }
 
-.joe-no-select{
+.joe-no-select,
+.joe-panel-submenu,
+.joe-panel-footer
+{
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;

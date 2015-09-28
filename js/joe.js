@@ -1904,7 +1904,8 @@ this.renderHTMLContent = function(specs){
                 html+= self.renderPreviewField(prop);
                 break;
             case 'wysiwyg':
-                html+= self.renderCKEditorField(prop);
+                html+= self.renderTinyMCEField(prop);
+                //html+= self.renderCKEditorField(prop);
                 break;
             case 'passthrough':
                 html+= self.renderPassthroughField(prop);
@@ -3286,6 +3287,31 @@ this.renderSorterField = function(prop){
 /*----------------------------->
  X //TextEditor Field
  <-----------------------------*/
+    var tinyconfig = {};
+    this.renderTinyMCEField = function(prop){
+         var locked = self.propAsFuncOrValue(prop.locked)?' disabled ':'';
+        var height = (prop.height)?'style="height:'+prop.height+';"' : '';
+        var editor_id = cuid();
+        var html=
+            '<div class="joe-tinymce-holder joe-texteditor-field joe-field" '
+            +height+' data-texteditor_id="'+editor_id+'" data-ftype="tinymce" name="'+prop.name+'">'+
+            '<div id="'+editor_id+'" class="joe-tinymce">'+(prop.value || "")+'</div>'+
+            '</div>';
+        return html;
+    };
+
+    this.readyTinyMCEs = function() {
+        tinymce.init({
+            selector: ".joe-tinymce"
+            /*plugins: [
+                "advlist autolink lists link image charmap print preview anchor",
+                "searchreplace visualblocks code fullscreen",
+                "insertdatetime media table contextmenu paste"
+            ],*/
+            /*toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image"*/
+        });
+    };
+    self.texteditors = [];
     this.renderCKEditorField = function(prop){
         var profile = self.current.profile;
         var locked = self.propAsFuncOrValue(prop.locked)?' disabled ':'';
@@ -3343,7 +3369,7 @@ this.renderSorterField = function(prop){
         self.ck_editors = neweditors;
 
     };
-
+    this.readyTextEditors = this.readyTinyMCEs;
 
     function _getField(fieldname){
         var fieldobj;
@@ -3386,7 +3412,7 @@ this.renderSorterField = function(prop){
                 if (!b.hasOwnProperty('condition') || self.propAsFuncOrValue(b.condition,item)) {
                     oc = (b.url && "window.open(\'"+fillTemplate(b.url,item)+"\')" )
                         || b.action || "alert('" + b.name + "');";
-                html += fillTemplate('<td class="joe-option-menu-button" onclick="' + oc + '">' + b.name + '</td>', item)
+                html += fillTemplate('<td class="joe-option-menu-button '+(self.propAsFuncOrValue(b.css,item)||'')+'" onclick="' + oc + '">' + b.name + '</td>', item)
                 }
             });
 
@@ -4242,8 +4268,9 @@ this.renderSorterField = function(prop){
         //uploaders
         self.readyUploaders();
 
-        //ckeditors
-        self.readyCKEditors();
+        //ckeditors|
+        self.readyTextEditors();
+
         //go back to previous item
         if(goingBackFromID){
             if(goBackListIndex != null){
@@ -4585,7 +4612,10 @@ this.renderSorterField = function(prop){
                                 //$(this).find('.ace_editor');
                                 object[prop] =(editor)? editor.getData():self.current.object[prop];
                                 break;
-
+                            case 'tinymce':
+                                var editor = tinymce.editors.where({id:$(this).data('texteditor_id')})[0]||false;
+                                object[prop] =(editor)? editor.getContent():self.current.object[prop];
+                                break;
 
                             case 'multisorter':
                                 var vals = [];
@@ -4626,6 +4656,14 @@ this.renderSorterField = function(prop){
 			}
 		});
 
+    //CONTENT FIELD
+        parentFind.find('.joe-object-field.content-field').each(function() {
+            prop = $(this).data('name');
+            var cfield = self.getField(prop);
+            if (cfield.passthrough) {
+                object[prop] = self.current.object[prop];
+            }
+        });
 
     //OBJECT LISTS
         parentFind.find('.objectList-field').each(function(){
