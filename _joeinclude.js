@@ -63,7 +63,7 @@ if (typeof jQuery == 'undefined') {
 }
 scripts.push("libs/jquery.ui.touch-punch.min.js");
 if (typeof Craydent == 'undefined' || (!Craydent.VERSION || Craydent.VERSION < '1.7.37')) {
-   scripts.push("libs/craydent-1.7.37.js");
+   scripts.push("libs/craydent-1.8.0.js");
 }
 scripts.push(
 /*	"JsonObjectEditor.jquery.craydent.js",

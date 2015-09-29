@@ -30,7 +30,7 @@ function __isNewer(loadedVersion, thisVersion){
         }
         return __isNewer(loadedVersion, thisVersion);
     }
-    return loadedVersion < thisVersion;
+    return parseInt(loadedVersion[0]) < parseInt(thisVersion[0]);
 }
 function __cleanUp() {
     try {
@@ -127,7 +127,20 @@ if (__thisIsNewer) {
     /*----------------------------------------------------------------------------------------------------------------
     /-	private methods
     /---------------------------------------------------------------------------------------------------------------*/
-    function __andNotHelper (record, query, operands) {
+    function __and (){
+        try {
+            var len = arguments.length;
+            for(var a = 0; a<len; a++){
+                if(!arguments[a]){
+                    return arguments[a - 1] || "";
+                }
+            }
+            return arguments[len - 1];
+        } catch (e) {
+            error('fillTemplate.__or', e);
+        }
+    }
+    function __andNotHelper (record, query, operands, index) {
         try {
             for (var i = 0, len = query.length; i < len; i++) {
                 for (var prop in query[i]) {
@@ -135,8 +148,8 @@ if (__thisIsNewer) {
                         continue;
                     }
                     if (!(prop in operands
-                        && _subQuery(record, query[i][prop], prop)
-                        || _subQuery(record, query[i][prop], "$equals", prop)
+                        && _subQuery(record, query[i][prop], prop, index)
+                        || _subQuery(record, query[i][prop], "$equals", prop, index)
                     )) {
                         return false;
                     }
@@ -833,7 +846,6 @@ if (__thisIsNewer) {
                 if ($w.HTMLElement.prototype.hasOwnProperty(prop)) {
                     try {
                         if (prop == "dataset" || prop == "firstElementChild" || prop == "nextElementSibling") {
-//                            _elem[prop] = $w.HTMLElement.prototype['_' + prop]();
                             _elem[prop] = $w['_' + prop]();
                             //return;
                         }
@@ -870,8 +882,12 @@ if (__thisIsNewer) {
             error('_subFieldHelper', e);
         }
     }
-    function _subQuery(record, query, operator, field) {
+    function _subQuery(record, query, operator, field, index) {
         try {
+            if (isNull(index)) {
+                index = field;
+                field = null;
+            }
             var operands = {
                 "$or":1,
                 "$and":1,
@@ -917,57 +933,63 @@ if (__thisIsNewer) {
                     return rtn;
                 }
                 switch(opt[i]) {
+                    // value is the record in the array
+                    // q is the conditional value
                     case "$equals":
-                        var isRegex = query.constructor == RegExp;
-                        if (value === undefined) {
+                        if (isNull(query) || isNull(value)) {
                             return false;
                         }
-                        rtn = isRegex ? query.test(value) :
-                                (query.hasOwnProperty("$equals") ? value == query['$equals'] : value == query);
+                        var q = $c.getValue(query.hasOwnProperty("$equals") ? query['$equals'] : query),
+                            isRegex = q.constructor == RegExp;
+                        
+                        rtn = isRegex ? q.test(value) : 
+                                ($c.isFunction(q) ? q(record, field, index) : value == q);
                     break;
 
                     case "$ne":
-                        if (value === undefined) {
+                        if (isNull(query) || isNull(value)) {
                             return false;
                         }
-                        rtn = value != query['$ne'];
+                        var q = query['$ne'],
+                                isRegex = q.constructor == RegExp;
+                        rtn = !(isRegex ? q.test(value) : value == q);
                     break;
 
                     case "$lt":
-                        if (value === undefined) {
+                        if (isNull(value)) {
                             return false;
                         }
                         rtn = value < query['$lt'];
                     break;
 
                     case "$lte":
-                        if (value === undefined) {
+                        if (isNull(value)) {
                             return false;
                         }
                         rtn = value <= query['$lte'];
                     break;
                     case "$gt":
-                        if (value === undefined) {
+                        if (isNull(value)) {
                             return false;
                         }
                         rtn = value > query['$gt'];
                     break;
                     case "$gte":
-                        if (value === undefined) {
+                        if (isNull(value)) {
                             return false;
                         }
                         rtn = value >= query['$gte'];
                     break;
                     case "$nor":
                         for(var i = 0, len = query.length; i < len; i++) {
-                            if (_subQuery(record,[query[i]],'$or',field)) {
+                            if (_subQuery(record,[query[i]],'$or',field, index)) {
                                 return false;
                             }
                         }
                         rtn = true;
                     break;
                     case "$regex":
-                        if (value === undefined) {
+                        if (isNull(value)) {
                             return false;
                         }
                         rtn = query["$regex"].test(value);
@@ -978,7 +1000,7 @@ if (__thisIsNewer) {
                         rtn = finished.validPath == query["$exists"];
                     break;
                     case "$type":
-                        if (value === undefined && query === undefined || value !== undefined && value.constructor == query) {
+                        if (isNull(value) && isNull(query) || !isNull(value) && value.constructor == query) {
     //                        return true;
                             rtn = true;
                             break;
@@ -989,7 +1011,7 @@ if (__thisIsNewer) {
                         //return record.getProperty(field).contains(query['$search']);
                         break;
                     case "$mod":
-                        if (!$c.isArray(query) || value === undefined) {
+                        if (!$c.isArray(query) || isNull(value)) {
                             return false;
                         }
                         rtn = value % query[0] == query[1];
@@ -1034,7 +1056,7 @@ if (__thisIsNewer) {
                                     val = query[prop];
                                     operand = "$equals";
                                 }
-                                if (_subQuery(record, val, operand, prop)) {
+                                if (_subQuery(record, val, operand, prop, index)) {
                                     brk = true;
                                     break;
     //                                return true;
@@ -1055,9 +1077,9 @@ if (__thisIsNewer) {
                                 }
                                 var subprop = _subFieldHelper(query[i][prop], operands);
                                 if (!(satisfied = prop in operands?
-                                    _subQuery(record, query[i][prop], prop) :
-                                    (subprop ? _subQuery(record, query[i][prop], subprop, prop) :
-                                        _subQuery(record, query[i][prop], "$equals", prop)))) {
+                                    _subQuery(record, query[i][prop], prop, index) : 
+                                    (subprop ? _subQuery(record, query[i][prop], subprop, prop, index) :
+                                        _subQuery(record, query[i][prop], "$equals", prop, index)))) {
                                     break;
                                 }
                             }
@@ -1065,11 +1087,11 @@ if (__thisIsNewer) {
                         rtn = satisfied;
                     break;
                     case "$and":
-                        rtn = __andNotHelper (record, query, operands);
+                        rtn = __andNotHelper (record, query, operands, index);
                     break;
                     case "$not":
                         if ($c.isObject(query)) {
-                            rtn = !__andNotHelper (record, query, operands);
+                            rtn = !__andNotHelper (record, query, operands, index);
                             break;
                         }
                         var isRegex =  query == RegExp;
@@ -1086,12 +1108,6 @@ if (__thisIsNewer) {
                                 continue;
                             }
                             value = $c.getProperty(record, field);
-
-
-//                            rtn = query[fieldProp].contains(value);
-//                            if (rtn) {
-//                                return isNIN?!rtn:rtn;
-//                            }
                             for (var k = 0, klen = query[fieldProp].length; k < klen; k++) {
                                 var isRegex = query[fieldProp][k] && query[fieldProp][k].constructor == RegExp; //array of values  
                                 if (($c.isArray(value) && value.contains(query[fieldProp][k])) 
@@ -1163,7 +1179,7 @@ if (__thisIsNewer) {
 
 
         for (var i = 0, len = objs.length; i < len; i++) {
-            if (returnAll || _subQuery(objs[i], [condition],'$or')) {
+            if (returnAll || _subQuery(objs[i], [condition],'$or', i)) {
                 if(!callback.call(objs, objs[i], i)) {
                     break;
                 }
@@ -2051,7 +2067,7 @@ if (__thisIsNewer) {
                 offset = 0;
             }
 
-            htmlTemplate = htmlTemplate || "";
+            htmlTemplate = (htmlTemplate || "").replace(/\{\{(?!\{)(.*?)\}\}/g,'${$1}');
             $c.isDomElement(htmlTemplate) && (htmlTemplate = htmlTemplate.toString());
             if (htmlTemplate.trim() == "") {
                 return "";
@@ -2081,7 +2097,8 @@ if (__thisIsNewer) {
             max = max || objs.length;
             offset = offset || 0;
 
-            var props = (htmlTemplate.match(/\$\{.*?\}/g) || []).condense(true);
+//            var props = (htmlTemplate.match(/\$\{.*?\}/g) || []).condense(true);
+            var props = (htmlTemplate.match(/\$\{(?!\$).*?\}/g) || []).condense(true);
 
 
             for (var i = offset; i < max; i++) {
@@ -2108,7 +2125,10 @@ if (__thisIsNewer) {
                     }
                     var expression = "${"+property+"}";
                     if (template.contains(expression) && (objval = $c.getProperty(obj,property,null,{noInheritance:true})) /*&& (objval = obj[property])*/) {
-                        objval = parseRaw(objval, true).replace_all(['\n',';','[',']'],['<br />',';\\','\\[','\\]']);
+                        objval = parseRaw(objval, $c.isString(objval)).replace_all(['\n',';','[',']'],['<br />',';\\','\\[','\\]']);
+                        if (objval.contains('${')) {
+                            objval = fillTemplate(objval,[obj]);
+                        }
                         template = template.replace_all(expression, objval);
 
                         if (hasDataProps) {
@@ -2124,8 +2144,16 @@ if (__thisIsNewer) {
                 template = template.contains("${") ? template.replace(/(\$\{[a-zA-Z$_-]*\})/g, '') : template;
                 var tmp, rptmp;
                 if (template.contains('||') && (tmp = /\$\{(.+?\|\|?.+?)\}/.exec(template)) && tmp[1]) {
+                    tmp = tmp[1].strip('|').replace(/\|{3,}/,'');
+                    if (tmp.contains('||')) {
+                        rptmp = (tmp && "__or|" + tmp.replace_all('||', "|") || "");
+                        template = template.replace_all(tmp, rptmp);
+                    }
+                    template = template.replace("||",'|');
+                }
+                if (template.contains('&&') && (tmp = /\$\{(.+?\&\&?.+?)\}/.exec(template)) && tmp[1]) {
                     tmp = tmp[1];
-                    rptmp = (tmp && "__or|"+tmp.replace_all('||', "|") || "");
+                    rptmp = (tmp && "__and|"+tmp.replace_all('&&', "|") || "");
                     template = template.replace_all(tmp, rptmp);
                 }
                 template = template.contains('|') ? __run_replace (/\$\{(.+?(\|?.+?)+)\}/, template, false,obj) : template;
@@ -2159,7 +2187,7 @@ if (__thisIsNewer) {
         try {
             var index = "";
             prefix = prefix || "";
-            while (!isNull($(prefix + index))) {
+            while (!isNull($(prefix + index)) || $(prefix + index).length) {
                 index = index || 0;
                 index++;
             }
@@ -2292,11 +2320,11 @@ if (__thisIsNewer) {
             }
             var raw = "";
             if ($c.isString(value)) {
-                !skipQuotes && (raw = "\"" + value + "\"") || (raw = value);
+                raw = (!skipQuotes ? "\"" + value.replace_all('"','\\"') + "\"" : value);
             } else if ($c.isArray(value)) {
                 var tmp = [];
                 for (var i = 0, len = value.length; i < len; i++) {
-                    tmp[i] = parseRaw(value[i]);
+                    tmp[i] = parseRaw(value[i], skipQuotes, saveCircular, __windowVars, __windowVarNames);
                 }
                 raw = "[" + tmp.join(',') + "]";
             } else if (value instanceof Object && !$c.isFunction(value)) {
@@ -2324,7 +2352,7 @@ if (__thisIsNewer) {
                     raw = "{";
                     for (var prop in value) {
                         if (value.hasOwnProperty(prop)) {
-                            raw += "'" + prop + "': " + parseRaw(value[prop], skipQuotes, saveCircular, __windowVars, __windowVarNames) + ",";
+                            raw += "\"" + prop + "\": " + parseRaw(value[prop], skipQuotes, saveCircular, __windowVars, __windowVarNames) + ",";
                         }
                     }
                     raw = raw.slice(0,-1) + "}";
@@ -2890,7 +2918,7 @@ if (__thisIsNewer) {
          *    returnType: “()”
          * |*/
         try {
-            var isnull = (value == null || value == undefined || value.length == 0);
+            var isnull = value == null || value == undefined;
             if (defaultValue == null || defaultValue == undefined) {
                 return isnull;
             }
@@ -3887,7 +3915,7 @@ if (__thisIsNewer) {
                     tmp[cat] = objt[prop];
 
                     cats.push(cat);
-                    //catDict[cat] = objt;
+                    catDict[cat] = objt;
                     rtnArr.push(objt);
                     continue;
                 }
@@ -3898,6 +3926,8 @@ if (__thisIsNewer) {
                     singles[cat].push(objt);
                     tmp[cat] = tmp[cat] || [];
                     tmp[cat].push(objt);
+                } else {
+                    catDict[cat][prop].push(objt);
                 }
             }
             for (var prop in singles) {
@@ -4997,6 +5027,34 @@ if (__thisIsNewer) {
                 return this;
             }
 
+            // check if there is query MongoDB syntax
+            if (!projection && !/"\$or":|"\$and":|"\$in":|"\$nin":|"\$regex":|"\$gt":|"\$lt":|"\$gte":|"\$lte":|"\$exists":|"\$equals":|"\$ne":|"\$nor":|"\$type":|"\$text":|"\$mod":|"\$all":|"\$size":|"\$where":|"\$elemMatch":|"\$not":/.test(JSON.stringify(condition))) {
+                var props=[],
+                    ncheck = function (o,c,p) {return o[p.prop] != c[p.prop]},
+                    rcheck = function (o,c,p) {return ncheck(o,c,p) && p.isReg && !c[p.prop].test(o[p.prop])},
+                    check = ncheck;
+                for (var p in condition) {
+                    var isReg = false;
+                    if (condition.hasOwnProperty(p)) {
+                        if (condition[p].constructor == RegExp) {
+                            isReg = true;
+                            check = rcheck;
+                        }
+                        props.push({prop:p,isReg:isReg});
+                    }
+                }
+                
+                return this.filter(function (obj) {
+                    var j = 0, prop;
+                    while (prop = props[j++]) {
+                        if (check(obj,condition,prop)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                });
+            }
+
             var arr = [];
             _whereHelper(this, condition, function (obj,i) {
                 return arr.push(useReference ? obj : _copyWithProjection(projection, obj));
@@ -5490,7 +5548,7 @@ if (__thisIsNewer) {
             error('Object.duplicate', e);
         }
     });
-    _ao("equals", function (compare){
+    _ao("equals", function (compare, props){
         /*|  {info: "Object class extension to check if object values are equal",
          *    category: "Object",
          *    parameters:[
@@ -5500,8 +5558,16 @@ if (__thisIsNewer) {
          *    returnType: “(Bool)”
          * |*/
         try {
+            if ($c.isArray(props)) {
+                while (prop = props[j++]) {
+                    if (this.hasOwnProperty(prop) && compare.hasOwnProperty(prop) && this[prop] != compare[prop]
+                    || (!this.hasOwnProperty(prop) && compare.hasOwnProperty(prop)) || (this.hasOwnProperty(prop) && !compare.hasOwnProperty(prop))) {
+                        return false;
+                    }
+                }
+            }
             if (($c.isObject(this) && $c.isObject(compare)) || ($c.isArray(this) && $c.isArray(compare))) {
-                for (prop in compare){
+                for (var prop in compare){
                     if (!compare.hasOwnProperty(prop)) {
                         continue;
                     }
@@ -5509,7 +5575,7 @@ if (__thisIsNewer) {
                         return false;
                     }
                 }
-                for (prop in this){
+                for (var prop in this){
                     if (!this.hasOwnProperty(prop)) {
                         continue;
                     }
