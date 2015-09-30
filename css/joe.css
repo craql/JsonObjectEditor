@@ -724,6 +724,10 @@
     background-color:#ddd;
 }
 
+.joe-button.tight{
+    font-size:14px;
+    padding:2px;
+}
 
 
 .joe-button.center{text-align:center;}
@@ -2282,13 +2286,14 @@ textarea.joe-rendering-field{
     display:none;
     max-height: 300px;
     overflow: auto;
-    max-width:80%;
+    min-width: 210px;
+    max-width: 100%;
 }
 .joe-text-autocomplete.active{
     display:block;
 }
 .joe-content-sidebar .joe-text-autocomplete.active {
-    max-width: 100%;
+
     width: 100%;
 }
 
@@ -2506,6 +2511,11 @@ table.joe-objectlist-table {
 .objectList-field .joe-button.joe-plus-button {
     margin-top: 10px;
 }
+
+.joe-objectlist-table textarea {
+    height: 100px;
+}
+
 
 /*-------------------------
     T: Tags

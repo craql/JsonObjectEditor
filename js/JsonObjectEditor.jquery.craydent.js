@@ -89,7 +89,8 @@ function JsonObjectEditor(specs){
 		autoInit:false,
         dynamicDisplay:30,
         sans:false,
-        listSubMenu:true
+        listSubMenu:true,
+        documentTitle:false
 	};
 
 	this.specs = $.extend({},defaults,specs||{});
@@ -572,20 +573,40 @@ function JsonObjectEditor(specs){
 /*----------------------------->
 	A | Header
 <-----------------------------*/
+    function createTitleObject(specs){
+        var titleObj = $.extend({},self.current.object);
+        if(specs.list){
+            var lcount = specs.list.length;
+            if(self.current.subset){
+                lcount = specs.list.where(self.current.subset.filter).length;
+            }
+            titleObj._listCount =(lcount||'0');
+        }
+        self.current.title = specs.title || 'Json Object Editor';
+        var title = fillTemplate(self.current.title,titleObj);
+        titleObj.docTitle = title;
+        return titleObj;
+    }
 	this.renderEditorHeader = function(specs){
         var BM = new Benchmarker();
-		specs = specs || {};
-		var titleObj = self.current.object;
+		var specs = specs || {};
+		var titleObj = /*createTitleObject(specs);*/$.extend({},self.current.object)
 		if(specs.list){
             var lcount = specs.list.length;
             if(self.current.subset){
              lcount = specs.list.where(self.current.subset.filter).length;
             }
-			titleObj = $.extend({},self.current.object,{_listCount:lcount||'0'});
+			titleObj._listCount =(lcount||'0');
 		}
         self.current.title = specs.title || 'Json Object Editor';
 		var title = fillTemplate(self.current.title,titleObj);
-
+        titleObj.docTitle = title;
+        //show doctitle
+        if(self.specs.documentTitle){
+            var doctitle = (self.specs.documentTitle === true)?
+                self.current.title:self.propAsFuncOrValue(self.specs.documentTitle,self.current.title);
+            document.title = fillTemplate(doctitle,titleObj);
+        }
 		var close_action = specs.close_action||'onclick="getJoe('+self.joe_index+').closeButtonAction()"';
         var reload_action = specs.reload_action||'onclick="getJoe('+self.joe_index+').reload()"';
 		function renderHeaderBackButton(){
@@ -1710,7 +1731,7 @@ this.renderHTMLContent = function(specs){
 
 		html+=
 			'<div class="joe-object-field '+hidden+' '+required+' '+prop.type+'-field " data-type="'+prop.type+'" data-name="'+prop.name+'">'+
-			'<label class="joe-field-label">'+(required && '*' ||'')
+			'<label class="joe-field-label" title="'+prop.name+'">'+(required && '*' ||'')
                 +fillTemplate(fieldlabel,self.current.object)
 				+self.renderFieldTooltip(prop)
             +'</label>';
@@ -1977,7 +1998,11 @@ this.renderHTMLContent = function(specs){
             if(typeof prop.values == "function"){
                 prop.values = prop.values(self.current.object);
             }
+            if($.type(prop.values) == 'string' && self.getDataset(prop.values)){
+                prop.values = self.getDataset(prop.values);
+            }
             if($.type(prop.values) != 'array'){
+
                 prop.values = [prop.values];
             }
             autocomplete =prop.autocomplete;
@@ -2010,7 +2035,9 @@ this.renderHTMLContent = function(specs){
                     prop.values[v]:
                     {id:prop.values[v],name:prop.values[v]};
                 ac_title = fillTemplate(ac_template,ac_opt);
-                ac_id = (autocomplete.idprop && ac_opt[autocomplete.idprop])||ac_opt._id||ac_opt.id||ac_opt.name;
+                ac_id = (autocomplete.value && fillTemplate(self.propAsFuncOrValue(autocomplete.value,ac_opt),ac_opt))
+                    ||(autocomplete.idprop && ac_opt[autocomplete.idprop])
+                    ||ac_opt._id||ac_opt.id||ac_opt.name;
 				html+='<div class="joe-text-autocomplete-option" '
 					+'onclick="getJoe('+self.joe_index+').autocompleteTextFieldOptionClick(this);" '
                     +'data-value="'+ac_id+'">'+ac_title+'</div>';
@@ -2750,7 +2777,19 @@ this.renderSorterField = function(prop){
 /*----------------------------->
  O | Object List Field
  <-----------------------------*/
-
+    function getObjectlistSubProperty(prop){
+        var subprop = prop;
+        if($.type(prop) == "string"){
+            subprop = {name:prop};
+            subprop.name = subprop.name || prop;
+        }else{
+            if(subprop.extend && self.fields[subprop.extend]){
+                subprop = $.extend({},subprop,self.fields[subprop.extend],(subprop.specs||{}))
+                subprop.name = subprop.name || subprop.extend;
+            }
+        }
+        return subprop;
+    }
     this.renderObjectListField = function(prop){
         var hiddenHeading = (prop.hideHeadings)?" hidden-heading " :'';
         var html ="<table class='joe-objectlist-table "+hiddenHeading+"' >"
@@ -2758,7 +2797,6 @@ this.renderSorterField = function(prop){
             +self.renderObjectListObjects(prop)
         //render a (table/divs) of properties
         //cross reference with array properties.
-        //make sortable ?
         +"</table>";
         var max = prop.max;
 
@@ -2774,20 +2812,25 @@ this.renderSorterField = function(prop){
         var properties = prop.properties || self.objectlistdefaultproperties;
         var property;
         var subprop;
-
+        var width;
         var html = '<thead><tr><th class="joe-objectlist-object-row-handle-header"></th>';
         for(var p = 0,tot = properties.length; p<tot;p++){
-            subprop = properties[p];
-            subprop = ($.type(properties[p]) == "string")?{name:properties[p]}:subprop;
+            subprop = getObjectlistSubProperty(properties[p]);
+/*            if($.type(properties[p]) == "string"){
+                subprop = self.fields[subprop]||{name:properties[p]}
+                subprop.name = subprop.name || properties[p];
+            }*/
+
+
             property = {
                 name: subprop.display||subprop.name,
                 type: subprop.type||'text'
             };
-
-            html+="<th data-subprop='"+subprop.name+"'>"
+            width=(subprop.width)?'width="'+subprop.width+'"':'';
+            html+="<th data-subprop='"+subprop.name+"' "+width+">"
                 +(subprop.display || subprop.name)+"</th>";
         }
-        html+="<th class='joe-objectlist-delete-header'></th>"
+        html+="<th class='joe-objectlist-delete-header'></th>";
         html+="</tr></thead>";
         return html;
     };
@@ -2818,14 +2861,16 @@ this.renderSorterField = function(prop){
         var renderInput = {
             'text':self.renderTextField,
             select:self.renderSelectField,
-            'date':self.renderDateField
+            'date':self.renderDateField,
+            'content':self.renderContentField,
+            'rendering':self.renderRenderingField
         };
 
         //show all properties
         //TODO:create template in previous function and then use that to show values?
         for(var p = 0,tot = properties.length; p<tot;p++){
-            prop = properties[p];
-            prop = ($.type(properties[p]) == "string")?{name:properties[p]}:prop;
+            prop = getObjectlistSubProperty(properties[p]);
+            //prop = ($.type(properties[p]) == "string")?{name:properties[p]}:prop;
             property = $.extend({
                 name: prop.name,
                 type:prop.type||'text',
@@ -4296,6 +4341,8 @@ this.renderSorterField = function(prop){
             self.panel.toggleClass('list-mode',listMode);
         }
         self.panel.toggleClass('show-filters',leftMenuShowing && listMode);
+
+
 /*        if($(window).height() > 700) {
             self.overlay.find('.joe-submenu-search-field').focus();
         }*/
@@ -4677,7 +4724,7 @@ this.renderSorterField = function(prop){
                 var ol_array_obj = {};
                 $(this).find('td').each(function(i){
                   //  if($(this).data('subprop')) {//skip row handle
-                        ol_array_obj[subprops[i]] = $(this).find('input,select').val();
+                        ol_array_obj[subprops[i]] = $(this).find('input,select,textarea').val();
                    // }
                 });
             //store to ol_array
