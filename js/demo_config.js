@@ -31,6 +31,7 @@ var demo_config = {
         _id:{label:'ID',type:'guid'},
         description:{label:'Description',type:'code'},
 
+        created:{label:'created',type:'text',width:'50%',locked:true},
         //function
         global_function:{label:'Global',type:'boolean', onchange:'updateSourceCode()'},
         source_code:{label:'Code',type:'content',

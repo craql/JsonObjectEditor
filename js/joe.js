@@ -193,7 +193,7 @@ function JsonObjectEditor(specs){
                         }
                     }else{//NOT LIST MODE, DETAILS MODE
                         //is control key down
-                        if(e.ctrlKey) {
+                        if(e.ctrlKey || e.metaKey) {
                             switch (code) {
                                 case 83://look for control save
                                     if(self.container.find('.joe-button.joe-quicksave-button').length) {
@@ -4034,7 +4034,7 @@ this.renderSorterField = function(prop){
         //concatenate
         var values = self.propAsFuncOrValue(values,name);
         if(name && values && $.type(values) == "array"){
-            self.Data[name] == values;
+            self.Data[name] = values;
         }
 
 
@@ -5007,7 +5007,17 @@ ANALYSIS, IMPORT AND MERGE
                         name: p,
                         global_function: false,
                         ref: ref,
-                        parameters:params
+                        class:ref,
+                        parameters:params,
+                        id:ref+'_'+p
+                    })
+                }else{
+                    data.properties.push({
+                        name:p,
+                        value:object[p],
+                        ref:ref,
+                        class:ref,
+                        id:ref+'_'+p
                     })
                 }
             }catch(e){
