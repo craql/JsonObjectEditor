@@ -2664,6 +2664,8 @@ this.renderSorterField = function(prop){
                 html += prop.run(itemObj, prop) || '';
             } else if (prop.template) {
                 html += fillTemplate(prop.template, itemObj);
+            } else if (prop.value) {
+            	html += prop.value;
             }
         }catch(e){
             return 'error rendering field:'+e;
