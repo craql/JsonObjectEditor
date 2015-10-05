@@ -2802,7 +2802,7 @@ this.renderSorterField = function(prop){
 		    + "</table>";
         var max = prop.max;
 
-        if ((!max || !prop.value || (prop.value.length < max)) && !prop.read_only) {
+        if ((!max || !prop.value || (prop.value.length < max)) && !prop.locked) {
 	        var addaction = 'onclick="getJoe(' + self.joe_index + ').addObjectListItem(\'' + prop.name + '\')"';
 	        html += '<div><div class="joe-button joe-iconed-button joe-plus-button" ' + addaction + '> Add Another</div>' + __clearDiv__ + '</div>';
         }
@@ -2846,18 +2846,18 @@ this.renderSorterField = function(prop){
         var obj;
         for(var o = 0,objecttot = objects.length; o<objecttot;o++){
             obj = objects[o];
-            html += self.renderObjectListObject(obj, properties, o, prop.read_only);
+            html += self.renderObjectListObject(obj, properties, o, prop.locked);
 	        //parse across properties
 
         }
         html+="</tbody>";
         return html;
     };
-    this.renderObjectListObject = function (object, objectListProperties, index, read_only) {
+    this.renderObjectListObject = function (object, objectListProperties, index, locked) {
         var properties = objectListProperties || self.objectlistdefaultproperties;
         var prop,property;
         //var html = "<tr class='joe-object-list-row' data-index='"+index+"'><td class='joe-objectlist-object-row-handle'>|||</td>";
-        var html = read_only
+        var html = locked
 			? "<tr class='joe-object-list-row' data-index='" + index + "'><td></td>"
 			: "<tr class='joe-object-list-row' data-index='" + index + "'><td><div class='joe-panel-button joe-objectlist-object-row-handle' " + delaction + ">|||</div></td>";
 
@@ -2884,7 +2884,7 @@ this.renderSorterField = function(prop){
 
         }
         var delaction = "onclick='getJoe("+self.joe_index+")._oldeleteaction(this);'";
-        html += read_only 
+        html += locked 
 			? "<td ></td>"
 			: "<td ><div class='jif-panel-button joe-delete-button' " + delaction + ">&nbsp;</div></td>";
 	    html += '</tr>';
