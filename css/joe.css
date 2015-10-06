@@ -1599,6 +1599,10 @@ input.joe-submenu-search-field {
     left: 44px;
 }
 
+.joe-field-item-content.ui-sortable-handle.nonclickable {
+    margin-left: 10px !important;
+}
+
 .numbered .joe-panel-content-option-expander-button{
     left:20px;
 }

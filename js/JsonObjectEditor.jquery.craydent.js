@@ -599,7 +599,7 @@ function JsonObjectEditor(specs){
 			titleObj._listCount =(lcount||'0');
 		}
         self.current.title = specs.title || 'Json Object Editor';
-		var title = fillTemplate(self.current.title,titleObj);
+		var title = fillTemplate(self.propAsFuncOrValue(self.current.title),titleObj);
         titleObj.docTitle = title;
         //show doctitle
         if(self.specs.documentTitle){
@@ -1424,6 +1424,9 @@ this.renderHTMLContent = function(specs){
 		var fieldProp;
         self.current.fields = [];
         self.current.sections = {};
+        if(specs.schema && typeof specs.schema == 'string'){
+            specs.schema = self.schemas[specs.schema];
+        }
         var schemaFields = (specs.schema)?self.propAsFuncOrValue(specs.schema.fields):false;
 		if(!specs.schema || !schemaFields){//no schema use items as own schema
 			for( var prop in object){
@@ -2203,7 +2206,7 @@ this.renderHTMLContent = function(specs){
         var optionVal;
 			valObjs.map(function(v){
                 optionVal = (template)?fillTemplate(template,v):(v.display||v.label||v.name);
-				val = (prop.idprop && v[prop.idprop])||v.value||v.name||'';
+                val = (prop.idprop && v.hasOwnProperty(prop.idprop))?v[prop.idprop]:v.value||v.name||'';
 				if($.type(prop.value) == 'array'){
 					selected = '';
 					selected = (prop.value.indexOf(val) != -1)?'selected':'';
@@ -2676,12 +2679,14 @@ this.renderSorterField = function(prop){
 
 
         var specs = $.extend({
+            isObject:false,
             deleteButton:false,
             expander:null,
             gotoButton:false,
             itemMenu:false,
             schemaprop:false,
             callback:false,
+            nonclickable:false,
             value:''
         },specs);
         var contentTemplate = contentTemplate || '<h4>${name}</h4><div class="joe-subtext">${itemtype}</div>';
@@ -2691,7 +2696,8 @@ this.renderSorterField = function(prop){
         var idprop = specs.idprop || (schemaobj && schemaobj.idprop) ||'_id';
         var hasMenu = specs.itemMenu && specs.itemMenu.length;
         var action = specs.action || ' onclick="goJoe(_joe.search(\'${'+idprop+'}\')[0],{schema:\''+schema+'\'})" ';
-        var clickablelistitem = (!specs.gotoButton/* && !hasMenu*/);
+        var nonclickable = self.propAsFuncOrValue(specs.nonclickable,item);
+        var clickablelistitem = (!specs.gotoButton && !nonclickable/* && !hasMenu*/);
         //var clickablelistitem = !!clickable && (!specs.gotoButton && !hasMenu);
         var deleteButton = '<div class="joe-delete-button joe-block-button left" ' +
             'onclick="$(this).parent().remove();">&nbsp;</div>';
@@ -2699,20 +2705,23 @@ this.renderSorterField = function(prop){
 
         var click = (!clickablelistitem)?'':action;
 
+        var value = (specs.isObject)?
+            'data-value="' +encodeURI(JSON.stringify(specs.value))+ '" data-isObject=true'
+            :'data-value="' + specs.value + '"';
         var html = fillTemplate('<div class="'
             +((clickablelistitem && 'joe-field-list-item clickable') ||'joe-field-item')
             +(specs.deleteButton &&' deletable' ||'')
             +(specs.gotoButton &&' gotobutton' ||'')
             +(specs.itemMenu &&' itemmenu' ||'')
             +(specs.expander &&' expander expander-collapsed' ||'')+'" '
-            +(specs.value &&'data-value="' + specs.value + '"' ||'')
+            +(value ||'')
             +'>'
 
                     //if(clickableListItem){
                         +((hasMenu && renderItemMenu(item, specs.itemMenu)) || '')
 
                         + (specs.deleteButton && deleteButton || '')
-                        + '<div class="joe-field-item-content" ' + click + '>'
+                        + '<div class="joe-field-item-content '+(nonclickable && 'nonclickable' || '')+'" ' + click + ' >'
                         + self.propAsFuncOrValue(contentTemplate+__clearDiv__, item)
                         + '</div>'
                         + self._renderExpanderButton(expanderContent, item)
@@ -3208,8 +3217,24 @@ this.renderSorterField = function(prop){
         $('.joe-object-references-holder[data-field='+field+']').append(self.createObjectReferenceItem(null,id,field));
 
     };
-    this.createObjectReferenceItem = function(item,id,fieldname){
+    this.createObjectReferenceItem = function(item,id,fieldname,specs){
         var field = _getField(fieldname);
+
+        var specs = $.extend({
+                expander:field.expander,
+                gotoButton:field.gotoButton,
+                itemMenu:field.itemMenu,
+                schemaprop:field.schemaprop,
+                idprop:field.idprop,
+                template:field.template,
+                deleteButton:true,
+                nonclickable:field.nonclickable,
+            value:'${_id}',
+            },specs||{});
+        if(item && typeof item == "object") {
+            specs.isObject = true;
+            specs.value = item;
+        }
         var idprop = field.idprop||'_id';
         if(!item) {
             var values = self.getFieldValues(field.values);
@@ -3221,22 +3246,24 @@ this.renderSorterField = function(prop){
                 }
             }
         }
+
         if(!item) {
             var deleteButton = '<div class="joe-delete-button joe-block-button left" ' +
                 'onclick="$(this).parent().remove();">&nbsp;</div>';
             return '<div class="joe-field-item deletable" data-value="' + id + '">' +
                 deleteButton + "<div>REFERENCE NOT FOUND</div><span class='subtext'>" + id + "</span>" + '</div>';
         }
-        var template = self.propAsFuncOrValue(field.template, item) || "<div>${name}</div><span class='subtext'>" + id + "</span>";
-        var specs = {
-            deleteButton:true,
-            expander:field.expander,
-            gotoButton:field.gotoButton,
-            itemMenu:field.itemMenu,
-            value:'${_id}',
-            idprop:field.idprop,
-            schemaprop:field.schemaprop
-        };
+        var template = self.propAsFuncOrValue(specs.template, item) || "<div>${name}</div><span class='subtext'>" + id + "</span>";
+/*        var specs = {
+            deleteButton:specs.deleteButton,
+            expander:specs.expander,
+            gotoButton:specs.gotoButton,
+            itemMenu:specs.itemMenu,
+            value:specs.value ||'${_id}',
+            idprop:specs.idprop,
+            schemaprop:specs.schemaprop,
+            isObject:specs.isObject
+        };*/
         return self.renderFieldListItem(item,template,'',specs);
 
     };
@@ -3923,10 +3950,10 @@ this.renderSorterField = function(prop){
 /*-------------------------------------------------------------------->
 	MINIJOE WIndow
 <-------------------------------------------------------------------*/
-	this.showMiniJoe = function(specs){
+	this.showMiniJoe = function(specs,joespecs){
 		var mini = {};
-        specs = $.extend({mode:'object'},
-            (specs || {}));
+        specs = $.extend({mode:'text'},
+            (specs || {}),(joespecs||{}));
         var object =specs.props || specs.object ||specs.list||specs.content;
 		if(!object){
 			return;
@@ -3938,21 +3965,27 @@ this.renderSorterField = function(prop){
 
 		//var html = '<div class="joe-mini-panel joe-panel">';
         var mode = specs.mode || 'object';
+        specs.object = object;
+
+        specs.minimenu = specs.minimenu|| specs.menu;
         switch($.type(object)){
             case 'object':
                 mode ='object';
+
             break;
             case 'array':
                 mode ='list';
             break;
         }
+        specs.mode = mode;
         var minimode = mini.id;
+        specs.minimode = minimode;
         var html =
             self.renderEditorHeader({title: title, minimode:minimode,
                 close_action: 'onclick="getJoe(' + self.joe_index + ').hideMini();"'});
 
-            html += self.renderEditorContent({object: object, mode: mode, minimode:minimode});
-            html += self.renderEditorFooter({minimenu: specs.menu,minimode:minimode,});
+            html += self.renderMiniEditorContent(specs);
+            html += self.renderEditorFooter({minimenu: specs.menu,minimode:minimode});
 
         var height = specs.height ||self.overlay.height()/2;
         mini.panel = $('.joe-mini-panel');
@@ -4000,6 +4033,62 @@ this.renderSorterField = function(prop){
 		return object;
 	};
 
+    this.renderMiniEditorContent = function(specs){
+
+        self.current.sidebars = {left:{collapsed:false},right:{collapsed:false}};
+        //specs = specs || {};
+        var content;
+
+        if(!specs){
+            specs = {
+                mode:'text', //text,list,single
+                text:'No object or list selected'
+            };
+        }
+        var mode = specs.mode;
+
+        switch(mode){
+            case 'text':
+                content = self.renderTextContent(specs);
+                break;
+            case 'rendering':
+                content = self.renderHTMLContent(specs);
+                break;
+            case 'list':
+                content = self.renderListContent(specs);
+                break;
+            case 'object':
+                content = self.renderObjectContent(specs);
+                break;
+
+            default:
+                content = content || '';
+                break;
+
+        }
+        var submenu = '';
+        if(!specs.minimode) {
+            if ((mode == 'list' && self.current.submenu) || (self.current.submenu || renderSectionAnchors().count)) {
+                submenu = ' with-submenu '
+            }
+        }
+        //submenu=(self.current.submenu || renderSectionAnchors().count)?' with-submenu ':'';
+        var scroll = 'onscroll="getJoe('+self.joe_index+').onListContentScroll(this);"';
+        var rightC = content.right||'';
+        var leftC = content.left||'';
+        var content_class='joe-panel-content joe-inset ' +submenu;// +(rightC && ' right-sidebar '||'')+(leftC && ' left-sidebar '||'');
+        var html =
+
+
+            '<div class="'+content_class+'" ' +((listMode && scroll)||'')+'>'
+            +(content.main||content)
+            +'</div>'
+            +self.renderSideBar('left',leftC,{css:submenu})
+            +self.renderSideBar('right',rightC,{css:submenu});
+        self.current.sidebars.left.content = leftC;
+        self.current.sidebars.right.content = rightC;
+        return html;
+    };
 /*-------------------------------------------------------------------->
   D | DATA
  <--------------------------------------------------------------------*/
@@ -4178,7 +4267,11 @@ this.renderSorterField = function(prop){
         var reloadBM = new Benchmarker();
         var info = self.history.pop();
         if($.type(info.data)== 'object') {
-            var obj = $.extend({}, info.data, (specs.overwrite || specs.overwrites));
+            if(specs.overwrite || specs.overwrites){
+                var obj = $.extend({}, info.data, (specs.overwrite || specs.overwrites));
+            }else{
+                obj = info.data;
+            }
         }else{
             var obj = info.data;
         }
@@ -4578,6 +4671,7 @@ this.renderSorterField = function(prop){
 		specs = specs || {};
 		var deletes = specs.deletes || [];
 		var itemobj = $.extend({},self.current.object);
+        delete itemobj[self.getIDProp()];
 		delete itemobj.joeUpdated;
 		itemobj.name = itemobj.name +' copy';
 		deletes.map(function(d){
@@ -4682,11 +4776,21 @@ this.renderSorterField = function(prop){
                             case 'objectReference':
                                 var vals = [];
                                 object[prop] = 'objectReference';
-                                $('.objectReference-field[data-name="'+prop+'"]').find('.joe-field-list-item')
+                                var obj;
+                                $('.objectReference-field[data-name="'+prop+'"]')
+                                    .find('.joe-field-list-item,.joe-field-item')
                                     .each(function(){
-                                        vals.push($(this).data().value);
+                                        var data = $(this).data();
+                                        if(data.isobject){
+                                            obj = JSON.parse(decodeURI($(this).data().value));
+                                            vals.push(obj);
+                                        }else{
+                                            vals.push($(this).data().value);
+                                        }
+                                        //JSON.parse(decodeURI($(this).data().value))
+
                                     });
-                                object[prop] = vals;
+                                object[prop] = vals.condense();
                                 break;
                             default:
                                 object[prop] = $(this).val();
