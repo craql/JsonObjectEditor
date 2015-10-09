@@ -1701,6 +1701,9 @@ this.renderHTMLContent = function(specs){
                 hidden = 'hidden';
             }
         }
+	//Locked
+        prop.locked = self.propAsFuncOrValue(prop.locked);
+
 
     //required
         var required = '';
