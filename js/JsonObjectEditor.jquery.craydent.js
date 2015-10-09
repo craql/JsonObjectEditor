@@ -931,7 +931,7 @@ function JsonObjectEditor(specs){
         }
         function searchFilter(keyword){
             var searchBM = new Benchmarker();
-            keyword = keyword || $('.joe-submenu-search-field').val();
+            keyword = keyword || $('.joe-submenu-search-field').val() ||'';
             var value=keyword.toLowerCase();
             var keywords = value.replace(/,/g,' ').split(' ');
             var filters = self.generateFiltersQuery();
