@@ -2667,6 +2667,8 @@ this.renderSorterField = function(prop){
                 html += prop.run(itemObj, prop) || '';
             } else if (prop.template) {
                 html += fillTemplate(prop.template, itemObj);
+            } else if (prop.value) {
+            	html += prop.value;
             }
         }catch(e){
             return 'error rendering field:'+e;
@@ -2801,17 +2803,17 @@ this.renderSorterField = function(prop){
     }
     this.renderObjectListField = function(prop){
         var hiddenHeading = (prop.hideHeadings)?" hidden-heading " :'';
-        var html ="<table class='joe-objectlist-table "+hiddenHeading+"' >"
-            +self.renderObjectListHeaderProperties(prop)
-            +self.renderObjectListObjects(prop)
-        //render a (table/divs) of properties
-        //cross reference with array properties.
-        +"</table>";
+	    var html = "<table class='joe-objectlist-table " + hiddenHeading + "' >"
+		    + self.renderObjectListHeaderProperties(prop)
+		    + self.renderObjectListObjects(prop)
+		    //render a (table/divs) of properties
+		    //cross reference with array properties.
+		    + "</table>";
         var max = prop.max;
 
-        if(!max || !prop.value || (prop.value.length < max)){
-            var addaction = 'onclick="getJoe('+self.joe_index+').addObjectListItem(\''+prop.name+'\')"';
-            html+='<div><div class="joe-button joe-iconed-button joe-plus-button" '+addaction+'> Add Another</div>'+__clearDiv__+'</div>'
+        if ((!max || !prop.value || (prop.value.length < max)) && !prop.locked) {
+	        var addaction = 'onclick="getJoe(' + self.joe_index + ').addObjectListItem(\'' + prop.name + '\')"';
+	        html += '<div><div class="joe-button joe-iconed-button joe-plus-button" ' + addaction + '> Add Another</div>' + __clearDiv__ + '</div>';
         }
         return html;
     };
@@ -2850,22 +2852,23 @@ this.renderSorterField = function(prop){
         var properties = prop.properties || self.objectlistdefaultproperties;
 
         var html = '<tbody id="joe-objectist-table">';
-        var objHtml = '';
         var obj;
         for(var o = 0,objecttot = objects.length; o<objecttot;o++){
             obj = objects[o];
-            html+=self.renderObjectListObject(obj,properties,o);
-        //parse across properties
+            html += self.renderObjectListObject(obj, properties, o, prop.locked);
+	        //parse across properties
 
         }
         html+="</tbody>";
         return html;
     };
-    this.renderObjectListObject = function(object,objectListProperties,index){
+    this.renderObjectListObject = function (object, objectListProperties, index, locked) {
         var properties = objectListProperties || self.objectlistdefaultproperties;
         var prop,property;
         //var html = "<tr class='joe-object-list-row' data-index='"+index+"'><td class='joe-objectlist-object-row-handle'>|||</td>";
-        var html = "<tr class='joe-object-list-row' data-index='"+index+"'><td><div class='joe-panel-button joe-objectlist-object-row-handle' "+delaction+">|||</div></td>";
+        var html = locked
+			? "<tr class='joe-object-list-row' data-index='" + index + "'><td></td>"
+			: "<tr class='joe-object-list-row' data-index='" + index + "'><td><div class='joe-panel-button joe-objectlist-object-row-handle' " + delaction + ">|||</div></td>";
 
         var renderInput = {
             'text':self.renderTextField,
@@ -2890,8 +2893,10 @@ this.renderSorterField = function(prop){
 
         }
         var delaction = "onclick='getJoe("+self.joe_index+")._oldeleteaction(this);'";
-        html+="<td ><div class='jif-panel-button joe-delete-button' "+delaction+">&nbsp;</div></td>";
-        html+= '</tr>';
+        html += locked 
+			? "<td ></td>"
+			: "<td ><div class='jif-panel-button joe-delete-button' " + delaction + ">&nbsp;</div></td>";
+	    html += '</tr>';
 
 
 
