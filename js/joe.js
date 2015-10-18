@@ -16,10 +16,11 @@
 /*TODO:
 
     -make autoinit true
-    -make grid into table functions
     -
 
 */
+
+window._joeEditingHash = false;
 var _webworkers = false;
 var _joeworker;
 if (!!window.Worker) {
@@ -150,9 +151,11 @@ function JsonObjectEditor(specs){
             if (!useHash || self.joe_index != 0) {
                 return false;
             }
-            var useHash = useHash.replace('#','');
-            var hashBreakdown = useHash.split(hash_delimiter).condense();
-            console.log('hash',hashBreakdown);
+            if(!window._joeEditingHash){
+                self.readHashLink();
+                logit(useHash);
+            }
+
 
         }, false);
         var respond_timeout;
@@ -4223,6 +4226,7 @@ this.renderSorterField = function(prop){
 	};
 
 	this.show = function(data,specs){
+        self.setEditingHashLink(true);
         self.showBM = new Benchmarker();
         clearTimeout(self.hideTimeout);
     //handle transition animations.
@@ -4449,6 +4453,7 @@ this.renderSorterField = function(prop){
         }
         self.panel.toggleClass('show-filters',leftMenuShowing && listMode);
 
+        self.setEditingHashLink(false);
 
 /*        if($(window).height() > 700) {
             self.overlay.find('.joe-submenu-search-field').focus();
@@ -5180,8 +5185,9 @@ ANALYSIS, IMPORT AND MERGE
 /*-------------------------------------------------------------------->
  I | Hashlink
  <--------------------------------------------------------------------*/
-    this.renderHashlink = function(){
-        var hlink = fillTemplate();
+    this.setEditingHashLink = function(bool){
+        /*| toggle to set hash link editing , false means joe did not cause change directly. |*/
+        window._joeEditingHash = bool||false;
     };
 
     var hash_delimiter = '/';
@@ -5197,12 +5203,13 @@ ANALYSIS, IMPORT AND MERGE
         hashInfo.schema_name =self.current.schema && self.current.schema.__schemaname;
         if(listMode){
             hashInfo.object_id = '';
+            hashInfo.subset = self.current.subset.name;
         }else{
-
+            hashInfo.subset = '';
             hashInfo.object_id = (self.current.object && self.current.object[self.getIDProp()])||'';
         }
 
-        var hashtemplate = ($.type(specs.useHashlink) == 'string')?specs.useHashlink:hash_delimiter+'${schema_name}'+hash_delimiter+'${object_id}';
+        var hashtemplate = ($.type(specs.useHashlink) == 'string')?specs.useHashlink:hash_delimiter+'${schema_name}'+hash_delimiter+'${object_id}${subset}';
         //$SET({'@!':fillTemplate(hashtemplate,hashInfo)},{noHistory:true});
         //$SET({'@!':fillTemplate(hashtemplate,hashInfo)});
         location.hash = fillTemplate(hashtemplate,hashInfo);
@@ -5223,6 +5230,12 @@ ANALYSIS, IMPORT AND MERGE
             }
             var hashSchema = self.schemas[hashBreakdown[0]];
             var hashItemID = hashBreakdown[1]||'';
+
+/*            function goHash(item,dataset){
+                if(item){
+                    goJoe(collectionItem, {schema: hashSchema});
+                }
+            }*/
             if (hashSchema && (hashSchema.dataset || (!$.isEmptyObject(self.Data) && self.Data[hashSchema.__schemaname]))) {
                 var dataset;
                 if(hashSchema.dataset) {
@@ -5230,7 +5243,7 @@ ANALYSIS, IMPORT AND MERGE
                 }else{
                     dataset =  self.Data[hashSchema.__schemaname] || [];
                 }
-                //SINGLE ITEM
+            //SINGLE ITEM
                 if(!$.isEmptyObject(self.Data)) {
                     if(hashItemID ){
                         var collectionName = hashSchema.__collection || hashSchema.__schemaname;
@@ -5239,10 +5252,11 @@ ANALYSIS, IMPORT AND MERGE
 
                             if (collectionName) {
                                 var collectionItem = self.getDataItem(hashItemID, collectionName);
+                               // goHash(collectionItem,);
                                 if (collectionItem) {
                                     goJoe(collectionItem, {schema: hashSchema});
                                 }else {//SHOW LIST, NO item
-                                    goJoe(dataset, {schema: hashSchema});
+                                    goJoe(dataset, {schema: hashSchema,subset:hashItemID});
                                 }
                             }
                         }else{
@@ -5256,11 +5270,11 @@ ANALYSIS, IMPORT AND MERGE
                                     goJoe(collectionItem, {schema: hashSchema});
                                 }
                             }else {//SHOW LIST, NO item
-                                goJoe(dataset, {schema: hashSchema});
+                                goJoe(dataset, {schema: hashSchema,subset:hashItemID});
                             }
                         }
                     }else {//SHOW LIST, NO item
-                        goJoe(dataset, {schema: hashSchema});
+                        goJoe(dataset, {schema: hashSchema,subset:hashItemID});
                     }
                     var section = $GET('section')||hashBreakdown[2];
                     if(section) {
