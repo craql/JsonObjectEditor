@@ -1398,18 +1398,32 @@ input.joe-submenu-search-field {
 /*-------------------------
 	//COLS
 -------------------------*/
-.cols-2 .joe-panel-content-option,.cols-3 .joe-panel-content-option{
+.cols-2 .joe-panel-content-option,.cols-3 .joe-panel-content-option,.cols-4 .joe-panel-content-option,.cols-5 .joe-panel-content-option{
     float:left;
     clear: none;
 }
-.cols-2 .joe-panel-content-option-content ,.cols-3 .joe-panel-content-option-content {
+.cols-2 .joe-panel-content-option-content ,.cols-3 .joe-panel-content-option-content,.cols-4 .joe-panel-content-option-content,.cols-5 .joe-panel-content-option-content {
     min-height: 60px;
 }
 .cols-2 .joe-panel-content-option{  width:49%;  }
+/*
 .cols-2 .joe-panel-content-option-content {  min-height: 60px;  }
+*/
 
 .cols-3 .joe-panel-content-option{  width:32%;  }
+/*
 .cols-3 .joe-panel-content-option-content {  min-height: 60px;  }
+*/
+
+.cols-4 .joe-panel-content-option{  width:24%;  }
+/*
+.cols-4 .joe-panel-content-option-content {  min-height: 60px;  }
+*/
+
+.cols-5 .joe-panel-content-option{  width:19%;  }
+/*
+.cols-5 .joe-panel-content-option-content {  min-height: 60px;  }
+*/
 /*-------------------------
 	//STRIPE
 -------------------------*/

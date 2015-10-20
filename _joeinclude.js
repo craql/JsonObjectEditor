@@ -28,22 +28,9 @@ if(location && location.hostname){//fix for devices
             break;
 
         case 'localhost':
-        case 'localhost:81':
-                if(location && location.port < 1000) {
-                        web_dir = 'http://' + location.hostname + ':' + location.port + "/" + projectName + '/';
-                }
-                break;
-        case 'coreyh.esri.com':
-                web_dir = 'http://coreyh.esri.com:81/'+projectName+'/';
-        break;
-
-        case 'cinadapc.esri.com':
-
-                web_dir = 'http://cinadapc.esri.com/'+projectName+'/';
-
-        break;
-        case 'corey-bootcamp.esri.com':
-                web_dir = 'http://corey-bootcamp.esri.com/'+projectName+'/';
+        if(location && location.port < 1000) {
+                web_dir = 'http://' + location.hostname + ':' + location.port + "/" + projectName + '/';
+        }
         break;
 	}
 } else if (location && location.hostname === '') {
@@ -72,18 +59,13 @@ scripts.push(
 	"zebra_datepicker.js",
 	*/
     "joe.js",
-    "ace/ace.js"
+    "ace/ace.js",
+    'plugins/tinymce.min.js'
 );
 
 var
 styles_dir = web_dir+"css/",
 styles =[
-/*   "leaflet.css",
-   "esri-leaflet-geocoder.css",
-   "joe-styles.css",
-   //"jquery-ui-1.10.4.custom.min.css",
-	"jquery-ui.min.css",
-    "jif/style.css"*/
     "joe.css"
 ],
 script,style,sc,st,

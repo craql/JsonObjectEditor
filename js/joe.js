@@ -506,7 +506,10 @@ function JsonObjectEditor(specs){
         specs.title =(
 			title
 			|| specs.listWindowTitle
-			|| (specs.schema && (specs.schema.title||specs.schema._title))  || "Viewing "+specs.mode.capitalize());
+			|| (specs.schema && (specs.schema.title||specs.schema._title))
+            || "Viewing "+((self.current.schema && self.current.schema.__schemaname)
+                ||(typeof self.current.userSpecs.schema == 'string' && self.current.userSpecs.schema)
+                || specs.mode).capitalize());
 	//setup profile
 		specs.profile = (profile)?
 			(self.specs.profiles[profile]||self.specs.joeprofile):
@@ -744,7 +747,7 @@ function JsonObjectEditor(specs){
             search:true,
             itemcount:true,
             filters:showFilters,
-            numCols:['1','2','3']
+            numCols:['1','2','3','4','5']
         };
         var userSubmenu = ($.type(self.current.submenu) != 'object')?{}:self.current.submenu;
         $.extend(subSpecs,userSubmenu);
@@ -5203,7 +5206,7 @@ ANALYSIS, IMPORT AND MERGE
         hashInfo.schema_name =self.current.schema && self.current.schema.__schemaname;
         if(listMode){
             hashInfo.object_id = '';
-            hashInfo.subset = self.current.subset.name;
+            hashInfo.subset = (self.current.subset && self.current.subset.name) || '';
         }else{
             hashInfo.subset = '';
             hashInfo.object_id = (self.current.object && self.current.object[self.getIDProp()])||'';
@@ -5314,7 +5317,7 @@ ANALYSIS, IMPORT AND MERGE
 /*-------------------------------------------------------------------->
  J | RESPOND
  <--------------------------------------------------------------------*/
-    self.respond = function(e){
+    this.respond = function(e){
         var w = self.overlay.width();
         var h = self.overlay.height();
         var curPanel = self.panel[0];
@@ -5361,6 +5364,33 @@ K | Smart Schema Values
 
     };
 
+/*-------------------------------------------------------------------->
+ L | API
+<--------------------------------------------------------------------*/
+    this.parseAPI = function(jsObj,libraryname){
+        goJoe(self.analyzeClassObject(jsObj,libraryname).functions,
+            {schema:'function',title:libraryname+' Functions'})
+    };
+    window.joeAPI = this.parseAPI;
+
+    this.jsonp = function(url,dataset,callback,data){
+        callback = callback || logit;
+        $.ajax({
+            url:url,
+            data:data,
+            dataType:'jsonp',
+            callback:function(data){
+                callback(data,dataset);
+            }
+        })/*
+        ajax({url:url,
+            onsuccess:function(data){
+                callback(data,dataset);
+            },
+            dataType:'jsonp',
+        query:data
+        })*/
+    };
 /*-------------------------------------------------------------------->
      //AUTOINIT
  <--------------------------------------------------------------------*/
