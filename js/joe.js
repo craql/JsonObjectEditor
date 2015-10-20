@@ -328,7 +328,7 @@ function JsonObjectEditor(specs){
 		self.current.userSpecs = $.extend({},setts);
         gridMode = (self.current.specs.viewMode == 'grid')?true:false;
         tableMode = (self.current.specs.viewMode == 'table')?true:false;
-        colCount = self.current.specs.colCount || colCount || 1;
+
 
 	//update history 1/2
 		if(!self.current.specs.noHistory){
@@ -354,8 +354,11 @@ function JsonObjectEditor(specs){
 		specs.schema = this.setSchema(schema);
 	//	specs.schema = ($.type(schema) == 'object')? schema : self.schemas[schema] || null;
 	//	self.current.schema = specs.schema;
-
-
+/*-------------------------
+Column Count
+-------------------------*/
+        colCount = self.current.specs.colCount || (specs.schema && specs.schema.colCount) || colCount || 1;
+   // colCount = (specs.schema && scpecs.schema.colCount) || colCount;
 
 /*-------------------------
     Preformat Functions
@@ -752,6 +755,7 @@ function JsonObjectEditor(specs){
         var userSubmenu = ($.type(self.current.submenu) != 'object')?{}:self.current.submenu;
         $.extend(subSpecs,userSubmenu);
 
+
         if(specs.mode == 'list') {
             var submenu =
                 '<div class="joe-panel-submenu">'
@@ -1098,7 +1102,9 @@ View Mode Buttons
         var modes = [
             {name:'1'},
             {name:'2'},
-            {name:'3'}
+            {name:'3'},
+            {name:'4'},
+            {name:'5'}
         ];
 
 /*        var modeTemplate="<div data-colcount='${name}' " +
