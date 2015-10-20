@@ -1403,13 +1403,16 @@ input.joe-submenu-search-field {
     box-sizing: border-box;
 }
 /*-------------------------
-	//COLS
+	// MULTI COLS
 -------------------------*/
 .multi-col .joe-panel-content-option{
     float:left;
     clear: none;
-    min-height: 100px;
 }
+.multi-col .joe-panel-content-option-content {
+    min-height: 120px;
+}
+
 .multi-col .joe-panel-content-option.item-menu{
     padding-bottom:55px;
 }
