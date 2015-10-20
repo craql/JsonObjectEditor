@@ -1123,6 +1123,8 @@ View Mode Buttons
     this.setColumnCount = function(mode){
         self.overlay[0].className = self.overlay[0].className.replace(/cols-[0-9]/,'cols-'+mode);
         if(mode){colCount = mode;}
+        var multi = (mode && mode > 1)?true:false;
+        self.overlay.toggleClass('multi-col',multi)
         //self.reload(true,{colCount:mode});
     };
 
@@ -3602,14 +3604,24 @@ this.renderSorterField = function(prop){
 		var idprop = self.getIDProp();// listSchema._listID;
 		var id = listItem[idprop] || null;
 		//var action = 'onclick="_joe.editObjectFromList(\''+id+'\');"';
-        var schemaprop = self.current.schema && (self.current.schema.listView && self.current.schema.listView.schemaprop);
-        if(schemaprop){
-            action = 'onclick="getJoe('+self.joe_index+')' +
-                '.listItemClickHandler({dom:this,id:\''+id+'\',schema:\''+listItem[schemaprop]+'\',idprop:\'_id\'});"';
-        }else{
-            action = 'onclick="getJoe('+self.joe_index+')' +
-                '.listItemClickHandler({dom:this,id:\''+id+'\'});"';
+
+        var customAction = (self.current.schema && (
+            (self.current.schema.listView && self.current.schema.listView.action )
+            || self.current.schema.listAction));
+        if(customAction){
+            action = 'onclick="'+self.propAsFuncOrValue(customAction)+'"';
+        }else {
+            var schemaprop = self.current.schema && (self.current.schema.schemaprop || (self.current.schema.listView && self.current.schema.listView.schemaprop));
+            if (schemaprop) {
+                action = 'onclick="getJoe(' + self.joe_index + ')' +
+                    '.listItemClickHandler({dom:this,id:\'' + id + '\',schema:\'' + listItem[schemaprop] + '\',idprop:\'_id\'});"';
+            } else {
+                action = 'onclick="getJoe(' + self.joe_index + ')' +
+                    '.listItemClickHandler({dom:this,id:\'' + id + '\'});"';
+            }
         }
+
+
 
     //add stripe color
         var stripeColor = ($.type(listSchema.stripeColor)=='function')?listSchema.stripeColor(listItem):fillTemplate(listSchema.stripeColor,listItem);
@@ -3658,7 +3670,7 @@ this.renderSorterField = function(prop){
             //list item content
             title="<div class='joe-panel-content-option-content ' "+action+">"+title+"<div class='clear'></div></div>";
 
-            var html = '<div class="'+(self.allSelected && 'selected' ||'')+' joe-panel-content-option trans-bgcol '+((numberHTML && 'numbered') || '' )+' joe-no-select '+((stripeColor && 'striped')||'')+' '+((listItemExpanderButton && 'expander expander-collapsed')||'')+'"  data-id="'+id+'" >'
+            var html = '<div class="'+(self.allSelected && 'selected' ||'')+' joe-panel-content-option trans-bgcol '+((numberHTML && 'numbered') || '' )+' joe-no-select '+((stripeColor && 'striped')||'')+' '+((listItemExpanderButton && 'expander expander-collapsed')||'')+(listItemMenu && ' item-menu'||'')+'"  data-id="'+id+'" >'
 
                 +'<div class="joe-panel-content-option-bg" '+bgHTML+'></div>'
                 +'<div class="joe-panel-content-option-stripe" '+stripeHTML+'></div>'

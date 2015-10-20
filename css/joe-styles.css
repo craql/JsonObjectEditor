@@ -728,6 +728,14 @@ input.joe-submenu-search-field {
 .joe-submenu-selector.opts-3.expanded{
     width:120px;
 }
+.joe-submenu-selector.opts-4:hover,
+.joe-submenu-selector.opts-4.expanded{
+    width:160px;
+}
+.joe-submenu-selector.opts-5:hover,
+.joe-submenu-selector.opts-5.expanded{
+    width:200px;
+}
 /*label*/
 
 /*button */
@@ -760,10 +768,9 @@ input.joe-submenu-search-field {
 -------------------------*/
 .joe-list-sorter {
     float: right;
-    background-color: #ddd;
     height: 40px;
     line-height: 40px;
-    padding: 0 6px;
+    padding: 0 10px;
     display:block;
     cursor:pointer;
 }
@@ -827,13 +834,22 @@ input.joe-submenu-search-field {
 /*-------------------------
 	//COLS
 -------------------------*/
-.cols-2 .joe-panel-content-option,.cols-3 .joe-panel-content-option,.cols-4 .joe-panel-content-option,.cols-5 .joe-panel-content-option{
+.multi-col .joe-panel-content-option{
     float:left;
     clear: none;
+    min-height: 100px;
 }
-.cols-2 .joe-panel-content-option-content ,.cols-3 .joe-panel-content-option-content,.cols-4 .joe-panel-content-option-content,.cols-5 .joe-panel-content-option-content {
+.multi-col .joe-panel-content-option.item-menu{
+    padding-bottom:55px;
+}
+
+/*.cols-2 .joe-panel-content-option,.cols-3 .joe-panel-content-option,.cols-4 .joe-panel-content-option,.cols-5 .joe-panel-content-option{
+    float:left;
+    clear: none;
+}*/
+/*.cols-2 .joe-panel-content-option-content ,.cols-3 .joe-panel-content-option-content,.cols-4 .joe-panel-content-option-content,.cols-5 .joe-panel-content-option-content {
     min-height: 60px;
-}
+}*/
 .cols-2 .joe-panel-content-option{  width:49%;  }
 /*
 .cols-2 .joe-panel-content-option-content {  min-height: 60px;  }
@@ -983,6 +999,17 @@ input.joe-submenu-search-field {
     /* display: table-row; */
     /* height: 100%; */
 }
+.multi-col .joe-panel-content-option-menu {
+
+    float: none;
+    position: absolute;
+    bottom: 0;
+    top: auto;
+    margin:0;
+    border:none;
+    border-top:1px solid #eee;
+    padding:5px;
+}
 .joe-field-list-item > .joe-panel-content-option-menu {
     top: 0;
 }
@@ -995,6 +1022,10 @@ input.joe-submenu-search-field {
     line-height: 30px;
     transition: .2s;
     white-space: nowrap;
+}
+
+.multi-col .joe-option-menu-button{
+    padding:5px 10px;
 }
 .joe-option-menu-button:hover{
     background:rgba(0,0,0,.1);
