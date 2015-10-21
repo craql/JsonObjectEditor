@@ -931,7 +931,11 @@ Column Count
 
     this.searchTimeout;
     this.filterListFromSubmenu = function(keyword,now){
-
+        /*|{
+            featured:true,
+            tags:'filters,list',
+            description:'Filters the list based on keywords,subsets and filters'
+        }|*/
         clearTimeout(self.searchTimeout );
         self.overlay.removeClass('.multi-edit');
         if(!now) {
@@ -2697,7 +2701,12 @@ this.renderSorterField = function(prop){
     };
 
     this.renderFieldListItem = function(item,contentTemplate,schema,specs){
-
+        /*|{
+            description:'renders a preformated list item for use in itemexpanders, details page, etc',
+            featured:true,
+            tags:'render, field list item',
+            cssclass:'.joe-field-list-item || .joe-field-item'
+        }|*/
 
         var specs = $.extend({
             isObject:false,
@@ -4127,6 +4136,11 @@ this.renderSorterField = function(prop){
   D | DATA
  <--------------------------------------------------------------------*/
     self.search = function(id,specs){
+        /*|{
+         featured:true,
+         tags:'data,search',
+         description:'Finds any item in JOE by name or idm can specify additional search params'
+         }|*/
         var specs = specs || {};
         var collections = specs.collections || '';
         var properties = specs.props || specs.properties ||['_id','id','name'];
@@ -4147,6 +4161,11 @@ this.renderSorterField = function(prop){
         return results;
     };
     self.addDataset = function(name,values,specs){
+        /*|{
+            featured:true,
+            tags:'data',
+            description:'Adds a dataset to JOE'
+        }|*/
         //idprop
         //concatenate
         var values = self.propAsFuncOrValue(values,name);
@@ -4160,8 +4179,13 @@ this.renderSorterField = function(prop){
         delete self.Data[dataset];
     };
     self.getDataItem = function(id,datatype,idprop) {
+        /*|{
+            featured:true,
+            description:'gets a single data item from a data collection',
+            tags:'data'
+        }|*/
         var item;
-        var idprop = idprop || '_id';
+        var idprop = idprop || (self.schemas[datatype] && self.schemas[datatype].idprop) || '_id';
         var dataset = self.Data[datatype];
         if(!self.Data[datatype]){
             return false;
@@ -5124,18 +5148,35 @@ ANALYSIS, IMPORT AND MERGE
     };
 
     this.analyzeClassObject = function(object,ref){
+        /*|
+        {
+            description:'This takes a js class and creates a joe viewable object from it.'
+        }
+         |*/
         var data ={
             methods:[],
             properties:[]
         };
         var pReg = /function[\s*]\(([_a-z,A-Z0-9]*)\)/;
         var curProp;
-        var params
+        var params;
         for(var p in object){
             curProp = object[p];
             try {
                 if ($.type(curProp) == "function") {
                     params = pReg.exec(object[p])[1] || 'none';
+                    try {
+
+                        var comments = /\/\*\|([\s\S]*)?\|\*\//;
+                        evalString = curProp.toString().match(comments);
+                        if(evalString && evalString[1]){
+                            evalString = eval('('+evalString[1].replace(/\*/g,'')+')');
+                        }
+                        //logit(evalString);
+
+                    } catch (e) {
+                        evalString = {error:'Could not evalutate: \n' + e};
+                    }
                     data.methods.push({
                         code: object[p],
                         name: p,
@@ -5143,7 +5184,8 @@ ANALYSIS, IMPORT AND MERGE
                         ref: ref,
                         class:ref,
                         parameters:params,
-                        id:ref+'_'+p
+                        id:ref+'_'+p,
+                        comments:evalString
                     })
                 }else{
                     data.properties.push({
@@ -5233,9 +5275,15 @@ ANALYSIS, IMPORT AND MERGE
 
     };
 
-    this.readHashLink = function(){
+    this.readHashLink = function(hash){
+        /*|{
+            featured:true,
+            deacription:'reads the page hashlink and parses for collection, item id, subset and details section',
+            tags:'hash, SPA'
+
+        }|*/
         try {
-            var useHash = $GET('!') || location.hash;
+            var useHash = hash || $GET('!') || location.hash;
             if (!useHash || self.joe_index != 0) {
                 return false;
             }
