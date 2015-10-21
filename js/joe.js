@@ -4273,6 +4273,11 @@ this.renderSorterField = function(prop){
 	};
 
 	this.show = function(data,specs){
+        /*|{
+            featured:true,
+            description:'Populates and shows the joe editor, takes full configuration overides.',
+            alias:'goJoe()'
+         }|*/
         self.setEditingHashLink(true);
         self.showBM = new Benchmarker();
         clearTimeout(self.hideTimeout);
@@ -4665,6 +4670,12 @@ this.renderSorterField = function(prop){
     };
 
 	this.updateObject = function(dom,callback,stayOnItem,overwrites,skipValidation){
+        /*|{
+         featured:true,
+         tags:'save',
+         description:'updates the current object using validation and the callback from the schema'
+         }|*/
+
         var oldObj = $.extend({},self.current.object);
 		function defaultCallback(data){
 			self.showMessage(data.name +' updated successfully');
@@ -4748,6 +4759,12 @@ this.renderSorterField = function(prop){
 		goJoe(itemobj,self.current.userSpecs);
 	};
 	this.constructObjectFromFields = function(index){
+        /*|{
+         featured:true,
+         tags:'construct',
+         alias:'_jco(true)',
+         description:'constructs a new object from the current JOE details view'
+         }|*/
 		var object = {joeUpdated:new Date()};
         var groups = {};
 		var prop;
@@ -5156,7 +5173,9 @@ ANALYSIS, IMPORT AND MERGE
     this.analyzeClassObject = function(object,ref){
         /*|
         {
-            description:'This takes a js class and creates a joe viewable object from it.'
+            alias:'_joe.parseAPI, window.joeAPI'
+            description:'Takes a js class and creates a joe viewable object from it.',
+            tags:'api, analysis'
         }
          |*/
         var data ={
@@ -5190,8 +5209,9 @@ ANALYSIS, IMPORT AND MERGE
                         ref: ref,
                         class:ref,
                         parameters:params,
-                        id:ref+'_'+p,
-                        comments:evalString
+                        _id:ref+'_'+p,
+                        comments:evalString,
+                        itemtype:'method'
                     })
                 }else{
                     data.properties.push({
@@ -5199,7 +5219,8 @@ ANALYSIS, IMPORT AND MERGE
                         value:object[p],
                         ref:ref,
                         class:ref,
-                        id:ref+'_'+p
+                        _id:ref+'_'+p,
+                        itemtype:'property'
                     })
                 }
             }catch(e){
@@ -5466,10 +5487,19 @@ K | Smart Schema Values
 	if(self.specs.autoInit){
 		self.init();
 	}
+
+    self.getCurrentObject = function(construct){
+        /*|{
+        featured:true,
+        description:'gets the current object JOE is editing, if construct, has current user updates.',
+        alias:'_jco(construct)'
+        }|*/
+        if(construct){return self.constructObjectFromFields();}
+        return self.current.object
+    };
    // if(window){
-        window._jco = function(construct){
-            if(construct){return self.constructObjectFromFields();}
-            return self.current.object};
+        window._jco = self.getCurrentObject;
+
    // }
 	return this;
 }
