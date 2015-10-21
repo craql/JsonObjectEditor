@@ -3722,7 +3722,12 @@ this.renderSorterField = function(prop){
 
 	this.shiftSelecting = false;
     var goBackListIndex;
-	this.listItemClickHandler=function(specs){
+	this.listItemClickHandler= function(specs){
+        /*|{
+        featured:true,
+         tags:'list,handler',
+         description:'the default function called when a list item is clicked.'
+         }|*/
         goBackListIndex = null;
         if(specs && specs.dom){//store index
             goBackListIndex = $(specs.dom).parents('.joe-panel-content-option').index();
@@ -3812,6 +3817,10 @@ this.renderSorterField = function(prop){
     };
 
 	this.editObjectFromList = function(specs){
+        /*|{
+            tags:'list,default',
+            description:'the default function called by the list item click handler, overwritten by listAction'
+        }|*/
 		specs = specs || {};
 
 		self.current.schema = specs.schema || self.current.schema || null;
