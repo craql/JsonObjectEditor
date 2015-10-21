@@ -125,7 +125,7 @@ function JsonObjectEditor(specs){
 /*-------------------------------------------------------------------->
 	1 | INIT
 <--------------------------------------------------------------------*/
-	this.init = function() {
+	this.init = function(callback) {
         if(initialized){return false;}
 
         beginLogGroup('JOE init');
@@ -166,8 +166,10 @@ function JsonObjectEditor(specs){
             //self.respond
         });
         initialized = true;
+
         endLogGroup();
-	};
+        callback && callback();
+    };
 
 /*-------------------------------------------------------------------->
      INIT KEY HANDLERS
@@ -5129,7 +5131,7 @@ ANALYSIS, IMPORT AND MERGE
 
     this.analyzeClassObject = function(object,ref){
         var data ={
-            functions:[],
+            methods:[],
             properties:[]
         };
         var pReg = /function[\s*]\(([_a-z,A-Z0-9]*)\)/;
@@ -5140,7 +5142,7 @@ ANALYSIS, IMPORT AND MERGE
             try {
                 if ($.type(curProp) == "function") {
                     params = pReg.exec(object[p])[1] || 'none';
-                    data.functions.push({
+                    data.methods.push({
                         code: object[p],
                         name: p,
                         global_function: false,
@@ -5386,8 +5388,8 @@ K | Smart Schema Values
  L | API
 <--------------------------------------------------------------------*/
     this.parseAPI = function(jsObj,libraryname){
-        goJoe(self.analyzeClassObject(jsObj,libraryname).functions,
-            {schema:'function',title:libraryname+' Functions'})
+        goJoe(self.analyzeClassObject(jsObj,libraryname).methods,
+            {schema:'method',title:libraryname+' Methods'})
     };
     window.joeAPI = this.parseAPI;
 
