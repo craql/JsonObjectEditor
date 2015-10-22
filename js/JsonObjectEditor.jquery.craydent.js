@@ -2565,16 +2565,22 @@ this.renderSorterField = function(prop){
 <-----------------------------*/
 	//TODO: progressively render bucket options.
 	this.renderBucketsField = function(prop){
+        /*
+        description:'renders buckets field',
+        tags:'buckets,field',
+        specs:['idprop','values','allowMultiple','template','bucketCount','bucketNames']
+         */
 
 		/*var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];*/
         var values = self.getFieldValues(prop.values);
 		var valObjs = [];
-
+        var bucketNames = self.PropAsFuncOrValue(prop.bucketNames) || [];
 
 
 	//sort values into selected or option
 		var val;
-		var bucketCount = (typeof prop.bucketCount =="function")?prop.bucketCount():prop.bucketCount || 3;
+		var bucketCount = self.PropAsFuncOrValue(prop.bucktCount) || 3;
+		//(typeof prop.bucketCount =="function")?prop.bucketCount():prop.bucketCount || 3;
 		var optionsHtml ='';
 		var bucketsHtml =[];
 		var value = prop.value || [[],[],[]];
@@ -2631,8 +2637,8 @@ this.renderSorterField = function(prop){
 				}
 			});
 
-		function renderBucket(id){
-			return '<ul class="joe-buckets-bin selections-bin">'+bucketsHtml[id]+'</ul>';
+		function renderBucket(id,name){
+			return name+'<ul class="joe-buckets-bin selections-bin">'+bucketsHtml[id]+'</ul>';
 		}
 	//renderHTML
 		var html=
@@ -2643,7 +2649,7 @@ this.renderSorterField = function(prop){
 			+'</div>'
 			+'<div class="joe-buckets-field-holder" style="width:75%;">';
 				bucketsHtml.map(function(b,i){
-					html+=renderBucket(i);
+					html+=renderBucket(i,(bucketNames[i]||''));
 				});
 				//+'<ul class="joe-buckets-bin selections-bin">'+bucketsHtml+'</ul>'
 
