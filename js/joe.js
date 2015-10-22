@@ -3647,7 +3647,8 @@ this.renderSorterField = function(prop){
 
 
     //add stripe color
-        var stripeColor = ($.type(listSchema.stripeColor)=='function')?listSchema.stripeColor(listItem):fillTemplate(listSchema.stripeColor,listItem);
+        //var stripeColor = ($.type(listSchema.stripeColor)=='function')?listSchema.stripeColor(listItem):fillTemplate(listSchema.stripeColor,listItem);
+        var stripeColor = self.propAsFuncOrValue(listSchema.stripeColor,listItem);
         var stripeHTML ='';
         if(stripeColor){
             stripeHTML = 'style="background-color:'+stripeColor+';"';
@@ -4015,6 +4016,12 @@ this.renderSorterField = function(prop){
 	MINIJOE WIndow
 <-------------------------------------------------------------------*/
 	this.showMiniJoe = function(specs,joespecs){
+        /*|{
+         featured:true,
+         tags:'mini',
+         description:'Shows a miniature joe from specs.(props||list||object||content)',
+         specs:'mode,(object||list||content||props),(minimenu||menu),callback'
+         }|*/
 		var mini = {};
         specs = $.extend({mode:'text'},
             (specs || {}),(joespecs||{}));
@@ -4537,6 +4544,12 @@ this.renderSorterField = function(prop){
 	};
     var messageTimeouts = Array(4);
 	this.showMessage = function(message,specs){
+        /*|{
+            featured:true,
+            tags:'message',
+            description:'Shows the destiny style message on the joe panel.',
+            specs:'message,timeout,message_class'
+        }|*/
 		var mspecs = $.extend({
 			timeout:3,
 			message_class:''
@@ -5188,7 +5201,7 @@ ANALYSIS, IMPORT AND MERGE
     this.analyzeClassObject = function(object,ref){
         /*|
         {
-            alias:'_joe.parseAPI, window.joeAPI'
+            alias:'_joe.parseAPI, window.joeAPI',
             description:'Takes a js class and creates a joe viewable object from it.',
             tags:'api, analysis'
         }
@@ -5204,7 +5217,8 @@ ANALYSIS, IMPORT AND MERGE
             curProp = object[p];
             try {
                 if ($.type(curProp) == "function") {
-                    params = pReg.exec(object[p])[1] || 'none';
+                    params = pReg.exec(object[p]);
+                    params = (params && params[1]) || '';
                     try {
 
                         var comments = /\/\*\|([\s\S]*)?\|\*\//;
@@ -5215,7 +5229,7 @@ ANALYSIS, IMPORT AND MERGE
                         //logit(evalString);
 
                     } catch (e) {
-                        evalString = {error:'Could not evalutate: \n' + e};
+                        evalString = {error:'Could not evalutate "'+p+'": \n' + e};
                     }
                     data.methods.push({
                         code: object[p],
@@ -5223,7 +5237,7 @@ ANALYSIS, IMPORT AND MERGE
                         global_function: false,
                         ref: ref,
                         class:ref,
-                        parameters:params,
+                        parameters:(comments && (comments.params || comments.parameters)) || params,
                         _id:ref+'_'+p,
                         comments:evalString,
                         itemtype:'method'
@@ -5256,11 +5270,22 @@ ANALYSIS, IMPORT AND MERGE
 	};
 
 	this.getIDProp = function(schema){
+        /*|{
+            featured:true,
+            tags:'helper',
+            description:'Gets the idprop of the current item, or any item with a passed schemaname.'
+        }|*/
+
 		var prop = ( ((schema && self.schemas[schema]) || self.current.schema) && (self.current.schema.idprop || self.current.schema._listID)) || 'id' || '_id';
 		return prop;
 	};
 
     this.propAsFuncOrValue = function(prop, toPass, defaultTo){
+        /*|{
+            featured:true,
+            tags:'helper',
+            description:'Parses the property passed as a function or value, can be passed an object to be a parameter of the function call.'
+         }|*/
         try {
             var toPass = toPass || self.current.object;
 
@@ -5287,7 +5312,10 @@ ANALYSIS, IMPORT AND MERGE
  I | Hashlink
  <--------------------------------------------------------------------*/
     this.setEditingHashLink = function(bool){
-        /*| toggle to set hash link editing , false means joe did not cause change directly. |*/
+        /*|{
+            tags:'hash',
+            description: 'toggle to set hash link editing , false means joe did not cause change directly.'
+        }|*/
         window._joeEditingHash = bool||false;
     };
 
