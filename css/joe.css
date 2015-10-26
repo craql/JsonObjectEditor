@@ -982,8 +982,8 @@
     text-align: center;
     cursor: pointer;
     height: 40px;
-    background-color: #DDD;
-    background-color: rgba(0, 0, 0, 0.1);
+/*    background-color: #DDD;
+    background-color: rgba(0, 0, 0, 0.1);*/
 
     font-size: 32px;
     color:#444;
@@ -2826,7 +2826,9 @@ button.Zebra_DatePicker_Icon                { margin: 0 0 0 3px }
 button.Zebra_DatePicker_Icon_Inside         { margin: 0 3px 0 0 }
 
 
-
+.joe-subset-selector{
+    display:none;
+}
 /* For phones and small tablets */
 @media only screen and (max-width: 600px),
 screen and (max-height:400px) and (orientation:landscape){
