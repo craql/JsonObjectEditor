@@ -5353,7 +5353,7 @@ ANALYSIS, IMPORT AND MERGE
             }
             var useHash = useHash.replace('#','');
             var hashBreakdown = useHash.split(hash_delimiter).condense();
-            hashBreakdown.removeAll('');
+            //hashBreakdown.removeAll('');
             if(!hashBreakdown.length){
                 return false;
             }
