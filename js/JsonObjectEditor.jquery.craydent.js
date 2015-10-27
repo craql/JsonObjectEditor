@@ -91,7 +91,8 @@ function JsonObjectEditor(specs){
         dynamicDisplay:30,
         sans:false,
         listSubMenu:true,
-        documentTitle:false
+        documentTitle:false,
+        useInset:true
 	};
 
 	this.specs = $.extend({},defaults,specs||{});
@@ -731,6 +732,14 @@ Column Count
 /*----------------------------->
  B | SubMenu
  <-----------------------------*/
+    this.renderSubmenuButtons = function(buttons){
+        var html = '<div class="joe-submenu-buttons">';
+        var buttons = buttons || self.getPropFrom('headerListMenu') || self.getPropFrom('headerMenu');
+        if(buttons && buttons.length){
+            html+= self.renderMenuButtons(buttons,'joe-submenu-button');
+        }
+        return html +'</div>';
+    };
     this.renderEditorSubmenu = function(specs) {
         var BM = new Benchmarker();
         var sectionAnchors =renderSectionAnchors();
@@ -765,6 +774,8 @@ Column Count
                 + ((subSpecs.search && self.renderSubmenuSearch(subSpecs.search)) || '')
                 + ((subSpecs.itemcount && self.renderSubmenuItemcount(subSpecs.itemcount)) || '')
 
+                +self.renderSubmenuButtons()
+
                 + '</div>'
                 + "<div class='joe-filters-holder'>"
                 + renderSubsetsDiv()
@@ -774,8 +785,10 @@ Column Count
         }else{
             var submenu =
                 '<div class="joe-panel-submenu">'
+                    //+ self.renderSubmenuButtons()
                     + ((sectionAnchors.count && sectionAnchors.code) || '')
                     + renderSidebarToggle('left')+ renderSidebarToggle('right')
+                +self.renderSubmenuButtons()
                 + '</div>';/*
                 + "<div class='joe-filters-holder'>"
                // + renderSubsetsDiv()
@@ -1210,7 +1223,8 @@ this.resort = function(sorter){
         var scroll = 'onscroll="getJoe('+self.joe_index+').onListContentScroll(this);"';
         var rightC = content.right||'';
         var leftC = content.left||'';
-        var content_class='joe-panel-content joe-inset ' +submenu;// +(rightC && ' right-sidebar '||'')+(leftC && ' left-sidebar '||'');
+        //var content_class='joe-panel-content joe-inset ' +submenu;
+        var content_class='joe-panel-content '+(self.specs.useInset &&'joe-inset '||'') +submenu;
 		var html =
 
 
@@ -1641,11 +1655,15 @@ this.renderHTMLContent = function(specs){
 <-----------------------------*/
 	this.renderEditorFooter = function(specs){
         var fBM = new Benchmarker();
+        var customMenu = true;
 		specs = specs || this.specs || {};
 		var menu = specs.minimenu || (listMode && (specs.schema && specs.schema.listmenu)||specs.listmenu) ||//list mode
 		 (multiEdit && (specs.multimenu ||  (specs.schema && specs.schema.multimenu) || __defaultMultiButtons)) ||
-        specs.menu
-        || __defaultObjectButtons;
+        specs.menu || null;
+        if(!menu){
+            menu = __defaultObjectButtons;
+            customMenu = false;
+        }
 		if(typeof menu =='function'){
 			menu = menu();
 		}
@@ -1663,12 +1681,18 @@ this.renderHTMLContent = function(specs){
 			if(!specs.minimenu && self.current.list && $.type(self.current.data) == 'array'){
 				html+= self.renderFooterMenuItem(__selectAllBtn__);
                 html+= '<div class="joe-selection-indicator"></div>';
-				html+= self.renderFooterMenuItem(
-				{	label:'Multi-Edit',
-					name:'multiEdit',
-					css:'joe-multi-only',
-					action:'getJoe('+self.joe_index+').editMultiple()'}
-				);
+
+                //remove multiedit if menu passed.
+                if(!customMenu) {
+                    html += self.renderFooterMenuItem(
+                        {
+                            label: 'Multi-Edit',
+                            name: 'multiEdit',
+                            css: 'joe-multi-only',
+                            action: 'getJoe(' + self.joe_index + ').editMultiple()'
+                        }
+                    );
+                }
 			}
 
 		html+=
@@ -1681,19 +1705,36 @@ this.renderHTMLContent = function(specs){
 	};
 
 	this.renderFooterMenuItem=function(m){//passes a menu item
-        if(!m){
-            logit('error loading footer menu button');
-            return '';
-        }
-		var display,action,html='';
-        if(m.condition && !m.condition(self.current.object,m)){
-            return '';
-        };
-		display = fillTemplate(self.propAsFuncOrValue(m.label || m.name),self.current.object);
-		action = fillTemplate(self.propAsFuncOrValue(m.action),self.current.object) || 'alert(\''+display+'\')';
-		html+= '<div class="joe-button joe-footer-button '+(m.css ||'')+'" onclick="'+action+'" data-btnid="'+m.name+'" title="'+ (m.title||'')+'">'+display+'</div>';
-		return html;
+
+        return self.renderMenuButtons(m,'joe-footer-button');
 	};
+
+
+
+    this.renderMenuButtons = function(button,menucss){
+        if(!button){return '';}
+        var button = $.type(button) == "array"?button:[button];
+        var menucss = menucss ||'';
+        var display,action,html='',m;
+
+        for(var b = 0,tot= button.length;b<tot; b++) {
+            m = button[b];
+            if (!m) {
+                logit('error loading menu button');
+                continue;
+                //return '';
+            }
+
+            if (m.condition && !m.condition(self.current.object, m)) {
+                //return '';
+                continue
+            }
+            display = fillTemplate(self.propAsFuncOrValue(m.label || m.display|| m.name), self.current.object);
+            action = fillTemplate(self.propAsFuncOrValue(m.action), self.current.object) || 'alert(\'' + display + '\')';
+            html += '<div class="joe-button ' + menucss + ' ' + (m.css || '') + '" onclick="' + action + '" data-btnid="' + (m.id||m.name) + '" title="' + (m.title || '') + '">' + display + '</div>';
+        }
+        return html;
+    };
 /*-------------------------------------------------------------------->
 	3 | OBJECT FORM
 <--------------------------------------------------------------------*/
@@ -4141,7 +4182,7 @@ this.renderSorterField = function(prop){
         var scroll = 'onscroll="getJoe('+self.joe_index+').onListContentScroll(this);"';
         var rightC = content.right||'';
         var leftC = content.left||'';
-        var content_class='joe-panel-content joe-inset ' +submenu;// +(rightC && ' right-sidebar '||'')+(leftC && ' left-sidebar '||'');
+        var content_class='joe-panel-content '+(self.specs.useInset &&'joe-inset '||'') +submenu;
         var html =
 
 
@@ -5262,6 +5303,22 @@ ANALYSIS, IMPORT AND MERGE
 		var reg=/function ([^\(]*)/;
 		return reg.exec(name)[1];
 	};
+
+    this.getPropFrom = function(propname){
+        /*|{
+         tags:'helper',
+         description:'Gets a prop based off either current user specs, schema spec or joe default spec (respectively)'
+         }|*/
+
+        var prop =
+            self.current[propname]
+            || self.current.userSpecs[propname]
+            || (self.current.schema && self.current.schema[propname]);
+
+        return prop;
+
+
+    };
 
 	this.getIDProp = function(schema){
         /*|{
