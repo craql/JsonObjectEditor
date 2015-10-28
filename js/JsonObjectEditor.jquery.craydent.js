@@ -831,6 +831,8 @@ Column Count
                     fh += '<div class="joe-filter-option ' + act + '" onclick="getJoe(' + self.joe_index + ').toggleFilter(\'' + idval + '\',this);"><span class ="joe-option-checkbox"></span>' + opt.name + '</div>'
                 }
             });
+
+            fh+='<div class="joe-subset-option" onclick="'+getSelfStr+'.clearFilters()">clear filters</div>';
             fh+='</div>';
             return fh;
         }
@@ -908,7 +910,7 @@ Column Count
         //var qval, fval;
         for(var f in self.current.filters){
             filterobj = (
-            (self.propAsFuncOrValue(self.current.schema.filters)||[]).where({name:f})[0]|| {}).filter;
+            (self.propAsFuncOrValue(self.current.schema.filters)||[]).where({name:f})[0] || self.current.filters[f] || {}).filter;
             for(var ff in filterobj) {
                 if (query[ff]) {
 
@@ -3996,7 +3998,11 @@ this.renderSorterField = function(prop){
 
         );
 	};
-    this.toggleFilter=function(filtername,dom){
+    this.toggleFilter = function(filtername,dom){
+        /*|{
+            description:'toggles a filter on or off, takes a filtername and dom',
+            tags:'filter'
+        }|*/
         var filter = ((self.current.schema && self.propAsFuncOrValue(self.current.schema.filters))||[])
                 .where({name:filtername})[0] || false;
         if(!filter){
@@ -4010,11 +4016,34 @@ this.renderSorterField = function(prop){
         }
         if(dom){$(dom).toggleClass('active')}
         self.filterListFromSubmenu(null,true);
-        //self.reload();
-        //self.hide();
-        //goJoe(self.current.list,$c.merge(self.current.userSpecs,{subset:subset}));
+    };
+    this.toggleFilterObject = function(filtername,filterObj,wait){
+        /*|{
+         description:'toggles a filter on or off, takes a filtername filterobject and whether or not to do it now',
+         tags:'filter'
+         }|*/
+        var filter = self.propAsFuncOrValue(filterObj);
+        if(!filter){
+            logit('issue finding filter: '+filtername);
+            return;
+        }
+        if(self.current.filters[filtername]){
+            delete self.current.filters[filtername];
+        }
+        self.current.filters[filtername] = {name:filtername,filter:filterObj};
+
+        self.filterListFromSubmenu(null,!wait);
     };
 
+    this.clearFilters = function(){
+        /*|{
+         description:'clears all filters',
+         tags:'filter'
+         }|*/
+        self.current.filters = {};
+        self.container.find('.joe-filter-option').removeClass('active');
+        self.filterListFromSubmenu(null,true);
+    };
 /*-------------------------------------------------------------------->
 	5 | HTML Renderings
 <--------------------------------------------------------------------*/
@@ -5276,7 +5305,7 @@ ANALYSIS, IMPORT AND MERGE
                 evalString = {error:'Could not evalutate "'+p+'": \n' + e};
             }
             var funcName = parent+p;
-            data.methods.push({
+            var methodObj = {
                 code: object[p],
                 name: funcName,
                 global_function: false,
@@ -5287,7 +5316,14 @@ ANALYSIS, IMPORT AND MERGE
                 comments:evalString,
                 itemtype:'method',
                 parent:parent||null
-            });
+            };
+            if(methodObj.comments && methodObj.comments.description){
+                methodObj.description =methodObj.comments.description;
+            }
+            if(methodObj.comments && methodObj.comments.tags){
+                methodObj.tags =methodObj.comments.tags.split(',');
+            }
+            data.methods.push(methodObj);
 
             return {_id:ref+'_'+funcName};
         }
