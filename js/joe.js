@@ -738,18 +738,24 @@ Column Count
 /*----------------------------->
  B | SubMenu
  <-----------------------------*/
-    this.renderSubmenuButtons = function(buttons){
+    function renderSubmenuButtons(buttons){
         var html = '<div class="joe-submenu-buttons">';
-        var buttons = buttons || self.getPropFrom('headerListMenu') || self.getPropFrom('headerMenu');
-        if(buttons && buttons.length){
-            html+= self.renderMenuButtons(buttons,'joe-submenu-button');
+        var buttons = self.propAsFuncOrValue(buttons || (listMode && self.getCascadingProp('headerListMenu')) || self.getCascadingProp('headerMenu'));
+        var content;
+        if(buttons){
+            var h = self.renderMenuButtons(buttons,'joe-submenu-button');
+            if(h){content = true;}
+            html+= h;
         }
-        return html +'</div>';
+        return {html:html +'</div>',content:content};
     };
+    //self.current.submenuButtons;
     this.renderEditorSubmenu = function(specs) {
         var BM = new Benchmarker();
         var sectionAnchors =renderSectionAnchors();
-        if(!self.current.submenu && !sectionAnchors.count){
+        //submenu buttons
+        var submenuButtons =  renderSubmenuButtons();
+        if(!self.current.submenu && !sectionAnchors.count && (!listMode && !self.getCascadingProp('headerMenu'))){
             return '';
         }
         var showFilters =
@@ -767,6 +773,7 @@ Column Count
         $.extend(subSpecs,userSubmenu);
 
 
+
         if(specs.mode == 'list') {
             var submenu =
                 '<div class="joe-panel-submenu">'
@@ -780,7 +787,7 @@ Column Count
                 + ((subSpecs.search && self.renderSubmenuSearch(subSpecs.search)) || '')
                 + ((subSpecs.itemcount && self.renderSubmenuItemcount(subSpecs.itemcount)) || '')
 
-                +self.renderSubmenuButtons()
+                +submenuButtons.html
 
                 + '</div>'
                 + "<div class='joe-filters-holder'>"
@@ -791,10 +798,9 @@ Column Count
         }else{
             var submenu =
                 '<div class="joe-panel-submenu">'
-                    //+ self.renderSubmenuButtons()
                     + ((sectionAnchors.count && sectionAnchors.code) || '')
                     + renderSidebarToggle('left')+ renderSidebarToggle('right')
-                +self.renderSubmenuButtons()
+                    +submenuButtons.html
                 + '</div>';/*
                 + "<div class='joe-filters-holder'>"
                // + renderSubsetsDiv()
@@ -982,7 +988,7 @@ Column Count
             var searchables = self.current.schema && self.current.schema.searchables;
             //logit('search where in '+searchBM.stop()+' seconds');
             _bmResponse(searchBM,'search where');
-            currentListItems = listables.where(filters).filter(function(i){
+            self.current.filteredList = currentListItems = listables.where(filters).filter(function(i){
                 id = i[idprop];
                 testable = '';
                 if(searchables){//use searchable array
@@ -1221,7 +1227,8 @@ this.resort = function(sorter){
 		}
         var submenu = '';
         if(!specs.minimode) {
-            if ((mode == 'list' && self.current.submenu) || (self.current.submenu || renderSectionAnchors().count)) {
+            if ((mode == 'list' && self.current.submenu)
+                || (self.current.submenu || renderSectionAnchors().count || renderSubmenuButtons().content)) {
                 submenu = ' with-submenu '
             }
         }
@@ -5239,7 +5246,7 @@ ANALYSIS, IMPORT AND MERGE
         }
     };
 
-    this.analyzeClassObject = function(object,ref){
+    this.analyzeClassObject = function(object,ref,maxDepth){
         /*|
         {
             alias:'_joe.parseAPI, window.joeAPI',
@@ -5247,6 +5254,7 @@ ANALYSIS, IMPORT AND MERGE
             tags:'api, analysis'
         }
          |*/
+        var maxDepth = maxDepth || 10;
         var data ={
             methods:[],
             properties:[]
@@ -5254,44 +5262,97 @@ ANALYSIS, IMPORT AND MERGE
         var pReg = /function[\s*]\(([_a-z,A-Z0-9]*)\)/;
         var curProp;
         var params;
+
+        function parseFunction(object,p,parent,depth){
+
+            var parent = parent || '';
+            var curProp = object[p];
+            params = pReg.exec(object[p]);
+            params = (params && params[1]) || '';
+            try {
+
+                var comments = /\/\*\|([\s\S]*)?\|\*\//;
+                evalString = curProp.toString().match(comments);
+                if(evalString && evalString[1]){
+                    evalString = eval('('+evalString[1].replace(/\*/g,'')+')');
+                }
+                //logit(evalString);
+
+            } catch (e) {
+                evalString = {error:'Could not evalutate "'+p+'": \n' + e};
+            }
+            var funcName = parent+p;
+            data.methods.push({
+                code: object[p],
+                name: funcName,
+                global_function: false,
+                ref: ref,
+                class:ref,
+                parameters:(comments && (comments.params || comments.parameters)) || params,
+                _id:ref+'_'+funcName,
+                comments:evalString,
+                itemtype:'method',
+                parent:parent||null
+            });
+
+            return {_id:ref+'_'+funcName};
+        }
+
+        function parseProperty(object,p,parent,depth) {
+            if(depth > maxDepth){
+                return;
+            }
+            var depth = depth || 0;
+            depth++;
+            var parent = parent || '';
+            var curProp = object[p];
+
+            var propName = parent+p;
+            var propObj = {
+                name:propName,
+                ref:ref,
+                class:ref,
+                _id:ref+'_'+propName,
+                itemtype:'property',
+                parent:parent||null,
+                depth:depth
+            };
+
+            if($.type(curProp) == "object"){
+
+                var subproperties =[];
+
+                for(var sub in curProp) {
+                    try {
+                        if(curProp.hasOwnProperty(sub) && object != window.document && object != window) {
+
+                                //JSON.stringify(curProp.sub);
+
+                                if ($.type(curProp) == "function") {
+                                    subproperties.push(parseFunction(curProp, sub, propName+'.',depth)._id);
+                                } else {
+                                    subproperties.push(parseProperty(curProp, sub, propName+'.',depth)._id);
+                                }
+                        }
+                    }catch(e){
+                        console && console.log(sub+': '+e,curProp[sub]);
+                    }
+                }
+                if(subproperties.length){propObj.subproperties = subproperties;}
+            }else{
+                propObj.value = object[p];
+
+            }
+            data.properties.push(propObj);
+            return {_id:ref+'_'+propName};
+        }
         for(var p in object){
             curProp = object[p];
             try {
                 if ($.type(curProp) == "function") {
-                    params = pReg.exec(object[p]);
-                    params = (params && params[1]) || '';
-                    try {
-
-                        var comments = /\/\*\|([\s\S]*)?\|\*\//;
-                        evalString = curProp.toString().match(comments);
-                        if(evalString && evalString[1]){
-                            evalString = eval('('+evalString[1].replace(/\*/g,'')+')');
-                        }
-                        //logit(evalString);
-
-                    } catch (e) {
-                        evalString = {error:'Could not evalutate "'+p+'": \n' + e};
-                    }
-                    data.methods.push({
-                        code: object[p],
-                        name: p,
-                        global_function: false,
-                        ref: ref,
-                        class:ref,
-                        parameters:(comments && (comments.params || comments.parameters)) || params,
-                        _id:ref+'_'+p,
-                        comments:evalString,
-                        itemtype:'method'
-                    })
+                    parseFunction(object,p);
                 }else{
-                    data.properties.push({
-                        name:p,
-                        value:object[p],
-                        ref:ref,
-                        class:ref,
-                        _id:ref+'_'+p,
-                        itemtype:'property'
-                    })
+                    parseProperty(object,p);
                 }
             }catch(e){
                 logit(e);
@@ -5310,7 +5371,7 @@ ANALYSIS, IMPORT AND MERGE
 		return reg.exec(name)[1];
 	};
 
-    this.getPropFrom = function(propname){
+    this.getCascadingProp = function(propname){
         /*|{
          tags:'helper',
          description:'Gets a prop based off either current user specs, schema spec or joe default spec (respectively)'
@@ -5318,7 +5379,7 @@ ANALYSIS, IMPORT AND MERGE
 
         var prop =
             self.current[propname]
-            || self.current.userSpecs[propname]
+            || (self.current.userSpecs && self.current.userSpecs[propname])
             || (self.current.schema && self.current.schema[propname]);
 
         return prop;
@@ -5478,7 +5539,7 @@ ANALYSIS, IMPORT AND MERGE
                 }
             }
             else{
-                throw(error,'dataset for "'+hashSchema+'" note found');
+                throw(error,'dataset for "'+hashSchema+'" not found');
             }
         }catch(e){
             logit('error reading hashlink:'+e);
@@ -5580,6 +5641,40 @@ K | Smart Schema Values
         query:data
         })*/
     };
+
+/*-------------------------------------------------------------------->
+ N | ITEM NAVIGATION
+ <--------------------------------------------------------------------*/
+    this.next = function(){
+        navigateItems(1);
+    };
+    this.previous = function(){
+        navigateItems(-1);
+    };
+    function navigateItems(goto){
+        var dataset,currentObjectIndex,gotoIndex,gotoObject,idprop = self.getIDProp();
+        if(self.current.filteredList){
+            dataset = self.current.filteredList;
+            //look at list, find index, add goto, choose that item.
+        }else{
+            if(!self.current.schema){return alert('no schema set');}
+            dataset = self.getDataset(self.current.schema.__schemaname)
+                .sortBy(self.current.schema.sorter || ['name']);
+            //sortBy sorters
+            //use default subset
+        }
+        if(!dataset){return alert('no dataset set');}
+
+        currentObjectIndex = dataset.indexOf(_joe.current.object);
+        if(currentObjectIndex == -1){return alert('object not found in current dataset');}
+        gotoIndex = currentObjectIndex + goto;
+        gotoObject = dataset[gotoIndex];
+        self.show(gotoObject, {schema:self.current.schema.__schemaname});
+    }
+    var getSelfStr = 'getJoe('+self.joe_index+')';
+    this.buttons = {};
+    this.buttons.next = {name:'next', display:'next >',css:'fright', action:getSelfStr+'.next()'};
+    this.buttons.previous = {name:'previous',display:'< prev', css:'fleft', action:getSelfStr+'.previous()'};
 /*-------------------------------------------------------------------->
      //AUTOINIT
  <--------------------------------------------------------------------*/
