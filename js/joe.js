@@ -4023,7 +4023,7 @@ this.renderSorterField = function(prop){
         if(dom){$(dom).toggleClass('active')}
         self.filterListFromSubmenu(null,true);
     };
-    this.toggleFilterObject = function(filtername,filterObj,wait){
+    this.toggleFilterObject = function(filtername,filterObj,wait){ 
         /*|{
          description:'toggles a filter on or off, takes a filtername filterobject and whether or not to do it now',
          tags:'filter',
