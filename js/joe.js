@@ -5331,6 +5331,7 @@ ANALYSIS, IMPORT AND MERGE
                 code: object[p],
                 name: funcName,
                 global_function: false,
+                propname:p,
                 ref: ref,
                 class:ref,
                 parameters:(comments && (comments.params || comments.parameters)) || params,
@@ -5367,7 +5368,8 @@ ANALYSIS, IMPORT AND MERGE
                 _id:ref+'_'+propName,
                 itemtype:'property',
                 parent:parent||null,
-                depth:depth
+                depth:depth,
+                propname:p,
             };
 
             if($.type(curProp) == "object"){
