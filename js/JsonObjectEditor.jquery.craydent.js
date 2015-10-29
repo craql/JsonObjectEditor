@@ -110,7 +110,9 @@ function JsonObjectEditor(specs){
     };*/
 
     for(var s in _joe.schemas){
-        _joe.schemas[s].__schemaname = s;
+        _joe.schemas[s].__schemaname = _joe.schemas[s].name = s;
+        _joe.schemas[s]._id = cuid();
+
     }
 
 	this.defaultProfile = this.specs.defaultProfile || this.specs.joeprofile;
@@ -734,7 +736,9 @@ Column Count
  <-----------------------------*/
     function renderSubmenuButtons(buttons){
         var html = '<div class="joe-submenu-buttons">';
-        var buttons = self.propAsFuncOrValue(buttons || (listMode && self.getCascadingProp('headerListMenu')) || self.getCascadingProp('headerMenu'));
+        var buttons = self.propAsFuncOrValue(buttons
+            || (listMode && self.getCascadingProp('headerListMenu'))
+            || (!listMode && self.getCascadingProp('headerMenu')));
         var content;
         if(buttons){
             var h = self.renderMenuButtons(buttons,'joe-submenu-button');
@@ -1756,7 +1760,7 @@ this.renderHTMLContent = function(specs){
         var joeFieldBenchmarker = new Benchmarker();
 		//field requires {name,type}
         self.current.fields.push(prop);
-        prop.value = self.propAsFuncOrValue(prop.value);
+        prop.value = (prop.asFunction)?prop.value : self.propAsFuncOrValue(prop.value);
 		//set default value
 		if(prop.value == undefined && prop['default'] != undefined){
 			prop.value = prop['default'];
@@ -3285,11 +3289,12 @@ this.renderSorterField = function(prop){
 
         //html+= fillTemplate(template,values);
        // html += self.createObjectReferenceItem(null,value,prop.name);
+        var refSpecs = {deleteButton : !disabled};
         value.map(function(v){
             if($c.isObject(v)){
-                html += self.createObjectReferenceItem(v,null,prop.name);
+                html += self.createObjectReferenceItem(v,null,prop.name,refSpecs);
             }else if($c.isString(v)){
-                html += self.createObjectReferenceItem(null,v,prop.name);
+                html += self.createObjectReferenceItem(null,v,prop.name,refSpecs);
             }
 
         });
@@ -3308,6 +3313,7 @@ this.renderSorterField = function(prop){
     };
     this.createObjectReferenceItem = function(item,id,fieldname,specs){
         var field = _getField(fieldname);
+        var deletable = true;
 
         var specs = $.extend({
                 expander:field.expander,
@@ -4017,7 +4023,7 @@ this.renderSorterField = function(prop){
         if(dom){$(dom).toggleClass('active')}
         self.filterListFromSubmenu(null,true);
     };
-    this.toggleFilterObject = function(filtername,filterObj,wait){ 
+    this.toggleFilterObject = function(filtername,filterObj,wait){
         /*|{
          description:'toggles a filter on or off, takes a filtername filterobject and whether or not to do it now',
          tags:'filter',
@@ -4483,6 +4489,10 @@ this.renderSorterField = function(prop){
 
 	var sortable_index;
 	this.onPanelShow = function(){
+        /*|{
+            description:'function that initializes any js interactions and calls onPanelShow when it completes',
+            tags:'show'
+        }|*/
         var BM = new Benchmarker();
         self.respond();
 
@@ -4600,7 +4610,12 @@ this.renderSorterField = function(prop){
         self.panel.toggleClass('show-filters',leftMenuShowing && listMode);
 
         self.setEditingHashLink(false);
-
+        var panelShowFunction = self.getCascadingProp('onPanelShow');
+        try {
+            panelShowFunction && panelShowFunction(self.current.item, currentListItems);
+        }catch(e){
+            warn(e);
+        }
 /*        if($(window).height() > 700) {
             self.overlay.find('.joe-submenu-search-field').focus();
         }*/
@@ -5370,6 +5385,9 @@ ANALYSIS, IMPORT AND MERGE
                     }
                 }
                 if(subproperties.length){propObj.subproperties = subproperties;}
+                //else{
+                    propObj.value = object[p];
+                //}
             }else{
                 propObj.value = object[p];
 
@@ -5411,7 +5429,8 @@ ANALYSIS, IMPORT AND MERGE
         var prop =
             self.current[propname]
             || (self.current.userSpecs && self.current.userSpecs[propname])
-            || (self.current.schema && self.current.schema[propname]);
+            || (self.current.schema && self.current.schema[propname])
+            || self.specs[propname];
 
         return prop;
 
@@ -5425,7 +5444,7 @@ ANALYSIS, IMPORT AND MERGE
             description:'Gets the idprop of the current item, or any item with a passed schemaname.'
         }|*/
 
-		var prop = ( ((schema && self.schemas[schema]) || self.current.schema) && (self.current.schema.idprop || self.current.schema._listID)) || 'id' || '_id';
+		var prop = ( ((schema && self.schemas[schema]) || self.current.schema) && (self.current.schema.idprop || self.current.schema._listID)) || '_id' || 'id';
 		return prop;
 	};
 
@@ -5498,7 +5517,8 @@ ANALYSIS, IMPORT AND MERGE
         /*|{
             featured:true,
             deacription:'reads the page hashlink and parses for collection, item id, subset and details section',
-            tags:'hash, SPA'
+            tags:'hash, SPA',
+            returns:'(bool)'
 
         }|*/
         try {
@@ -5527,8 +5547,12 @@ ANALYSIS, IMPORT AND MERGE
                 }else{
                     dataset =  self.Data[hashSchema.__schemaname] || [];
                 }
-            //SINGLE ITEM
+
+                /*function variableGoJoe(dataset,item,subset){
+                    goJoe((item||), {schema: hashSchema});
+                }*/
                 if(!$.isEmptyObject(self.Data)) {
+                //SINGLE ITEM
                     if(hashItemID ){
                         var collectionName = hashSchema.__collection || hashSchema.__schemaname;
                     //using standard id
@@ -5683,27 +5707,60 @@ K | Smart Schema Values
         navigateItems(-1);
     };
     function navigateItems(goto){
-        var dataset,currentObjectIndex,gotoIndex,gotoObject,idprop = self.getIDProp();
-        if(self.current.filteredList){
+        var dataset,currentObjectIndex,gotoIndex,gotoObject;
+   // ,idprop = self.getIDProp();
+ /*       if(self.current.filteredList){
             dataset = self.current.filteredList;
-            //look at list, find index, add goto, choose that item.
         }else{
             if(!self.current.schema){return alert('no schema set');}
             dataset = self.getDataset(self.current.schema.__schemaname)
                 .sortBy(self.current.schema.sorter || ['name']);
-            //sortBy sorters
-            //use default subset
         }
         if(!dataset){return alert('no dataset set');}
 
-        currentObjectIndex = dataset.indexOf(_joe.current.object);
-        if(currentObjectIndex == -1){return alert('object not found in current dataset');}
+        currentObjectIndex = dataset.indexOf(self.current.object);
+        if(currentObjectIndex == -1){return alert('object not found in current dataset');}*/
+        var objIndex = self.getObjectIndex();
+        var dataset = objIndex.dataset;
+        if(!dataset){return alert('no dataset set');}
+        currentObjectIndex = objIndex.index;
         gotoIndex = currentObjectIndex + goto;
+        if(gotoIndex > dataset.length-1){
+            gotoIndex = 0;
+        }else if(gotoIndex < 0){
+            gotoIndex = dataset.length-1;
+        }
         gotoObject = dataset[gotoIndex];
         self.show(gotoObject, {schema:self.current.schema.__schemaname});
     }
+
+    this.getObjectIndex = function(object){
+        var object = object || self.current.item;
+        var dataset,currentObjectIndex,gotoIndex,gotoObject,idprop = self.getIDProp();
+        if(self.current.filteredList){
+            dataset = self.current.filteredList;
+        }else{
+            if(!self.current.schema){return alert('no schema set');}
+            dataset = self.getDataset(self.current.schema.__schemaname)
+                .sortBy(self.current.schema.sorter || ['name']);
+        }
+        if(!dataset){return {index:-1,dataset:null}}
+
+        return {index:dataset.indexOf(self.current.object),dataset:dataset};
+
+        //if(currentObjectIndex == -1){return alert('object not found in current dataset');}
+    };
     var getSelfStr = 'getJoe('+self.joe_index+')';
-    this.buttons = {};
+    this.buttons = {
+        create:__createBtn__,
+        quickSave:__quicksaveBtn__,
+        save:__saveBtn__,
+        delete:__deleteBtn__,
+        multiSave:__multisaveBtn__,
+        selectAll:__selectAllBtn__,
+        duplicate:__duplicateBtn__
+
+    };
     this.buttons.next = {name:'next', display:'next >',css:'fright', action:getSelfStr+'.next()'};
     this.buttons.previous = {name:'previous',display:'< prev', css:'fleft', action:getSelfStr+'.previous()'};
 /*-------------------------------------------------------------------->
@@ -5884,7 +5941,9 @@ function logit(){
     }
 }
 */
-
+function warn(message){
+    console && console.warn && console.warn(message);
+}
 
 //until sortBy is updated
 _ext(Array, 'sortBy', function(props, rev, primer, lookup, options){

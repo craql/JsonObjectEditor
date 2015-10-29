@@ -858,7 +858,7 @@ input.joe-submenu-search-field {
     clear: none;
 }
 .multi-col .joe-panel-content-option-content {
-    min-height: 120px;
+    min-height: 120px !important;
 }
 
 .multi-col .joe-panel-content-option.item-menu{
