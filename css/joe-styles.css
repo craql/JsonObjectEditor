@@ -336,7 +336,7 @@
 -------------------------*/
 .joe-mini-panel {
     margin: 100px auto;
-    /*box-shadow: 0 5px 10px 0px rgba(0,0,0,.5);*/
+    box-shadow: 0 4px 8px 0px rgba(0,0,0,.4);
     position: relative;
     min-height: 250px;
     background: #eee;
@@ -1656,6 +1656,8 @@ display:none;
     border: 1px solid #007ac2;
     /* padding: 1px; */
     outline-offset: 0;
+    background-color: #f2f9ff;
+    transition: .2s;
     /*padding: 4px;*/
 }
 

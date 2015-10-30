@@ -1530,12 +1530,18 @@ this.renderHTMLContent = function(specs){
 	};
 
 	self.renderObjectPropFieldUI = function(prop,specs){
+        /*|{
+            featured:true,
+            description:'entry point to field rendering. takes the prop to be rendered and additional spec overwrites.',
+            tags:'rendering,field'
+        }|*/
 		//var prop = fieldname;
 		var fields = '';
 
         var schemaspec = specs || self.current.schema;
         var existingProp =
-            (self.propAsFuncOrValue(schemaspec.fields)||[]).filter(function(s){return s.name == prop || s.extend == prop})[0]
+            (self.propAsFuncOrValue(schemaspec.fields)||[])
+                .filter(function(s){return s.name == prop || s.extend == prop})[0];
         if(existingProp){
             prop = existingProp;
         }
@@ -1760,17 +1766,31 @@ this.renderHTMLContent = function(specs){
 	var preProp;
 	var prePropWidths = 0;
 	this.renderObjectField = function(prop){
+        /*|{
+            featured:true,
+            tags:''
+        }|*/
         if(prop.hasOwnProperty('condition') && !self.propAsFuncOrValue(prop.condition)){
             return '';
         }
         var joeFieldBenchmarker = new Benchmarker();
 		//field requires {name,type}
         self.current.fields.push(prop);
-        prop.value = (prop.asFunction)?prop.value : self.propAsFuncOrValue(prop.value);
+
+    //value
+          prop.value = (prop.asFunction)?prop.value : self.propAsFuncOrValue(prop.value);
+
+    //format
+        if(prop.format && $.type(prop.format == 'function')){
+            prop.value = prop.format(prop.value,prop,self.current.item);
+        }
+
 		//set default value
 		if(prop.value == undefined && prop['default'] != undefined){
 			prop.value = prop['default'];
 		}
+
+
 
     //hidden
 		var hidden = '';
@@ -1915,7 +1935,7 @@ this.renderHTMLContent = function(specs){
 		//var joeFieldBenchmarker = new Benchmarker();
 
 		var html = '';
-		switch(prop.type.toLowerCase()){
+		switch(self.propAsFuncOrValue(prop.type).toLowerCase()){
 			case 'select':
 				html+= self.renderSelectField(prop);
 				break;
@@ -4102,10 +4122,11 @@ this.renderSorterField = function(prop){
 	this.showMiniJoe = function(specs,joespecs){
         /*|{
          featured:true,
-         tags:'mini',
+         tags:'mini, show',
          description:'Shows a miniature joe from specs.(props||list||object||content)',
-         specs:'mode,(object||list||content||props),(minimenu||menu),callback'
+         specs:'mode,(object||list||content||props),(minimenu||menu),callback, title'
          }|*/
+
 		var mini = {};
         specs = $.extend({mode:'text'},
             (specs || {}),(joespecs||{}));
@@ -4137,7 +4158,7 @@ this.renderSorterField = function(prop){
         specs.minimode = minimode;
         var html =
             self.renderEditorHeader({title: title, minimode:minimode,
-                close_action: 'onclick="getJoe(' + self.joe_index + ').hideMini();"'});
+                close_action: 'onclick="getJoe(' + self.joe_index + ').hideMini(\''+minimode+'\');"'});
 
             html += self.renderMiniEditorContent(specs);
             html += self.renderEditorFooter({minimenu: specs.menu,minimode:minimode});
@@ -4154,16 +4175,33 @@ this.renderSorterField = function(prop){
 
         mini.callback = specs.callback || function(itemid){
             alert(itemid);
-        }
+        };
 		self.minis[mini.id] = mini;
+        self.Mini.id = mini.id;
 	};
 
-	this.hideMini = function(){
-        $('.joe-mini-panel').resizable('destroy').draggable('destroy');
-		$('.joe-mini-panel').removeClass('active')
+	this.hideMini = function(miniid){
+        /*|{
+            description:'hides the current joes mini.',
+            tags:'mini, hide'
+        }|*/
+        try {
+            $('.joe-mini-panel.ui-resizable').resizable('destroy').draggable('destroy');
+            $('.joe-mini-panel').removeClass('active');
+        }catch(e){
+            warn(e);
+        }
+        if(miniid){
+            delete self.minis[miniid];
+        }
 	};
 
 	this.constructObjectFromMiniFields = function(){
+        /*|{
+            featured:true,
+            description:'constructs object from the current minis fields',
+            tags:'mini, construct'
+         }|*/
 		var object = {};
 		var prop;
 		$('.joe-mini-panel.active .joe-object-field').find('.joe-field').each(function(){
@@ -4243,6 +4281,31 @@ this.renderSorterField = function(prop){
         self.current.sidebars.left.content = leftC;
         self.current.sidebars.right.content = rightC;
         return html;
+    };
+
+    this.Mini = {
+        show:self.showMiniJoe,
+        hide:self.hideMini,
+        construct:self.constructObjectFromMiniFields,
+        get:function(){
+            /*|{
+             featured:true,
+             description:'get the current joe mini as an object',
+             tags:'mini, get'
+             }|*/
+            return self.minis[self.Mini.id]||false;
+        },
+        clear:function(){
+            /*|{
+             featured:true,
+             description:'clear the current mini',
+             tags:'mini, clear'
+             }|*/
+            self.hideMini();
+            self.minis = {};
+            delete self.Mini.id;
+
+        }
     };
 /*-------------------------------------------------------------------->
   D | DATA
@@ -4582,6 +4645,9 @@ this.renderSorterField = function(prop){
 
         //ckeditors|
         self.readyTextEditors();
+
+        //minis
+        self.Mini.clear();
 
         //go back to previous item
         if(goingBackFromID){
@@ -5122,6 +5188,11 @@ this.renderSorterField = function(prop){
 		callback(obj);
 	};
 	this.selectAllItems = function(){
+        /*|{
+            featured:true,
+            description:'selects all items in the current filtered list',
+            tags:'list, select'
+        }|*/
         self.current.selectedListItems = [];
         var currentItemIDs =
             currentListItems.map(function(item){return item[self.getIDProp()]})
@@ -5291,7 +5362,7 @@ ANALYSIS, IMPORT AND MERGE
         }
     };
 
-    this.analyzeClassObject = function(object,ref,maxDepth){
+    this.analyzeClassObject = function(object,ref,maxDepth,classString){
         /*|
         {
             alias:'_joe.parseAPI, window.joeAPI',
@@ -5299,6 +5370,7 @@ ANALYSIS, IMPORT AND MERGE
             tags:'api, analysis'
         }
          |*/
+        var classString = classString;
         var maxDepth = maxDepth || 10;
         var data ={
             methods:[],
@@ -5340,6 +5412,15 @@ ANALYSIS, IMPORT AND MERGE
                 itemtype:'method',
                 parent:parent||null
             };
+
+            if(classString){
+                try{
+                    methodObj.count = (classString.toString().match(new RegExp(funcName,'g'))||[]).length;
+                }   catch(e){
+                    warn('issue with static class: '+ref);
+                }
+            }
+
             if(methodObj.comments && methodObj.comments.description){
                 methodObj.description =methodObj.comments.description;
             }
@@ -5382,7 +5463,7 @@ ANALYSIS, IMPORT AND MERGE
 
                                 //JSON.stringify(curProp.sub);
 
-                                if ($.type(curProp) == "function") {
+                                if ($.type(curProp[sub]) == "function") {
                                     subproperties.push(parseFunction(curProp, sub, propName+'.',depth)._id);
                                 } else {
                                     subproperties.push(parseProperty(curProp, sub, propName+'.',depth)._id);
