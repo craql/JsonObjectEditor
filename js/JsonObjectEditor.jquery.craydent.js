@@ -2648,12 +2648,12 @@ this.renderSorterField = function(prop){
 		/*var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];*/
         var values = self.getFieldValues(prop.values);
 		var valObjs = [];
-        var bucketNames = self.PropAsFuncOrValue(prop.bucketNames) || [];
+        var bucketNames = self.propAsFuncOrValue(prop.bucketNames) || [];
 
 
 	//sort values into selected or option
 		var val;
-		var bucketCount = self.PropAsFuncOrValue(prop.bucktCount) || 3;
+		var bucketCount = self.propAsFuncOrValue(prop.bucketCount) || 3;
 		//(typeof prop.bucketCount =="function")?prop.bucketCount():prop.bucketCount || 3;
 		var optionsHtml ='';
 		var bucketsHtml =[];
@@ -2667,7 +2667,7 @@ this.renderSorterField = function(prop){
 			}
 		}
 
-		var idprop = prop[idprop] ||'id'||'_id';
+		var idprop = prop.idprop ||'_id'|| 'id';
 		var template = prop.template || '${name} <br/><small>(${'+idprop+'})</small>';
 
 
