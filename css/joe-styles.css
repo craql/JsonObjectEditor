@@ -1882,6 +1882,7 @@ textarea.joe-rendering-field{
 }
 .joe-buckets-bin.selections-bin .joe-bucket-delete{
     display:block;
+    left:auto;
 }
 
 /*-------------------------
