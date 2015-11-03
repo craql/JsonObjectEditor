@@ -2406,7 +2406,7 @@ textarea.joe-rendering-field{
     /*line-height: 30px;*/
     min-height: 30px;
     padding: 5px;
-    cursor: ew-resize;
+    cursor: move;
     position:relative;
     border-top: 1px solid #fafafa;
 }
@@ -2426,7 +2426,7 @@ textarea.joe-rendering-field{
 .joe-buckets-bin{
     background: #EEE;
     min-height: 100px;
-    margin: 0 1%;
+    margin: 0 0 0 1%;
     list-style: none;
     max-height: 500px;
     overflow: auto;
@@ -2436,6 +2436,7 @@ textarea.joe-rendering-field{
     float: left;
     width: 31%;
     margin-bottom: 10px;
+    padding-bottom: 15px;
 }
 
 .joe-bucket-delete {
@@ -2454,6 +2455,7 @@ textarea.joe-rendering-field{
 .joe-buckets-bin.selections-bin .joe-bucket-delete{
     display:block;
     left:auto;
+    background-size: 20px;
 }
 
 /*-------------------------
@@ -2660,6 +2662,11 @@ iframe.joe-preview-iframe {
     max-width: 24% !important;
 }
 
+.joe-bucket-label.ui-sortable-handle {
+    font-size: 12px;
+    padding: 5px 10px;
+    background-color: rgba(255,255,255,.4);
+}
 
 /*-------------------------------------------------------------------->
 	4 | Footer
@@ -2904,6 +2911,26 @@ screen and (max-height:400px) and (orientation:landscape){
     height: 35px;
     line-height: 35px;
     text-align: center;
+}
+.small-size .joe-buckets-bin{
+    width: 100% !important;
+    margin: 0px 0px 5px 5px;
+}
+.small-size .joe-buckets-field .joe-filter-field-holder input {
+    max-width: 100% !important;
+}
+.small-size .joe-buckets-bin.selections-bin {
+    width: 100% !important;
+    margin: 0px 0px 5px 5px;
+}
+
+.small-size .joe-buckets-field-holder {
+    width: 100% !important;
+    /* height: 150px; */
+}
+
+.small-size .joe-buckets-bin.options-bin {
+    height: 120px;
 }
 /*
 .small-size .joe-object-field input[type=text] {

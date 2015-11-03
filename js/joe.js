@@ -2098,6 +2098,11 @@ this.renderHTMLContent = function(specs){
         return ((value || '')+'').replace(/\"/g,"&quot;");
     }
 	this.renderTextField = function(prop){
+
+        /*|{
+            tags:'field, render',
+            description:'This renders a text field control. the prop is an object with the standard joe config properties.'
+        }|*/
 		var autocomplete;
 		if(prop.autocomplete && prop.values){
 
@@ -2647,8 +2652,8 @@ this.renderSorterField = function(prop){
 	this.renderBucketsField = function(prop){
         /*
         description:'renders buckets field',
-        tags:'buckets,field',
-        specs:['idprop','values','allowMultiple','template','bucketCount','bucketNames']
+        tags:'buckets,field,render',
+        specs:['idprop','values','allowMultiple','template','bucketCount','bucketNames','bucketWidth']
          */
 
 		/*var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values||[];*/
@@ -2717,10 +2722,13 @@ this.renderSorterField = function(prop){
 				}
 			});
 
-		function renderBucket(id,name){
-			return name+'<ul class="joe-buckets-bin selections-bin">'+bucketsHtml[id]+'</ul>';
+		function renderBucket(id,name,width){
+            var widthStr = (width)?'style="width:'+width+'"':'';
+            var nameStr = (name)?'<div class="joe-bucket-label">'+name+'</div>':'';
+			return '<ul class="joe-buckets-bin selections-bin" '+widthStr+'>'+nameStr+bucketsHtml[id]+'</ul>';
 		}
-	//renderHTML
+
+    //renderHTML
 		var html=
 		'<div class="joe-buckets-field joe-field" name="'+prop.name+'" data-ftype="buckets">'
 			+'<div class="joe-filter-field-holder"><input type="text"class="" onkeyup="_joe.filterBucketOptions(this);"/></div>'
@@ -2729,7 +2737,7 @@ this.renderSorterField = function(prop){
 			+'</div>'
 			+'<div class="joe-buckets-field-holder" style="width:75%;">';
 				bucketsHtml.map(function(b,i){
-					html+=renderBucket(i,(bucketNames[i]||''));
+					html+=renderBucket(i,(bucketNames[i]||''),prop.bucketWidth);
 				});
 				//+'<ul class="joe-buckets-bin selections-bin">'+bucketsHtml+'</ul>'
 
@@ -5866,8 +5874,14 @@ K | Smart Schema Values
         description:'gets the current object JOE is editing, if construct, has current user updates.',
         alias:'_jco(construct)'
         }|*/
-        if(construct){return self.constructObjectFromFields();}
-        return self.current.object
+        if(construct){
+            var obj = self.constructObjectFromFields();
+            if(!obj[self.getIDProp()]){
+                return self.current.object;
+            }
+            return obj;
+        }
+        return self.current.object;
     };
    // if(window){
         window._jco = self.getCurrentObject;
