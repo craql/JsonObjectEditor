@@ -2690,55 +2690,57 @@ this.renderSorterField = function(prop){
 		var bucketItem;
         var itemCss='joe-bucket-delete cui-block joe-icon';
 		var selectedIDs=[];
-			for(var i = 0; i < bucketCount; i++){
-				for(var li = 0; li < value[i].length; li++){
-					bucketItem = value[i][li];
-                    if($.type(bucketItem) == "string"){
-                        //find object in values
-                        foundItem = values.filter(function(v){
-                                return v[idprop] == bucketItem;
-                            })[0]||false;
-                        if(!foundItem){
-                            foundItem = {};
-                            foundItem[idprop] = li;
-                        }
-                        selectedIDs.push(bucketItem);
-                        lihtml = self.renderBucketItem(foundItem,prop,false);
-                            //'<li data-value="'+foundItem[idprop]+'" >'+fillTemplate(template,foundItem)+'<div class="'+itemCss+'" onclick="$(this).parent().remove()"></div></li>';
-                    }else if($.type(bucketItem) == "object"){
-                        foundItem = bucketItem;
-                        lihtml = self.renderBucketItem(foundItem,prop,true);
-
-                        //'<li data-isobject=true data-value="'+encodeURI(JSON.stringify(bucketItem))+'">'
-                           // +fillTemplate(template,bucketItem)
-                        //+'<div class="'+itemCss+'" onclick="$(this).parent().remove()"></div></li>';
+        for(var i = 0; i < bucketCount; i++){
+            for(var li = 0; li < value[i].length; li++){
+                bucketItem = value[i][li];
+                if($.type(bucketItem) == "string"){
+                    //find object in values
+                    foundItem = values.filter(function(v){
+                            return v[idprop] == bucketItem;
+                        })[0]||false;
+                    if(!foundItem){
+                        foundItem = {};
+                        foundItem[idprop] = li;
                     }
-					bucketsHtml[i] += lihtml;
-				}
-			}
+                    selectedIDs.push(bucketItem);
+                    lihtml = self.renderBucketItem(foundItem,prop,false);
+                        //'<li data-value="'+foundItem[idprop]+'" >'+fillTemplate(template,foundItem)+'<div class="'+itemCss+'" onclick="$(this).parent().remove()"></div></li>';
+                }else if($.type(bucketItem) == "object"){
+                    foundItem = bucketItem;
+                    lihtml = self.renderBucketItem(foundItem,prop,true);
 
-			values.map(function(v){
-				lihtml = //self.renderBucketItem(foundItem,template,idprop,false);
-				'<li data-value="'+v[idprop]+'" >'+fillTemplate(template,v)+'<div class="joe-bucket-delete cui-block joe-icon" onclick="$(this).parent().remove()"></div></li>';
-				selected = false;
-			//loop over buckets
-				/*if(!prop.allowMultiple){
-					for(var i = 0; i < bucketCount; i++){
-						if(value[i].indexOf(v[idprop]) != -1){//currently selected
-							bucketsHtml[i] += lihtml;
-						}
-					}
-				}*/
-				if(selectedIDs.indexOf(v) ==-1 || prop.allowMultiple){
-					optionsHtml += lihtml;
-				}
-			});
+                    //'<li data-isobject=true data-value="'+encodeURI(JSON.stringify(bucketItem))+'">'
+                       // +fillTemplate(template,bucketItem)
+                    //+'<div class="'+itemCss+'" onclick="$(this).parent().remove()"></div></li>';
+                }
+                bucketsHtml[i] += lihtml;
+            }
+        }
 
-		function renderBucket(id,name,width){
-            var widthStr = (width)?'style="width:'+width+'"':'';
-            var nameStr = (name)?'<div class="joe-bucket-label">'+name+'</div>':'';
-			return '<ul class="joe-buckets-bin selections-bin" '+widthStr+'>'+nameStr+bucketsHtml[id]+'</ul>';
-		}
+    //populate options list
+        var optionTemplate  = prop.optionTemplate || template;
+        values.map(function(v){
+            lihtml = //self.renderBucketItem(foundItem,template,idprop,false);
+            '<li data-value="'+v[idprop]+'" >'+fillTemplate(optionTemplate,v)+'<div class="joe-bucket-delete cui-block joe-icon" onclick="$(this).parent().remove()"></div></li>';
+            selected = false;
+        //loop over buckets
+            /*if(!prop.allowMultiple){
+                for(var i = 0; i < bucketCount; i++){
+                    if(value[i].indexOf(v[idprop]) != -1){//currently selected
+                        bucketsHtml[i] += lihtml;
+                    }
+                }
+            }*/
+            if(selectedIDs.indexOf(v) ==-1 || prop.allowMultiple){
+                optionsHtml += lihtml;
+            }
+        });
+
+    function renderBucket(id,name,width){
+        var widthStr = (width)?'style="width:'+width+'"':'';
+        var nameStr = (name)?'<div class="joe-bucket-label">'+name+'</div>':'';
+        return '<ul class="joe-buckets-bin selections-bin" '+widthStr+'>'+nameStr+bucketsHtml[id]+'</ul>';
+    }
 
     //renderHTML
 		var html=
@@ -4251,13 +4253,18 @@ this.renderSorterField = function(prop){
         }
         mini.panel.css('height',height);
 
+        if(specs.width){
+            mini.panel.css('width', specs.width);
+        }
+
         mini.panel.draggable({handle:'.joe-panel-header',snap:'.joe-overlay'}).resizable({handles:'s'});
 
         mini.callback = specs.callback || function(itemid){
             alert(itemid);
         };
+
+        mini.data = data || {};
 		self.minis[mini.id] = mini;
-        self.mini.data = data || {};
         self.Mini.id = mini.id;
 	};
 

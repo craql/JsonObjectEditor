@@ -352,6 +352,10 @@
 .joe-mini-panel .joe-panel-content {
     top: 40px;
 }
+
+.joe-mini-panel .joe-footer-button {
+    display: block;
+}
 /*-------------------------
 	UI Panels Floating
 -------------------------*/
