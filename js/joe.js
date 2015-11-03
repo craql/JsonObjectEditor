@@ -2797,6 +2797,11 @@ this.renderSorterField = function(prop){
         }
     }
     this.renderBucketItem = function(item,fieldnameorobject,specs){
+        /*
+         description:'renders a single bucket item, either from an id string or a passed object. set specs.isobject to true to use an object. pass the fielname as second parameter.',
+         tags:'buckets,item,render',
+         specs:['isobject','idprop','template']
+         */
         var fieldObj = ($.type(fieldnameorobject) == "object")?
             fieldnameorobject:
             self.getField(fieldnameorobject) || {};
