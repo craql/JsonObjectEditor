@@ -924,9 +924,7 @@
     top: 40px;
 }
 
-.joe-mini-panel .joe-footer-button {
-    display: block;
-}
+
 /*-------------------------
 	UI Panels Floating
 -------------------------*/
@@ -2697,7 +2695,7 @@ iframe.joe-preview-iframe {
 }
 
 .joe-multi-only,
-.multi-edit .joe-footer-button
+.multi-edit .joe-overlay-panel .joe-footer-button
 {
     display:none;
 }
