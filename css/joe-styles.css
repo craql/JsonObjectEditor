@@ -1837,12 +1837,16 @@ textarea.joe-rendering-field{
     padding: 5px;
     cursor: move;
     position:relative;
-    border-top: 1px solid #fafafa;
+    margin: 1px 0;
+    transition: background .1s;
+    background:#f9f9f9;
 }
 .joe-multisorter-bin li:hover,
 .joe-buckets-bin li:hover{
     background:rgba(0,0,0,.1);
 }
+
+
 
 
 /*-------------------------
@@ -1887,6 +1891,16 @@ textarea.joe-rendering-field{
     background-size: 20px;
 }
 
+.joe-bucket-label {
+    font-size: 14px;
+    padding: 5px 10px;
+    border-bottom: 1px solid #ccc;
+}
+.joe-sortable-highlight {
+    margin:2px;
+    background: #ccc;
+    border:1px dashed #fff;
+}
 /*-------------------------
 	i | Image
 -------------------------*/
@@ -2343,19 +2357,13 @@ screen and (max-height:400px) and (orientation:landscape){
 }
 .small-size .joe-buckets-bin{
     width: 100% !important;
-    margin: 0px 0px 5px 5px;
+    margin: 0px 0px 5px 0px;
 }
 .small-size .joe-buckets-field .joe-filter-field-holder input {
     max-width: 100% !important;
 }
-.small-size .joe-buckets-bin.selections-bin {
-    width: 100% !important;
-    margin: 0px 0px 5px 5px;
-}
-
 .small-size .joe-buckets-field-holder {
     width: 100% !important;
-    /* height: 150px; */
 }
 
 .small-size .joe-buckets-bin.options-bin {

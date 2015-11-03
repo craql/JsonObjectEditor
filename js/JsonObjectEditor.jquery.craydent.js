@@ -2679,29 +2679,41 @@ this.renderSorterField = function(prop){
 		var lihtml;
 		var selected;
 
-		//populate selected buckets
+    //populate selected buckets
 		var foundItem;
 		var bucketItem;
+        var itemCss='joe-bucket-delete cui-block joe-icon';
 		var selectedIDs=[];
 			for(var i = 0; i < bucketCount; i++){
 				for(var li = 0; li < value[i].length; li++){
 					bucketItem = value[i][li];
-					//find object in values
-					foundItem = values.filter(function(v){
-						return v[idprop] == bucketItem;
-					})[0]||false;
-					if(!foundItem){
-						foundItem = {};
-						foundItem[idprop] = li;
-					}
-					selectedIDs.push(bucketItem);
-					lihtml = '<li data-id="'+foundItem[idprop]+'" >'+fillTemplate(template,foundItem)+'<div class="joe-bucket-delete cui-block joe-icon" onclick="$(this).parent().remove()"></div></li>';
+                    if($.type(bucketItem) == "string"){
+                        //find object in values
+                        foundItem = values.filter(function(v){
+                                return v[idprop] == bucketItem;
+                            })[0]||false;
+                        if(!foundItem){
+                            foundItem = {};
+                            foundItem[idprop] = li;
+                        }
+                        selectedIDs.push(bucketItem);
+                        lihtml = self.renderBucketItem(foundItem,prop,false);
+                            //'<li data-value="'+foundItem[idprop]+'" >'+fillTemplate(template,foundItem)+'<div class="'+itemCss+'" onclick="$(this).parent().remove()"></div></li>';
+                    }else if($.type(bucketItem) == "object"){
+                        foundItem = bucketItem;
+                        lihtml = self.renderBucketItem(foundItem,prop,true);
+
+                        //'<li data-isobject=true data-value="'+encodeURI(JSON.stringify(bucketItem))+'">'
+                           // +fillTemplate(template,bucketItem)
+                        //+'<div class="'+itemCss+'" onclick="$(this).parent().remove()"></div></li>';
+                    }
 					bucketsHtml[i] += lihtml;
 				}
 			}
 
 			values.map(function(v){
-				lihtml = '<li data-id="'+v[idprop]+'" >'+fillTemplate(template,v)+'<div class="joe-bucket-delete cui-block joe-icon" onclick="$(this).parent().remove()"></div></li>';
+				lihtml = //self.renderBucketItem(foundItem,template,idprop,false);
+				'<li data-value="'+v[idprop]+'" >'+fillTemplate(template,v)+'<div class="joe-bucket-delete cui-block joe-icon" onclick="$(this).parent().remove()"></div></li>';
 				selected = false;
 			//loop over buckets
 				/*if(!prop.allowMultiple){
@@ -2750,15 +2762,65 @@ this.renderSorterField = function(prop){
 		logit(query);
 
 	};
+    this.readyBinFields = function(){
+        try {
+            self.overlay.find('.joe-multisorter-bin').sortable({
+                connectWith: '.joe-multisorter-bin',
+                placeholder: "joe-sortable-highlight",
+                items: "li"
+            });
+            self.overlay.find('.joe-buckets-bin').sortable({
+                connectWith: '.joe-buckets-bin',
+                placeholder: "joe-sortable-highlight",
+                items: "li",
+                start: function (event, ui) {
+                    sortable_index = ui.item.index();
+                    ui.item.parents();
+                },
+                update: function (event, ui) {
+                    if (ui.sender && ui.sender.hasClass('options-bin') && ui.sender.hasClass('allow-multiple')) {
+                        //add the element back into the list.
+                        ui.sender.find('li').eq(sortable_index).before(ui.item.clone());
+                        //ui.item.parents('.joe-buckets-bin');
+                    }
 
+                }
+            });
+        }catch(e){
+            logit('Error creating sortables:\n'+e);
+        }
+    }
+    this.renderBucketItem = function(item,fieldnameorobject,specs){
+        var fieldObj = ($.type(fieldnameorobject) == "object")?
+            fieldnameorobject:
+            self.getField(fieldnameorobject) || {};
+        if(specs === true || specs === false){
+            specs = {isobject:specs};
+        }
+        var idprop = fieldObj.idprop || specs.idprop || '_id';
+        var template = fieldObj.template || specs.template || '${name} <br/><small>(${'+idprop+'})</small>';
+        var itemCss='joe-bucket-delete cui-block joe-icon';
+        var value = (fieldObj.isobject || specs.isobject)?
+            'data-isobject=true data-value="'+encodeURI(JSON.stringify(item))+'"':
+            'data-value="'+item[idprop]+'"';
 
+        var bucketHtml = '<li '+value+'>' +fillTemplate(template,item)
+            +'<div class="'+itemCss+'" onclick="$(this).parent().remove()"></div></li>';
+
+        return bucketHtml;
+    };
 /*----------------------------->
  L | Content
  <-----------------------------*/
     this.renderContentField = function(prop){
+        /*
+         description:'renders content field',
+         tags:'content,field,render',
+         specs:['idprop','template','run','value']
+         */
         var html = '';
 		var itemObj = self.current.object;
-		var idProp = self.getIDProp();
+		var idProp = prop.idprop || self.getIDProp();
 		var constructedItem =self.current.constructed || {};
 		if(!self.current.object[idProp] ||(constructedItem[idProp] && constructedItem[idProp] == self.current.object[idProp])){
 			itemObj = constructedItem;
@@ -3561,6 +3623,11 @@ this.renderSorterField = function(prop){
     this.readyTextEditors = this.readyTinyMCEs;
 
     function _getField(fieldname){
+        /*|{
+            featured:true,
+            description:'gets a currently registered field as a spec object',
+            alias:'window._getField'
+        }|*/
         var fieldobj;
         for(var f = 0,tot= self.current.fields.length; f<tot; f++){
             fieldobj = self.current.fields[f];
@@ -4121,7 +4188,7 @@ this.renderSorterField = function(prop){
 /*-------------------------------------------------------------------->
 	MINIJOE WIndow
 <-------------------------------------------------------------------*/
-	this.showMiniJoe = function(specs,joespecs){
+	this.showMiniJoe = function(specs,joespecs,data){
         /*|{
          featured:true,
          tags:'mini, show',
@@ -4179,6 +4246,7 @@ this.renderSorterField = function(prop){
             alert(itemid);
         };
 		self.minis[mini.id] = mini;
+        self.mini.data = data || {};
         self.Mini.id = mini.id;
 	};
 
@@ -4583,10 +4651,15 @@ this.renderSorterField = function(prop){
 
         }
         //multisorter
-        try {
-            self.overlay.find('.joe-multisorter-bin').sortable({connectWith: '.joe-multisorter-bin'});
+        self.readyBinFields();
+ /*       try {
+            self.overlay.find('.joe-multisorter-bin').sortable({
+                connectWith: '.joe-multisorter-bin',
+                placeholder: "joe-sortable-highlight"
+            });
             self.overlay.find('.joe-buckets-bin').sortable({
                 connectWith: '.joe-buckets-bin',
+                placeholder: "joe-sortable-highlight",
                 start: function (event, ui) {
                     sortable_index = ui.item.index();
                     ui.item.parents();
@@ -4602,7 +4675,7 @@ this.renderSorterField = function(prop){
             });
         }catch(e){
             logit('Error creating sortables:\n'+e);
-        }
+        }*/
 
 
         //preview
@@ -5036,7 +5109,7 @@ this.renderSorterField = function(prop){
                                 $(this).find('.selections-bin').each(function () {
                                     vals.push([]);
                                     $(this).find('li').each(function () {
-                                        vals[vals.length - 1].push($(this).data('id'));
+                                        vals[vals.length - 1].push(decodeValueObject(this));
                                     });
                                 });
                                 /*
@@ -5071,6 +5144,15 @@ this.renderSorterField = function(prop){
                         break;
                     }
 			}
+            function decodeValueObject(dom) {
+                var data = $(dom).data();
+                if (data.isobject) {
+                    obj = JSON.parse(decodeURI($(dom).data().value));
+                    return obj;
+                } else {
+                    return $(dom).data().value;
+                }
+            }
 		});
 
     //CONTENT FIELD
