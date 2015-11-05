@@ -352,8 +352,9 @@
 .joe-mini-panel .joe-panel-content {
     top: 40px;
 }
-
-
+.joe-mini-editing{
+border: 1px inset #007ac2;
+}
 /*-------------------------
 	UI Panels Floating
 -------------------------*/

@@ -107,7 +107,7 @@ function JsonObjectEditor(specs){
 	//TODO: check for class/id selector
 	this.container = $(this.specs.container);
 	this.fields = this.specs.fields;
-
+    this.Fields = {};
     //configure schemas
     this.schemas = this.specs.schemas;
 /*
@@ -1475,8 +1475,10 @@ this.renderHTMLContent = function(specs){
 		var fields = {main:'',left:'',right:''};
 		var propObj;
 		var fieldProp;
-        self.current.fields = [];
-        self.current.sections = {};
+        if(!specs.minimode) {
+            self.current.fields = [];
+            self.current.sections = {};
+        }
         if(specs.schema && typeof specs.schema == 'string'){
             specs.schema = self.schemas[specs.schema];
         }
@@ -1765,7 +1767,7 @@ this.renderHTMLContent = function(specs){
 <--------------------------------------------------------------------*/
 	var preProp;
 	var prePropWidths = 0;
-	this.renderObjectField = function(prop){
+	this.renderObjectField = function(prop,mini){
         /*|{
             featured:true,
             tags:''
@@ -1775,7 +1777,9 @@ this.renderHTMLContent = function(specs){
         }
         var joeFieldBenchmarker = new Benchmarker();
 		//field requires {name,type}
-        self.current.fields.push(prop);
+        //if(!mini){
+            self.current.fields.push(prop);
+        //}
 
     //value
           prop.value = (prop.asFunction)?prop.value : self.propAsFuncOrValue(prop.value);
@@ -1935,7 +1939,8 @@ this.renderHTMLContent = function(specs){
 		//var joeFieldBenchmarker = new Benchmarker();
 
 		var html = '';
-		switch(self.propAsFuncOrValue(prop.type).toLowerCase()){
+        var proptype = self.propAsFuncOrValue(prop.type).toLowerCase();
+		switch(proptype){
 			case 'select':
 				html+= self.renderSelectField(prop);
 				break;
@@ -1943,9 +1948,9 @@ this.renderHTMLContent = function(specs){
 			case 'multisorter':
 				html+= self.renderMultisorterField(prop);
 				break;
-			case 'sorter':
+			/*case 'sorter':
 				html+= self.renderSorterField(prop);
-				break;
+				break;*/
 				/*			case 'multi-select':
 				 html+= self.renderMultiSelectField(prop);*/
 				break;
@@ -1961,12 +1966,12 @@ this.renderHTMLContent = function(specs){
 
 			/*            case 'textarea':
 			 prop.type = 'rendering';*/
-			case 'code':
+			/*case 'code':
 				html+= self.renderCodeField(prop);
-				break;
-			case 'rendering':
+				break;*/
+			/*case 'rendering':
 				html+= self.renderRenderingField(prop);
-				break;
+				break;*/
 
 			case 'date':
 				html+= self.renderDateField(prop);
@@ -1998,13 +2003,13 @@ this.renderHTMLContent = function(specs){
 				html+= self.renderURLField(prop);
 				break;
 
-			case 'objectlist':
+			/*case 'objectlist':
 				html+= self.renderObjectListField(prop);
-				break;
+				break;*/
 
-            case 'objectreference':
+            /*case 'objectreference':
                 html+= self.renderObjectReferenceField(prop);
-                break;
+                break;*/
 
 			case 'tags':
 				html+= self.renderTagsField(prop);
@@ -2024,15 +2029,19 @@ this.renderHTMLContent = function(specs){
             case 'preview':
                 html+= self.renderPreviewField(prop);
                 break;
-            case 'wysiwyg':
+/*            case 'wysiwyg':
                 html+= self.renderTinyMCEField(prop);
                 //html+= self.renderCKEditorField(prop);
-                break;
+                break;*/
             case 'passthrough':
                 html+= self.renderPassthroughField(prop);
                 break;
 			default:
-				html+= self.renderTextField(prop);
+                if(self.Fields[proptype] && self.Fields[proptype].render){
+                    html+= self.Fields[proptype].render(prop);
+                }else {
+                    html += self.renderTextField(prop);
+                }
 				break;
 		}
 
@@ -2099,9 +2108,9 @@ this.renderHTMLContent = function(specs){
     }
 	this.renderTextField = function(prop){
 
-        /*|{
-            tags:'field, render',
-            description:'This renders a text field control. the prop is an object with the standard joe config properties.'
+        /*|{featured:true,
+            tags:'field, render,text',
+            description:'This renders a text field control. This is the default field type if none specified'
         }|*/
 		var autocomplete;
 		if(prop.autocomplete && prop.values){
@@ -2126,7 +2135,7 @@ this.renderHTMLContent = function(specs){
             ((autocomplete && '<div class="joe-text-autocomplete-label"></div>')||'')+
 		'<input class="joe-text-field joe-field '+((prop.skip && 'skip-prop')||'')+'" ' +
             ((prop.placeholder && 'placeholder="'+self.propAsFuncOrValue(prop.placeholder)+'"')||'')+ //add placeholder
-            'type="text"  '+disabled+' name="'+prop.name+'" value="'+cleanString(prop.value || '')+'" maxlength="'+(prop.maxlength || '')+'" '
+            'type="text"  '+disabled+' name="'+prop.name+'" value="'+cleanString(prop.value || '')+'" maxlength="'+(prop.maxlength || prop.max||'')+'" '
 			+self.renderFieldAttributes(prop)
 			+((autocomplete &&
 				//' onblur="getJoe('+self.joe_index+').hideTextFieldAutoComplete($(this));"'
@@ -2227,12 +2236,15 @@ this.renderHTMLContent = function(specs){
 		}*/
 	};
 
-
+    encapsulateFieldType('text',self.renderTextField);
 /*----------------------------->
 	B | Number/Int Input
 <-----------------------------*/
 	this.renderNumberField = function(prop){
-
+        /*|{
+        description:'forces a float value'
+         tags:'render,field,number'
+         }|*/
 		/*var disabled = (profile.lockedFields.indexOf(prop.name) != -1 || prop.locked)?
 			'disabled':'';
 	*/
@@ -2252,9 +2264,14 @@ this.renderHTMLContent = function(specs){
 		if(!$(dom).val()){return;}
 		$(dom).val(parseFloat($(dom).val()));
 	};
-
+    encapsulateFieldType('number',self.renderNumberField);
+/*----------------------------->
+ B.2
+ <-----------------------------*/
 	this.renderIntegerField = function(prop){
-
+        /*|{
+         tags:'render,field,integer'
+         }|*/
 		/*var disabled = (profile.lockedFields.indexOf(prop.name) != -1 || prop.locked)?
 			'disabled':'';
 	*/
@@ -2274,11 +2291,14 @@ this.renderHTMLContent = function(specs){
 		$(dom).val(parseInt($(dom).val()));
 
 	};
-
+    encapsulateFieldType('integer',self.renderIntegerField);
 /*----------------------------->
 	C | Select
 <-----------------------------*/
 	this.renderSelectField = function(prop){
+        /*|{
+         tags:'render,field,select'
+         }|*/
         var disabled = _disableField(prop);
         //(prop.hasOwnProperty(prop.locked) && self.propAsFuncOrValue(prop.locked) &&'disabled')||'';
 		/*var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values || [prop.value];*/
@@ -2294,12 +2314,12 @@ this.renderHTMLContent = function(specs){
 		}
 
 
-
+        var mul = prop.multiple || prop.allowMultiple;
 		var selected;
-		var multiple =(prop.multiple)?' multiple ':'';
+		var multiple =(mul)?' multiple ':'';
 		var selectSize = prop.size || ((valObjs.length*.5) > 10)? 10 : valObjs.length/2;
 
-		if(!prop.size && !prop.multiple){
+		if(!prop.size && !mul){
 			selectSize = 1;
 		}
 		var html=
@@ -2333,23 +2353,29 @@ this.renderHTMLContent = function(specs){
 		html+='</select>';
 		return html;
 	};
-
+    encapsulateFieldType('select',self.renderSelectField);
 /*----------------------------->
 	D | Date Field
 <-----------------------------*/
 	this.renderDateField = function(prop){
-
-				var html=
+        /*|{
+         tags:'render,field,date'
+         }|*/
+        var html=
 		'<input class="joe-date-field joe-field" type="text"  '+_disableField(prop)+' name="'+prop.name+'" value="'+(prop.value || '')+'" '+
 			self.renderFieldAttributes(prop)+
 		' />';
 
 		return html;
 	};
+    encapsulateFieldType('date',self.renderDateField);
 /*----------------------------->
 	E | Geo Field
 <-----------------------------*/
 	this.renderGeoField = function(prop){
+        /*|{
+            tags:'render,field,geo'
+        }|*/
 		var center = (prop.value && eval(prop.value)) || prop.center || [40.513,-96.020];
 		var zoom = prop.zoom || 4;
 	//map.setView([37.85750715625203,-96.15234375],3)
@@ -2430,10 +2456,14 @@ this.renderHTMLContent = function(specs){
 		map.marker.map = map;
 		map.marker.on('dragend', self.onMapClick);
 	};
+    encapsulateFieldType('geo',self.renderGeoField,{ready:self.initGeoMap});
 /*----------------------------->
 	F | Boolean
 <-----------------------------*/
 	this.renderBooleanField = function(prop){
+        /*|{
+            tags:'render,field,boolean'
+        }|*/
 		var profile = self.current.profile;
 
 		var html=
@@ -2446,7 +2476,7 @@ this.renderHTMLContent = function(specs){
             +(prop.label ||'') +'</small></label>';
 		return html;
 	};
-
+    encapsulateFieldType('guid',self.renderGuidField);
 
 /*----------------------------->
 	G | Guid
@@ -2459,12 +2489,12 @@ this.renderHTMLContent = function(specs){
 		'<input class="joe-guid-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || cuid())+'"  disabled />';
 		return html;
 	};
-
+    encapsulateFieldType('guid',self.renderGuidField);
 /*----------------------------->
 	H | Sorter
 <-----------------------------*/
-this.renderSorterField = function(prop){
-	/*
+/*this.renderSorterField = function(prop){
+	/!*
 		var values = ($.type(prop.values) == 'function')?prop.values(self.current.object):prop.values || [prop.value];
 		var valObjs = [];
 		if($.type(values[0]) != 'object'){
@@ -2506,12 +2536,16 @@ this.renderSorterField = function(prop){
 
 
 		html+='</div>';
-		return html;*/
-	};
+		return html;*!/
+	};*/
+    //encapsulateFieldType('iamge',self.renderImageField);
 /*----------------------------->
 	I | Image
 <-----------------------------*/
 	this.renderImageField = function(prop){
+        /*|{
+            tags:'render,field,image'
+        }|*/
 		var html=
 		'<input class="joe-image-field joe-field" type="text" name="'+prop.name+'" value="'+(prop.value || '')+'" '
 		+	self.renderFieldAttributes(prop)
@@ -2548,7 +2582,7 @@ this.renderSorterField = function(prop){
        // }
 
     };
-
+    encapsulateFieldType('image',self.renderImageField);
 /*----------------------------->
 	J | Multisorter
 <-----------------------------*/
@@ -2645,6 +2679,8 @@ this.renderSorterField = function(prop){
 
 
 	};
+
+    encapsulateFieldType('multisorter',self.renderMultisorterField);
 /*----------------------------->
 	K | Buckets
 <-----------------------------*/
@@ -2822,6 +2858,7 @@ this.renderSorterField = function(prop){
 
         return bucketHtml;
     };
+    encapsulateFieldType('buckets',self.renderBucketsField,{create:self.renderBucketItem});
 /*----------------------------->
  L | Content
  <-----------------------------*/
@@ -2862,7 +2899,7 @@ this.renderSorterField = function(prop){
         return html;
 
     };
-
+    encapsulateFieldType('content',self.renderContentField);
     this.renderFieldListItem = function(item,contentTemplate,schema,specs){
         /*|{
             description:'renders a preformated list item for use in itemexpanders, details page, etc',
@@ -2936,6 +2973,10 @@ this.renderSorterField = function(prop){
  M | URL
  <-----------------------------*/
     this.renderURLField = function(prop){
+        /*|{
+
+            tags:'render,field,URL'
+        }|*/
         var profile = self.current.profile;
             var disabled = _disableField(prop);// (prop.locked &&'disabled')||'';
         var prefix = fillTemplate(prop.prefix||'',self.current.object);
@@ -2952,11 +2993,14 @@ this.renderSorterField = function(prop){
         var url = $(dom).siblings('.joe-url-field').val();
         window.open((prefix||'')+url);
     };
+    encapsulateFieldType('url',self.renderURLField);
 /*----------------------------->
  N | Color
  <-----------------------------*/
     this.renderColorField = function(prop){
-
+        /*|{
+            tags:'render,field,color'
+        }|*/
         var html=
             '<input class="joe-color-field joe-field" type="text"  name="'+prop.name+'" value="'+(prop.value || '')+'" '
             +self.renderFieldAttributes(prop)
@@ -2976,10 +3020,15 @@ this.renderSorterField = function(prop){
         $(field).parents('.joe-object-field').css('background-color',color);
 
     };
+    encapsulateFieldType('color',self.renderColorField);
 /*----------------------------->
  O | Object List Field
  <-----------------------------*/
     function getObjectlistSubProperty(prop){
+        /*|{
+        description:'renders an object list field',
+            tags:'render,field,objectList'
+        }|*/
         var subprop = prop;
         if($.type(prop) == "string"){
             subprop = {name:prop};
@@ -3107,7 +3156,8 @@ this.renderSorterField = function(prop){
         var fieldobj = self.getField(fieldname);
         $('.joe-object-field[data-name=module_fields]').find('tbody').append(content);
     };
-
+    encapsulateFieldType('objectlist',self.renderObjectListField,
+        {add:self.addObjectListItem});
 /*----------------------------->
  P | Render Checkbox Group
  <-----------------------------*/
@@ -3119,7 +3169,7 @@ this.renderSorterField = function(prop){
         var checked;
         var itemid;
         var idprop = prop.idprop || '_id';
-        var cols = prop.cols || 2;
+        var cols = prop.cols || prop.numCols|| 2;
         values.map(function(value){
             if($.type(value) != 'object'){
                 var tempval = {name:value};
@@ -3169,6 +3219,7 @@ this.renderSorterField = function(prop){
 		+' </script>';
 		return html;
 	};
+    encapsulateFieldType('code',self.renderCodeField);
 /*----------------------------->
 	R | Rendering Field
 <-----------------------------*/
@@ -3181,6 +3232,7 @@ this.renderSorterField = function(prop){
             +(prop.value || "")+'</textarea>';
 		return html;
 	};
+    encapsulateFieldType('rendering',self.renderRenderingField);
 /*----------------------------->
  T | Tags Field
  <-----------------------------*/
@@ -3276,7 +3328,7 @@ this.renderSorterField = function(prop){
 
                 }
             }
-        }
+        };
         var uploadFunction = field.upload || function(file,callback,base64){
                 alert('file uploaded');
                 callback(err,url);
@@ -3351,7 +3403,12 @@ this.renderSorterField = function(prop){
 /*----------------------------->
  V | Object Reference
  <-----------------------------*/
+
     this.renderObjectReferenceField = function(prop){
+        /*|{
+        featured:true,
+         tags:'render,field,objectReference'
+         }|*/
         //var values = self.propAsFuncOrValue(prop.values) || [];
         var values = self.getFieldValues(prop.values);
         var value = self.current.object[prop.name] ||
@@ -3419,8 +3476,8 @@ this.renderSorterField = function(prop){
         var deletable = true;
 
         var specs = $.extend({
-                expander:field.expander,
-                gotoButton:field.gotoButton,
+                expander:field.expander||field.itemExpander,
+                gotoButton:field.gotoButton||field.goto,
                 itemMenu:field.itemMenu,
                 schemaprop:field.schemaprop,
                 idprop:field.idprop,
@@ -3466,56 +3523,16 @@ this.renderSorterField = function(prop){
 
     };
 
-    this.createObjectReferenceItem2 = function(item,id,fieldname){
-        var field = _getField(fieldname);
-        var idprop = field.idprop||'_id';
-        var gotoButton = '${RUN[_renderGotoButton]}';
-        if(field.hideGotoButton){gotoButton = '';}
-        if(!item) {
-            //logit('adding ' + id + ' from ' + fieldname);
-
-            //var values = self.propAsFuncOrValue(field.values);
-            var values = self.getFieldValues(field.values);
-            //var idprop = field.idprop||'_id';
-            var item;
-            for(var i = 0,tot = values.length; i <tot; i++){
-                if(values[i][idprop] == id){
-                    item = values[i];
-                    break;
-                }
-            }
-        }
-
-        var deleteButton = '<div class="joe-delete-button joe-block-button left" ' +
-            'onclick="$(this).parent().remove();">&nbsp;</div>';
-        if(!item) {
-            return '<div class="joe-field-item deletable" data-value="' + id + '">' +
-                deleteButton + "<div>REFERENCE NOT FOUND</div><span class='subtext'>" + id + "</span>" + '</div>';
-        }
-        var id = id||item[idprop];
-
-        var itemMenu = self.propAsFuncOrValue(field.itemMenu,item);
-
-        var expander = fillTemplate(self.propAsFuncOrValue(field.expander,item),item)||'';
-        var template = self.propAsFuncOrValue(field.template, item) || "<div>${name}</div><span class='subtext'>" + id + "</span>";
-        return '<div class="joe-field-item deletable '+(expander && 'expander expander-collapsed' || '')+'" data-value="' + id + '">'
-
-            + deleteButton
-            + '<div class="joe-field-item-content">'
-                +fillTemplate(template, item)
-            + '</div>'
-            +(itemMenu && renderItemMenu(item,itemMenu) || '')
-            +self._renderExpanderButton(expander,item)
-            +fillTemplate(gotoButton,item)
-            +renderItemExpander(item, expander)
-            + '</div>';
-
-    };
+    encapsulateFieldType('objectreference',self.renderObjectReferenceField,
+        {create:self.createObjectReferenceItem,add:self.createObjectReferenceItem});
 
 /*----------------------------->
  W | Preview Field
  <-----------------------------*/
     this.renderPreviewField = function(prop){
+        /*|{
+         tags:'render,field,preview'
+         }|*/
         //var locked = self.propAsFuncOrValue(prop.locked)?' disabled ':'';
         //var profile = self.current.profile;
         var height = prop.height || '600px';
@@ -3547,12 +3564,15 @@ this.renderSorterField = function(prop){
             + '<div class="joe-button joe-iconed-button joe-view-button multiline" onclick="window.open(\''+url+'\',\'joe-preview-'+previewid+'\').joeparent = window;"> view fullscreen preview <p class="joe-subtext">' + url.length + ' chars</p></div>'+__clearDiv__;
         return html;
     };
-
+    encapsulateFieldType('preview',self.renderPreviewField);
 /*----------------------------->
  X //TextEditor Field
  <-----------------------------*/
     var tinyconfig = {};
     this.renderTinyMCEField = function(prop){
+        /*|{
+            tags:'render,field,wysiwyg'
+        }|*/
          var locked = self.propAsFuncOrValue(prop.locked)?' disabled ':'';
         var height = (prop.height)?'style="height:'+prop.height+';"' : '';
         var editor_id = cuid();
@@ -3576,7 +3596,7 @@ this.renderSorterField = function(prop){
         });
     };
     self.texteditors = [];
-    this.renderCKEditorField = function(prop){
+/*    this.renderCKEditorField = function(prop){
         var profile = self.current.profile;
         var locked = self.propAsFuncOrValue(prop.locked)?' disabled ':'';
         var height = (prop.height)?'style="height:'+prop.height+';"' : '';
@@ -3633,14 +3653,40 @@ this.renderSorterField = function(prop){
         self.ck_editors = neweditors;
 
     };
+    */
     this.readyTextEditors = this.readyTinyMCEs;
+    encapsulateFieldType('wysiwyg',self.renderTinyMCEField,{ready:self.readyTextEditors});
 
+
+/*----------------------------->
+ Z | Passthrough
+ <-----------------------------*/
+    this.renderPassthroughField = function(prop){
+        var html= 'passthrough';
+        return html;
+    };
+
+/*----------------------------->
+Field Rendering Helpers
+ <-----------------------------*/
+    function encapsulateFieldType(name,render,additionalFunctions){
+        //render = render
+        if(!render){
+            return;
+        }
+        self.Fields[name] = {
+            render:render
+        };
+        $.extend(self.Fields[name],additionalFunctions||{});
+
+    }
     function _getField(fieldname){
         /*|{
-            featured:true,
-            description:'gets a currently registered field as a spec object',
-            alias:'window._getField'
-        }|*/
+         featured:true,
+         description:'gets a currently registered field as a spec object',
+         alias:'window._getField',
+         tags:'field,helper'
+         }|*/
         var fieldobj;
         for(var f = 0,tot= self.current.fields.length; f<tot; f++){
             fieldobj = self.current.fields[f];
@@ -3652,14 +3698,6 @@ this.renderSorterField = function(prop){
 
     }
     this.getField = _getField;
-
-/*----------------------------->
- Z | Passthrough
- <-----------------------------*/
-    this.renderPassthroughField = function(prop){
-        var html= 'passthrough';
-        return html;
-    };
 /*-------------------------------------------------------------------->
 	4 | OBJECT LISTS
 <--------------------------------------------------------------------*/
