@@ -5835,7 +5835,9 @@ ANALYSIS, IMPORT AND MERGE
     };
 
     this.isNewItem = function(){
-
+        if(listMode){
+            return false;
+        }
         if(!self.current.object || !self.current.object[self.getIDProp()]){
             return true;
         }
