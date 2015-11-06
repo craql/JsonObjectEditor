@@ -5539,7 +5539,7 @@ ANALYSIS, IMPORT AND MERGE
                 global_function: false,
                 propname:p,
                 ref: ref,
-                class:ref,
+                'class':ref,
                 parameters:(comments && (comments.params || comments.parameters)) || params,
                 _id:ref+'_'+funcName,
                 comments:evalString,
@@ -5579,7 +5579,7 @@ ANALYSIS, IMPORT AND MERGE
             var propObj = {
                 name:propName,
                 ref:ref,
-                class:ref,
+                'class':ref,
                 _id:ref+'_'+propName,
                 itemtype:'property',
                 parent:parent||null,
@@ -5805,10 +5805,13 @@ ANALYSIS, IMPORT AND MERGE
                             }
                         }
                     }else {//SHOW LIST, NO item
-                        goJoe(dataset, {schema: hashSchema,subset:hashItemID});
+                      //  goJoe(dataset, {schema: hashSchema,subset:hashItemID});
+                        goJoe(dataset, {schema: hashSchema/*,subset:hashItemID*/});
+
                     }
-                    var section = $GET('section')||hashBreakdown[2];
-                    if(section) {
+                    var section = $GET('section')||hashBreakdown[2]||false;
+                    if(!section) {
+                    }else{
                         //$DEL('section');
                         self.updateHashLink();
                         self.gotoSection(section);
@@ -5980,7 +5983,7 @@ K | Smart Schema Values
         create:__createBtn__,
         quickSave:__quicksaveBtn__,
         save:__saveBtn__,
-        delete:__deleteBtn__,
+        'delete':__deleteBtn__,
         multiSave:__multisaveBtn__,
         selectAll:__selectAllBtn__,
         duplicate:__duplicateBtn__
