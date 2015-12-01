@@ -1175,7 +1175,7 @@ View Mode Buttons
      var sorter = (self.current.subset && self.current.subset.sorter)
          ||(self.current.schema && self.current.schema.sorter)|| 'name';
      if($.type(sorter) == 'string'){sorter = sorter.split(',');}
-     if(sorter.indexOf('name') == -1 && sorter.indexOf('!name') == -1){
+     if(sorter.indexOf('name') == -1 && sorter.indexOf('!name') == -1 && !sorter.where({field:'name'}).length){
          sorter.push('name');
      }
      var newsorter = subspecs;
