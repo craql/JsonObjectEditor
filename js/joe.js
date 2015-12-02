@@ -1175,14 +1175,19 @@ View Mode Buttons
      var sorter = (self.current.subset && self.current.subset.sorter)
          ||(self.current.schema && self.current.schema.sorter)|| 'name';
      if($.type(sorter) == 'string'){sorter = sorter.split(',');}
-     if(sorter.indexOf('name') == -1 && sorter.indexOf('!name') == -1){
+     if(sorter.indexOf('name') == -1 && sorter.indexOf('!name') == -1 && !sorter.where({field:'name'}).length){
          sorter.push('name');
      }
      var newsorter = subspecs;
      var current;
      return '<label for="joe-'+self.joe_index+'-sorter" class="joe-list-sorter">sort ' +
          '<select name="joe-'+self.joe_index+'-sorter" onchange="getJoe('+self.joe_index+').resort(this.value);">' +
-         sorter.map(function(s){
+         sorter.map(function(so){
+             var s = so, display = so;
+             if (!$c.isString(so)) {
+                 s = so.field;
+                 display = so.display || s;
+             }adding ability to use object in addition to string in the sorter array
              current = (s == self.current.sorter[0]) ?'selected':'';
              /* if(self.current.sorter[0] == s){
               return '<option value="!'+s+'">!'+s+'</option>';
