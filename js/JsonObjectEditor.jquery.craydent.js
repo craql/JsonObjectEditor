@@ -31,7 +31,7 @@ $c.TEMPLATE_VARS.push(
 );
 
 
-var __joeFieldTypes = [
+/*var __joeFieldTypes = [
     'text',
     'select',
     'code',
@@ -45,7 +45,7 @@ var __joeFieldTypes = [
     'objectReference',
     'group',
     'content'
-];
+];*/
 
 function JsonObjectEditor(specs){
 	var self = this;
@@ -4907,7 +4907,8 @@ Field Rendering Helpers
         //_joe.current.fields.where({required:true});
         req_fields = _joe.current.fields.filter(function (prop) {
 
-            if (prop.required && (typeof prop.required != 'function' && prop.required) || (typeof prop.required == 'function' && prop.required(self.current.object))) {
+          //  if (prop.required && (typeof prop.required != 'function' && prop.required) || (typeof prop.required == 'function' && prop.required(self.current.object))) {
+            if(self.propAsFuncOrValue(prop.required)){
                 return true;
             }
             return false;
