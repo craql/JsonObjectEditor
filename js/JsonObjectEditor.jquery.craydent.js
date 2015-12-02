@@ -85,14 +85,15 @@ function JsonObjectEditor(specs){
 				//_listTitle:'${name} ${species}'
 
 		}},
-		compact:false,
-		useControlEnter:true,
-		autoInit:false,
-        dynamicDisplay:30,
-        sans:false,
-        listSubMenu:true,
-        documentTitle:false,
-        useInset:true
+    compact:false,
+    useControlEnter:true,
+    autoInit:false,
+    dynamicDisplay:30,
+    sans:false,
+    listSubMenu:true,
+    documentTitle:false,//tmplate to set document title
+    useInset:true,
+    speechRecognition:false
 	};
 
 	this.specs = $.extend({},defaults,specs||{});
@@ -136,6 +137,7 @@ function JsonObjectEditor(specs){
         self.overlay = $('.joe-overlay[data-joeindex=' + self.joe_index + ']');
         self.panel = self.overlay.find('.joe-overlay-panel');
         self.initKeyHandlers();
+        self.Speech.init();
         self.readHashLink();
 /*        $(window).on('hashChange',function(h,i,c){
             logit(h,i,c);
@@ -633,8 +635,11 @@ Column Count
 		}
 		//.replace(/(<([^>]+)>)/ig,"");
 
+      var speech_action = specs.speech_action||'onclick="getJoe('+self.joe_index+').Speech()"';
         var reload_button = (specs.minimode)?'':
         '<div class="jif-panel-header-button joe-panel-reload" title="reload" '+reload_action+'><span class="jif-reload"></span></div>';
+        var mic_button = (!self.specs.speechRecognition||specs.minimode)?'':
+        '<div class="jif-panel-header-button joe-panel-speech" title="speech" id="speech-button-'+self.joe_index+'">M</div>';
 
 		var html =
 		'<div class="joe-panel-header">'+
@@ -644,6 +649,7 @@ Column Count
 				(('<div>'+title+'</div>').toDomElement().innerText || title || 'Json Object Editor')+
 			'</span></div>'+
         //'<div class="joe-panel-reload joe-panel-header-button" title="reload" '+reload_action+'></div>'+
+        mic_button+
         reload_button+
         '<div class="jif-panel-header-button joe-panel-close" title="close" '+close_action+'>' +//joe-panel-close
         '<span class="jif-close"></span>'+
@@ -3127,7 +3133,7 @@ this.renderHTMLContent = function(specs){
 
         }
         var delaction = "onclick='getJoe("+self.joe_index+")._oldeleteaction(this);'";
-        html += locked 
+        html += locked
 			? "<td ></td>"
 			: "<td ><div class='jif-panel-button joe-delete-button' " + delaction + ">&nbsp;</div></td>";
 	    html += '</tr>';
@@ -4296,7 +4302,7 @@ Field Rendering Helpers
         };
 
         mini.data = data || {};
-		self.minis[mini.id] = mini;
+		    self.minis[mini.id] = mini;
         self.Mini.id = mini.id;
 	};
 
@@ -4806,6 +4812,8 @@ Field Rendering Helpers
         }
         self.panel.toggleClass('show-filters',leftMenuShowing && listMode);
 
+        self.specs.speechRecognition && self.Speech.initMic()
+
         self.setEditingHashLink(false);
         var panelShowFunction = self.getCascadingProp('onPanelShow');
         try {
@@ -4907,7 +4915,7 @@ Field Rendering Helpers
         //_joe.current.fields.where({required:true});
         req_fields = _joe.current.fields.filter(function (prop) {
 
-          //  if (prop.required && (typeof prop.required != 'function' && prop.required) || (typeof prop.required == 'function' && prop.required(self.current.object))) {
+            //if (prop.required && (typeof prop.required != 'function' && prop.required) || (typeof prop.required == 'function' && prop.required(self.current.object))) {
             if(self.propAsFuncOrValue(prop.required)){
                 return true;
             }
@@ -5129,7 +5137,7 @@ Field Rendering Helpers
 					if(prop && prop != 'undefined') {//make sure it's suppoesed to be a prop field
                         switch ($(this).data('ftype')) {
                             case 'passthrough':
-                                object[prop] = object[prop] || false;
+                                object[prop] = object[prop];
                                 break;
                             //ace editor
                             case 'ace':
@@ -5980,6 +5988,10 @@ K | Smart Schema Values
         //if(currentObjectIndex == -1){return alert('object not found in current dataset');}
     };
     var getSelfStr = 'getJoe('+self.joe_index+')';
+/*-------------------------------------------------------------------->
+    //BUTTONS
+<--------------------------------------------------------------------*/
+
     this.buttons = {
         create:__createBtn__,
         quickSave:__quicksaveBtn__,
@@ -5992,6 +6004,99 @@ K | Smart Schema Values
     };
     this.buttons.next = {name:'next', display:'next >',css:'fright', action:getSelfStr+'.next()'};
     this.buttons.previous = {name:'previous',display:'< prev', css:'fleft', action:getSelfStr+'.previous()'};
+
+/*-------------------------------------------------------------------->
+    //SPEECH RECOGNITION
+<--------------------------------------------------------------------*/
+//_joe.showMiniJoe({object:'hello',title:'Audio',menu:[{name:'confirm'},{name:'cancel'}]})
+    this.Speech = {
+        init : function(force){
+          if(force || self.specs.speechRecognition){
+            self.addStylesheet(joe_web_dir+'js/plugins/microphone/microphone.min.css',{name:'microphone-css'})
+            self.addScript(joe_web_dir+'js/plugins/microphone/microphone.min.js',{name:'microphone-js'})
+          }
+        },
+        confirm: function(){
+          self.Mini.show({object:'hello',title:'Audio',menu:[{name:'confirm'},{name:'cancel'}]})
+        },
+        initMic:function(){
+          var mic = self.Speech.mic = new Wit.Microphone(document.getElementById('speech-button-'+self.joe_index));
+          var info = function (msg) {
+            logit(msg);
+            //document.getElementById("info").innerHTML = msg;
+          };
+          var error = function (msg) {
+            logit(msg);
+            //document.getElementById("error").innerHTML = msg;
+          };
+          mic.onready = function () {
+            info("Microphone is ready to record");
+          };
+          mic.onaudiostart = function () {
+            info("Recording started");
+            error("");
+          };
+          mic.onaudioend = function () {
+            info("Recording stopped, processing started");
+          };
+          mic.onresult = function (intent, entities) {
+logit(intent)
+            /*var r = kv("intent", intent);
+
+            for (var k in entities) {
+              var e = entities[k];
+
+              if (!(e instanceof Array)) {
+                r += kv(k, e.value);
+              } else {
+                for (var i = 0; i < e.length; i++) {
+                  r += kv(k, e[i].value);
+                }
+              }
+            }
+
+            document.getElementById("result").innerHTML = r;*/
+          };
+          mic.onerror = function (err) {
+            error("Error: " + err);
+          };
+          mic.onconnecting = function () {
+            info("Microphone is connecting");
+          };
+          mic.ondisconnected = function () {
+            info("Microphone is not connected");
+          };
+
+          mic.connect("3J7E3INLVHRRZYVTX6VBXWUXXGMRDEPS");
+        }
+
+    }
+/*-------------------------------------------------------------------->
+    //SPEECH RECOGNITION
+<--------------------------------------------------------------------*/
+    this.addStylesheet = function(href,specs,cancelAppend){
+      var s = document.createElement('link');
+      var specs = $.extend({rel:'stylesheet'},specs || {})
+      $.extend(s,specs);
+      s.href = href;
+
+      if(!cancelAppend){
+        document.head.appendChild(s);
+      }
+      return s;
+    }
+    this.addScript = function(src,specs,cancelAppend){
+      var s = document.createElement('script');
+      var specs = $.extend({type:'text/javascript'},specs || {})
+      $.extend(s,specs);
+      s.src = src;
+
+      if(!cancelAppend){
+        document.body.appendChild(s);
+      }
+      return s;
+    }
+
 /*-------------------------------------------------------------------->
      //AUTOINIT
  <--------------------------------------------------------------------*/

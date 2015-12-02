@@ -1017,6 +1017,15 @@ border: 1px inset #007ac2;
     background-position: -110px -11px;
 }
 
+.joe-panel-speech{
+    right: 80px;
+    background-position: -210px -11px;
+}
+.joe-panel-speech.recording{
+    color:red;
+    right: 80px;
+    background-position: -210px -11px;
+}
 
 .joe-panel-reload{
     right: 40px;

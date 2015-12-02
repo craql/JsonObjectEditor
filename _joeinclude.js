@@ -3,39 +3,10 @@ last updated: CH March 2014
 */
 
 var includes = "",
-web_dir = (location.protocol||'http:')+"//webapps-cdn.esri.com/tools/JOE/",
-projectName = 'JsonObjectEditor';
+projectName = 'JsonObjectEditor',
+web_dir = '//' + location.hostname + ':' + location.port + "/" + projectName + '/';
 
-if(location && location.hostname){//fix for devices
-	switch(location.hostname){
-		case 'webapps-cdn-stg.esri.com':
-			web_dir = "http://webapps-cdn-stg.esri.com/tools/JOE/";
-		break;
-		case 'webapps-cdn.esri.com':
-			web_dir = "http://webapps-cdn.esri.com/tools/JOE/";
-		break;
 
-/*        case 'webnode.esri.com':
-            web_dir = "http://ec2-23-23-199-244.compute-1.amazonaws.com/JsonObjectEditor/";
-        break;*/
-
-        //NODE TIERS
-        case 'webnode.esri.com':
-        case 'ec2-23-23-199-244.compute-1.amazonaws.com'://dev
-        case 'ec2-54-215-12-204.us-west-1.compute.amazonaws.com'://stg
-        case 'ec2-23-23-237-78.compute-1.amazonaws.com'://prd
-            web_dir = location.protocol+'//'+location.hostname+"/"+projectName+"/";
-            break;
-
-        case 'localhost':
-        if(location && location.port < 1000) {
-                web_dir = 'http://' + location.hostname + ':' + location.port + "/" + projectName + '/';
-        }
-        break;
-	}
-} else if (location && location.hostname === '') {
-    web_dir = "http://ec2-23-23-199-244.compute-1.amazonaws.com/JsonObjectEditor/";
-}
 if(location && location.origin == 'file://'){
 	web_dir = location.href.slice(0,location.href.lastIndexOf('/')+1);
 }
@@ -43,7 +14,7 @@ var
     joe_web_dir = web_dir,
 scripts_dir = web_dir+"js/",
 scripts = [];
-if (typeof jQuery == 'undefined') {  
+if (typeof jQuery == 'undefined') {
 	scripts.push("libs/jquery-1.11.3.min.js");
 	scripts.push("libs/jquery-ui.min.js");
 

@@ -94,22 +94,22 @@ height: 300px;
 </div>
 <script>
 Craydent.DEBUG_MODE =true;
-var cat = 
-{	name:'tom', 
+var cat =
+{	name:'tom',
 	legs:4,
 	species:'cat',
 	id:cuid(),
 	hiddenizer:'the hidden field'
 };
 var dog =
-{	name:'rover', 
+{	name:'rover',
 	legs:4,
 	species:'dog',
 	id:cuid()
 };
 
 var rat =
-{	name:'jerry', 
+{	name:'jerry',
 	legs:4,
 	species:'rat',
 	weight:3.5,
@@ -117,7 +117,7 @@ var rat =
 };
 
 var monkey =
-{	name:'Chimp', 
+{	name:'Chimp',
 	legs:2,
 	species:'monkey',
 	weight:12,
@@ -156,13 +156,13 @@ function adjustSchema(dom){
 	}
 	else{
 		JOE.resetSchema('animal')
-	
+
 	}
 }
 function logValue(dom){
 	logit($(dom).val());
 }
-var animalschema = 
+var animalschema =
 	{
 		_title:'Animal',
 		fields:['id','name','legs','species','weight','color','gender','animalLink','birthday','pict'],
@@ -172,10 +172,10 @@ var animalschema =
 			alert(obj.name);
 		},*/
 		onblur:logit
-		
+
 	};
 
-var thingschema = 
+var thingschema =
 	{
 		_title:'Thing',
 		fields:['id','name','thingType','legs','species','weight','color','gender','html','friends'],
@@ -188,7 +188,7 @@ var thingschema =
         grid:{
             cols:['Name']
         }
-		
+
 	};
 
 var things = [];
@@ -196,13 +196,13 @@ for (var p = 1; p<= 3000; p++){
     things.push({id:cuid(),name:'thing-'+(p/1000)});
 }
 
-var citySchema = 
+var citySchema =
 	{
 		_title:'City',
 		fields:['id','name','city_buckets','city_css','geo','city_demos','isChecked'],
 		_listID:'id',
 		_listTitle:'${name} <br/>${geo}'
-		
+
 	};
 
 var objectListSchema =
@@ -237,8 +237,8 @@ var objectListSchema =
 			id:{label:'ID',type:'guid'},
 		//rendering
 			html:{label:'HTML Rendering', type:'rendering'},
-			
-		//example of select that takes function (function is passed item)	
+
+		//example of select that takes function (function is passed item)
 			animalLink:{label:'Link to other animal',type:'select', values:getAnimals},
 			hiddenizer:{hidden:true},
             animalList:{
@@ -255,7 +255,8 @@ var objectListSchema =
 			city:citySchema,
             objectList:objectListSchema
 		},
-		compact:false
+		compact:false,
+		speechRecognition:true
 	};
 
     var bucketItems = [];
@@ -268,16 +269,16 @@ var objectListSchema =
 
 	var JOE = new JsonObjectEditor(specs);
 	JOE.init();
-	
+
 	var JOE2 = new JsonObjectEditor({compact:true});
 	JOE2.init();
 
 var JOE3 = new JsonObjectEditor({container:'#embeddedJoe'});
 JOE3.init();
-	
+
 function keyboardTracker(evt){
 	logit(evt);
-	
+
 }
 //$(window).keypress(keyboardTracker);
 </script>
