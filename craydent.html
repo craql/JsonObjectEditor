@@ -1,11 +1,283 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head lang="en">
-    <meta charset="UTF-8">
-    <script src="_joeinclude.js"></script>
-    <title> Craydent Platform Test</title>
-</head>
-<body>
+<head>
+<meta charset="utf-8">
+<title>JOE Test</title>
 
+<script src="_joecraydent.js"></script>
+<style>
+
+#testEditableRegion{
+	margin:5px;
+	padding:5px;
+	border:1px solid #007ac2;
+	color:#444;
+	cursor:pointer;
+}
+#testEditableRegion:hover{
+	background:#eee;
+}
+#htmlInput {
+width: 100%;
+height: 300px;
+}
+
+.page-panel{
+ width:50%;
+    float:left;
+    margin:0;
+    padding:0;
+    box-sizing: border-box;
+    border:1px solid #ddd;
+}
+
+#embeddedJoe {
+    height: 400px;
+    position:relative
+}
+</style>
+</head>
+
+<body>
+<div>Json Object Editor Demo Page</div>
+<div id="panelWrapper">
+<div class="page-panel" >
+<h3>Animal Objects</h3>
+<a href="javascript:_joe.show();">Show JOE</a><br/>
+
+<a href="javascript:_joe.show(cat);">edit Cat</a><br/>
+
+<a href="javascript:_joe.show(cat,{schema:'animal'});">edit Cat(animal)</a><br/>
+
+<a href="javascript:_joe.show(dog,{schema:'thing', title:'Thing with Rendering'});">edit Dog(thing)</a><br/>
+
+    <a href="javascript:goJoe(things,{schema:'thing', title:'List of Things | ${_listCount}'});">view Things</a> |
+    <a href="javascript:goJoe(things,{schema:'thing', viewMode:'grid',title:'List of Things | ${_listCount}'});">as Grid</a><br/>
+
+<a href="javascript:_joe.show(animals,{schema:'animal',subsets:[{name:'Two-Legged',filter:{legs:2}}]});">edit Animals</a><br/>
+
+<a href="javascript:_joe.show({},{schema:'animal',callback:addAnimal});">Add Animal</a><br/>
+
+    <p>With object lists</p>
+    <a href="javascript:_joe.show(objectListItems[0],{schema:'objectList'});">Default List</a><br/>
+    <a href="javascript:_joe.show(objectListItems,{schema:'objectList'});">Add Animal List</a><br/>
+
+    <div>
+    <p>City with geo + multiselect</p>
+    <a href="javascript:_joe.show({},{schema:'city',callback:addCity});">Add City</a><br/>
+    <a href="javascript:goJoe(cities,{schema:'city'});">View Cities</a><br/>
+</div>
+
+<h3>Editing html Renderings</h3>
+<div id="testEditableRegion" onclick="JOE.replaceRendering(this)">
+    <h3>This div is editable</h3>
+    <p>You can change any of the specs.</p>
+    <p> On save, it will replace the current div.</p>
+    <p>The shortcut function is replaceRendering(domElement,specs)</p>
+</div>
+
+<p>Text field</p>
+<input onkeyup="alert($(this).val());" />
+
+
+
+</div>
+<div class="page-panel" id="embeddedJoe">
+    This is where joe goes. This container should be positioned relative/absolute.
+    in the instantiation of joe, the container was set to this dom elements id.
+    <div class="joe-button" onClick="JOE3.show('')">Show Joe</div>
+
+</div>
+</div>
+<script>
+Craydent.DEBUG_MODE =true;
+var cat =
+{	name:'tom',
+	legs:4,
+	species:'cat',
+	id:cuid(),
+	hiddenizer:'the hidden field'
+};
+var dog =
+{	name:'rover',
+	legs:4,
+	species:'dog',
+	id:cuid()
+};
+
+var rat =
+{	name:'jerry',
+	legs:4,
+	species:'rat',
+	weight:3.5,
+	id:cuid()
+};
+
+var monkey =
+{	name:'Chimp',
+	legs:2,
+	species:'monkey',
+	weight:12,
+	id:cuid()
+};
+
+var animals =[cat,dog,rat,monkey];
+var animalLinks = ['cat','dog','rat'];
+
+var defaultObjectList = {
+    id:"b52624a1-3070-404c-bd45-18d34ffac7a3",
+    name:'default',
+    animalList:[
+        {id:"9de0d472-f8bc-4da1-84e6-36caa326c62e",name:'corey',city:'orlando'},
+        {id:"b673426f-cefc-45ec-b72d-7d772c62bfee",name:'max',city:'tahoma'}
+    ]
+};
+var objectListItems = [defaultObjectList];
+var cities =[];
+function addAnimal(obj){
+	animals.push(obj);
+}
+
+function addCity(obj){
+	cities.push(obj);
+}
+
+function getAnimals(obj){
+	return animalLinks.filter(function(a){return a != obj.species;})
+}
+
+function adjustSchema(dom){
+	var species = $(dom).val();
+	if(species == "thing"){
+		JOE.resetSchema('thing')
+	}
+	else{
+		JOE.resetSchema('animal')
+
+	}
+}
+function logValue(dom){
+	logit($(dom).val());
+}
+var animalschema =
+	{
+		_title:'Animal',
+		fields:['id','name','legs','species','weight','color','gender','animalLink','birthday','pict'],
+		_listID:'id',
+		_listTitle:'${name} ${species}',
+		/*callback:function(obj){
+			alert(obj.name);
+		},*/
+		onblur:logit
+
+	};
+
+var thingschema =
+	{
+		_title:'Thing',
+		fields:['id','name','thingType','legs','species','weight','color','gender','html','friends'],
+		_listID:'id',
+		_listTitle:'${name} ${species}',
+        subsets:[
+            {name:'Has 2',filter:{name:/2/}},
+            {name:'99ers',filter:{name:/99/}}
+        ],
+        grid:{
+            cols:['Name']
+        }
+
+	};
+
+var things = [];
+for (var p = 1; p<= 3000; p++){
+    things.push({id:cuid(),name:'thing-'+(p/1000)});
+}
+
+var citySchema =
+	{
+		_title:'City',
+		fields:['id','name','city_buckets','city_css','geo','city_demos','isChecked'],
+		_listID:'id',
+		_listTitle:'${name} <br/>${geo}'
+
+	};
+
+var objectListSchema =
+{
+    _title:'Animal List',
+    fields:['id','name','animalList'],
+    _listID:'id',
+    _listTitle:'${name} '
+};
+	var specs = {
+/*		defaultProfile:{
+			lockedFields:['joeUpdated','id'],
+			hiddenFields:[]
+		},*/
+		fields:{
+			species:{label:'Species',type:'select', values:['cat','dog','rat','thing'], onchange:adjustSchema},
+			friends:{label:'Friends - multi',type:'select', values:['cat','dog','rat','thing'], multiple:true},
+			gender:{type:'select', values:['male','female']},
+			legs:{label:'# of Legs',type:'int', onblur:logit, value:4},
+			weight:{label:' Weight (lbs)',type:'number', onblur:logit},
+			name:{label:'Name', onkeyup:logValue, value:"Unnamed"},
+			birthday:{label:'birthday', type:'date'},
+			geo:{label:'Geography [lat,lon]', type:'geo'},
+			city_demos:{label:'City Demographics', type:'select', multiple:true,values:['Business','Residential','Metropolis','Agricultural']},
+			city_css:{type:'text',autocomplete:true,values:['happy','sad','frivilous','distinguished']},
+			isChecked:{type:'boolean'},
+			pict:{type:'image'},
+            city_buckets:{label:'Bucket Items - MultiSort',type:'multisorter',default:[], width:'50%', values:function(){return bucketItems},idprop:'id',
+                template:'${name} <br/><small>${id}</small>'
+            },
+			//id:{label:'ID',type:'text', locked:true},
+			id:{label:'ID',type:'guid'},
+		//rendering
+			html:{label:'HTML Rendering', type:'rendering'},
+
+		//example of select that takes function (function is passed item)
+			animalLink:{label:'Link to other animal',type:'select', values:getAnimals},
+			hiddenizer:{hidden:true},
+            animalList:{
+                display:'List of animals',type:'objectList',
+                properties:['name','id',
+                    {name:'city', display:'Location',type:'select', values:['cat','dog','rat','thing']},
+                    {name:'mood', autocomplete:true,values:['happy','sad','frivilous','distinguished']}
+                ]
+            }
+		},
+		schemas:{
+			animal:animalschema,
+			thing:thingschema,
+			city:citySchema,
+            objectList:objectListSchema
+		},
+		compact:false,
+		speechRecognition:true
+	};
+
+    var bucketItems = [];
+    for(var i = 0; i<1000;i++) {
+        bucketItems.push({
+            name:'Bucket Item '+i,
+            id:cuid()
+        })
+    }
+
+	var JOE = new JsonObjectEditor(specs);
+	JOE.init();
+
+	var JOE2 = new JsonObjectEditor({compact:true});
+	JOE2.init();
+
+var JOE3 = new JsonObjectEditor({container:'#embeddedJoe'});
+JOE3.init();
+
+function keyboardTracker(evt){
+	logit(evt);
+
+}
+//$(window).keypress(keyboardTracker);
+</script>
 </body>
 </html>
