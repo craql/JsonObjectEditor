@@ -1175,19 +1175,24 @@ View Mode Buttons
      var sorter = (self.current.subset && self.current.subset.sorter)
          ||(self.current.schema && self.current.schema.sorter)|| 'name';
      if($.type(sorter) == 'string'){sorter = sorter.split(',');}
-     if(sorter.indexOf('name') == -1 && sorter.indexOf('!name') == -1){
+     if(sorter.indexOf('name') == -1 && sorter.indexOf('!name') == -1 && !sorter.where({field:'name'}).length){
          sorter.push('name');
      }
      var newsorter = subspecs;
      var current;
      return '<label for="joe-'+self.joe_index+'-sorter" class="joe-list-sorter">sort ' +
          '<select name="joe-'+self.joe_index+'-sorter" onchange="getJoe('+self.joe_index+').resort(this.value);">' +
-         sorter.map(function(s){
+         sorter.map(function(so){
+             var s = so, display = so;
+             if (!$c.isString(so)) {
+                 s = so.field;
+                 display = so.display || s;
+             }
              current = (s == self.current.sorter[0]) ?'selected':'';
              /* if(self.current.sorter[0] == s){
               return '<option value="!'+s+'">!'+s+'</option>';
               }*/
-             return '<option '+current+' value="'+s+'">'+s+'</option>';
+             return '<option '+current+' value="'+s+'">'+display+'</option>';
          })+
          '</select></label>';
  };
@@ -1319,7 +1324,15 @@ this.renderHTMLContent = function(specs){
         var filteredList;
 
         if(self.current.sorter &&(($.type(self.current.sorter) != 'array') || self.current.sorter.length) ){
-            list = list.sortBy(self.current.sorter);
+            var sorterValues = self.current.sorter;
+            if ($c.isArray(self.current.sorter) && self.current.sorter[0].field) {
+                sorterValues = [];
+                for (var i = 0, len = self.current.sorter.length; i < len; i++) {
+                    sorterValues.push(self.current.sorter[i].field || self.current.sorter[i]);
+                }
+            }
+
+            list = list.sortBy(sorterValues);
         }
         //list = list.sortBy(self.current.sorter);
 		//logit('list sort complete in '+wBM.stop()+' seconds');
